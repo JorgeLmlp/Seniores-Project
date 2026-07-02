@@ -1,57 +1,47 @@
 import datetime
-from cuidador import Usuario
-
 from extensions import db
+from models.cuidador import Usuario
+
 
 class Paciente(Usuario):
-    id = db.column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
-    responsavel_id = db.column(db.relationship('Responsavel.id'), db.Integer)
-    lst_sinais_vit_id = db.Column(
-    db.Integer,
-    db.ForeignKey('lst_sinais_vit.id')
-)
-    responsavel = db.relationship(
-        'Responsavel',
-        backref='pacientes'
-    )
-    
+    __tablename__ = "pacientes"
+    __allow_unmapped__ = True
+    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+
+    responsavel_id = db.Column(db.Integer, db.ForeignKey('responsaveis.id'))
+    lst_sinais_vit_id = db.Column(db.Integer, db.ForeignKey('lst_sinais_vit.id'))
+
+    responsavel = db.relationship('Responsavel', backref='pacientes')
+
     __mapper_args__ = {
-        'polymorphic_identity': 'responsavel'
+        'polymorphic_identity': 'paciente'
     }
-    
+
     def vincularResponsavel(self, responsavel):
         self.responsavel = responsavel
-    
 
 
-class SinalVital():
-    def __init__(
-            self,
-            data: datetime,
-            freq_cardiaca: str,
-            saturacao: str,
-            pressao_art: str,
-            glicemia: str,
-            temperatura: str
-        ):
-        self.data = data
-        self.freq_cardiaca  = freq_cardiaca
-        self.saturacao = saturacao
-        self.pressao_art = pressao_art
-        self.glicemia = glicemia
-        self.temperatura = temperatura
+class SinalVital(db.Model):
+    __tablename__ = "sinais_vitais"
 
-        
+    id = db.Column(db.Integer, primary_key=True)
 
-class lstSinaisVit(db.model):
-    __tablename__ = 'lst_sinais_vit'
-    data = db.column()
-    freqCardiaca = db.column(db.String(30), nullable = False)
-    pressaoArterial = db.column()
-    saturacao = db.column()
-    glicemia = db.column()
-    temperatura = db.column()
-    
-    __mapper_args__ = {
-        'polymorphic_identity': 'responsavel'
-    }
+    data = db.Column(db.DateTime, default=datetime.datetime.utcnow)
+    freq_cardiaca = db.Column(db.String(30))
+    saturacao = db.Column(db.String(30))
+    pressao_art = db.Column(db.String(30))
+    glicemia = db.Column(db.String(30))
+    temperatura = db.Column(db.String(30))
+
+
+class LstSinaisVit(db.Model):
+    __tablename__ = "lst_sinais_vit"
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    data = db.Column(db.DateTime)
+    freqCardiaca = db.Column(db.String(30))
+    pressaoArterial = db.Column(db.String(30))
+    saturacao = db.Column(db.String(30))
+    glicemia = db.Column(db.String(30))
+    temperatura = db.Column(db.String(30))

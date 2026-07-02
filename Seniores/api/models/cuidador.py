@@ -2,9 +2,7 @@
 from extensions import db
 from datetime import datetime
 
-#classe abstrata NAO IMSTAMCIAR
 class Usuario(db.Model):
-    __abstract__ = True
     __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
@@ -57,11 +55,11 @@ class Usuario(db.Model):
 
 class Cuidador(Usuario):
     __tablename__ = 'cuidadores'
+    __allow_unmapped__ = True
 
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     experience = db.Column(db.String(255), nullable=True)
-    paciente_id = db.column(db.Integer, db.ForeingKey('Paciente.id'))
-
+    paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.id'))
     __mapper_args__ = {
         'polymorphic_identity': 'cuidador'
     }
@@ -70,17 +68,20 @@ class Cuidador(Usuario):
         dados = super().to_dict
         dados['experience'] = self.experience
         return dados
-
-    def registrar_sinais_vit(
-    self,
-    data: datetime,
-    freq_cardiaca: str,
-    saturacao: str,
-    pressao_art: str,
-    glicemia: str,
-    temperatura: str
-):
-        from models.paciente import SinalVital
+#TODO
+#     def registrar_sinais_vit(
+#     self,
+#     data: datetime,
+#     freq_cardiaca: str,
+#     saturacao: str,
+#     pressao_art: str,
+#     glicemia: str,
+#     temperatura: str
+# ):
+#         cuidadores = db.relationship(
+            
+#         )
+#         from models.paciente import SinalVital
         
         
 

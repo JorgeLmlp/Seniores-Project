@@ -1,9 +1,9 @@
 
-from cuidador import Usuario
+from .cuidador import Usuario
 from extensions import db
 
 class Remedio(db.Model):
-    
+    __allow_unmapped__ = True
     __tablename__ = 'tbl_remedio'
     def __init__(self, nome, descricao, dosagem):
         super().__init__(nome=nome)

@@ -1,9 +1,11 @@
-from cuidador import User, Paciente
+from .cuidador import Usuario
+from .paciente import Paciente
 from extensions import db
 
 
-class Responsavel(User):
+class Responsavel(Usuario):
     __tablename__ = 'responsaveis'
+    __allow_unmapped__ = True
     id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
     relationship = db.Column(db.String(50), nullable=True)
     paciente : Paciente  = db.relationship('Paciente', backref='Responsavel', uselist=False)
