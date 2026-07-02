@@ -10,7 +10,6 @@ class Paciente(Usuario):
 
     responsavel_id = db.Column(db.Integer, db.ForeignKey('responsaveis.id'))
     lst_sinais_vit_id = db.Column(db.Integer, db.ForeignKey('lst_sinais_vit.id'))
-
     responsavel = db.relationship('Responsavel', backref='pacientes')
 
     __mapper_args__ = {
