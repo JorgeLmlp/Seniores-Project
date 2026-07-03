@@ -3,7 +3,6 @@ from extensions import db
 from datetime import datetime
 
 class Usuario(db.Model):
-    __tablename__ = 'users'
 
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
@@ -11,6 +10,7 @@ class Usuario(db.Model):
     password = db.Column(db.String(128), nullable=False)
     phoneNumber = db.Column(db.String(20),  nullable=False)
     type = db.Column(db.String(20))
+    cpf = db.Column(db.String(14), unique=True, nullable=False)
 
     __mapper_args__ = {
         'polymorphic_on':       type,
@@ -64,10 +64,7 @@ class Cuidador(Usuario):
         'polymorphic_identity': 'cuidador'
     }
 
-    def to_dict(self):
-        dados = super().to_dict
-        dados['experience'] = self.experience
-        return dados
+    
 #TODO
 #     def registrar_sinais_vit(
 #     self,

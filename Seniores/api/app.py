@@ -1,8 +1,8 @@
 from flask import Flask
-from extensions import create_app
+from extensions import app
 from routes import *
 
-app = create_app()
+
 
 
 if __name__ == "__main__":
