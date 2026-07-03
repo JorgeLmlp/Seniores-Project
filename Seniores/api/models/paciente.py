@@ -6,7 +6,7 @@ from models.cuidador import Usuario
 class Paciente(Usuario):
     __tablename__ = "pacientes"
     __allow_unmapped__ = True
-    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
 
     responsavel_id = db.Column(db.Integer, db.ForeignKey('responsaveis.id'))
     lst_sinais_vit_id = db.Column(db.Integer, db.ForeignKey('lst_sinais_vit.id'))

@@ -3,13 +3,13 @@ from extensions import db
 from datetime import datetime
 
 class Usuario(db.Model):
-
+    __abstract__ = True
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     phoneNumber = db.Column(db.String(20),  nullable=False)
-    type = db.Column(db.String(20))
+    tpo = db.Column(db.String(20))
     cpf = db.Column(db.String(14), unique=True, nullable=False)
 
     __mapper_args__ = {
@@ -56,8 +56,7 @@ class Usuario(db.Model):
 class Cuidador(Usuario):
     __tablename__ = 'cuidadores'
     __allow_unmapped__ = True
-
-    id = db.Column(db.Integer, db.ForeignKey('users.id'), primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
     experience = db.Column(db.String(255), nullable=True)
     paciente_id = db.Column(db.Integer, db.ForeignKey('pacientes.id'))
     __mapper_args__ = {

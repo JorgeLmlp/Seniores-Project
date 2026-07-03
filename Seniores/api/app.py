@@ -1,6 +1,4 @@
-from flask import Flask
 from extensions import app
-from routes import *
 
 
 
