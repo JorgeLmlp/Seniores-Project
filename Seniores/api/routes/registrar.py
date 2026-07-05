@@ -1,6 +1,6 @@
-from flask import Blueprint, render_template, request, redirect, url_for 
-from app import app
+from controllers.user_controller import criar_usuario
+from flask import Blueprint
 
 registrar_cuidador = Blueprint('registrar', __name__)
 
-registrar_cuidador.route('/registrar_cuidador/', methods=['GET', 'POST'])(registrar_cuidador)
+registrar_cuidador.route('/registrar_cuidador/', methods=['POST'])(criar_usuario)

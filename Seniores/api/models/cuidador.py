@@ -9,11 +9,11 @@ class Usuario(db.Model):
     email = db.Column(db.String(120), unique=True, nullable=False)
     password = db.Column(db.String(128), nullable=False)
     phoneNumber = db.Column(db.String(20),  nullable=False)
-    tpo = db.Column(db.String(20))
+    tipo = db.Column(db.String(20))
     cpf = db.Column(db.String(14), unique=True, nullable=False)
 
     __mapper_args__ = {
-        'polymorphic_on':       type,
+        'polymorphic_on':       'tipo',
         'polymorphic_identity': 'user'
     }
 
@@ -35,20 +35,7 @@ class Usuario(db.Model):
             'phoneNumber': self.phoneNumber
         }
 
-    def trocarSenha(self, new_password):
-        self.password = new_password
-
-    def trocarNumeroTelefone(self, new_phone_number):
-        self.phoneNumber = new_phone_number
-
-    def trocarEmail(self, new_email):
-        self.email = new_email
-
-    def trocarNome(self, new_name):
-        self.name = new_name
-        
-    def autenticar(self):
-        pass
+  
     
 
 

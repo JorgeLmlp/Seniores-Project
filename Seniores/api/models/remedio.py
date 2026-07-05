@@ -17,5 +17,4 @@ class Remedio(db.Model):
     def __repr__(self):
         return self.__str__()
     
-    def alterar_dosagem(self, nova_dosagem):
-        self.dosagem = nova_dosagem
+    
