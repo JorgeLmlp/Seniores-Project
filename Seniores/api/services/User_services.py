@@ -1,33 +1,38 @@
-from repositories.user_repository import UserRepository
+from extensions import db
 from werkzeug.security import generate_password_hash
 
+from models.user import _aplicar_dados
+from models.cuidador import Cuidador
+from models.paciente import Paciente
+from models.responsavel import Responsavel
 
-def _normalizar_tipo(tipo):
-    return (tipo or '').lower()
 
-
-def _aplicar_dados(usuario, info):
-    if 'nome' in info:
-        usuario.name = info.get('nome')
-    if 'name' in info:
-        usuario.name = info.get('name')
-    if 'email' in info:
-        usuario.email = info.get('email')
-    if 'telefone' in info:
-        usuario.phoneNumber = info.get('telefone')
-    if 'phoneNumber' in info:
-        usuario.phoneNumber = info.get('phoneNumber')
-    if 'cpf' in info:
-        usuario.cpf = info.get('cpf')
-    if 'senha' in info and info.get('senha'):
-        usuario.password = generate_password_hash(info.get('senha'))
-    if 'password' in info and info.get('password'):
-        usuario.password = generate_password_hash(info.get('password'))
+CLASSES_POR_TIPO = {
+    'cuidador': Cuidador,
+    'paciente': Paciente,
+    'responsavel': Responsavel,
+}
 
 
 class UserService:
-    def __init__(self):
-        self.repository = UserRepository()
+    def _normalizar_tipo(self, tipo):
+        return (tipo or '').lower()
+
+    def _classe_por_tipo(self, tipo):
+        return CLASSES_POR_TIPO.get(self._normalizar_tipo(tipo))
+
+    def _email_ou_cpf_existe(self, email, cpf, usuario_id=None, tipo_atual=None):
+        # tipo_atual identifica de qual classe é o usuario_id, para a
+        # exclusão do próprio registro só valer dentro da mesma tabela.
+        tipo_normalizado = self._normalizar_tipo(tipo_atual) if tipo_atual else None
+
+        for tipo_chave, modelo in CLASSES_POR_TIPO.items():
+            query = modelo.query.filter((modelo.email == email) | (modelo.cpf == cpf))
+            if usuario_id is not None and tipo_chave == tipo_normalizado:
+                query = query.filter(modelo.id != usuario_id)
+            if query.first():
+                return True
+        return False
 
     def criar(self, info):
         nome = info.get('nome') or info.get('name')
@@ -35,36 +40,46 @@ class UserService:
         senha = info.get('senha') or info.get('password')
         telefone = info.get('telefone') or info.get('phoneNumber')
         cpf = info.get('cpf')
-        tipo = _normalizar_tipo(info.get('tipo'))
-        classe = self.repository.classe_por_tipo(tipo)
+        tipo = info.get('tipo')
+        classe = self._classe_por_tipo(tipo)
 
         if not all([nome, email, senha, telefone, cpf, classe]):
             return None, 400
 
-        if self.repository.email_ou_cpf_existe(email, cpf):
+        if self._email_ou_cpf_existe(email, cpf):
             return None, 409
 
-        usuario = self.repository.criar_usuario(
-            tipo,
-            nome,
-            email,
-            generate_password_hash(senha),
-            telefone,
-            cpf,
+        usuario = classe(
+            name=nome,
+            email=email,
+            password=generate_password_hash(senha),
+            phoneNumber=telefone,
+            cpf=cpf,
+            tipo=self._normalizar_tipo(tipo),
         )
+        db.session.add(usuario)
+        db.session.commit()
+
         return usuario, 201
 
     def listar(self, tipo=None):
-        usuarios = self.repository.listar(tipo)
-        if usuarios is None:
-            return None, 400
+        if tipo:
+            classe = self._classe_por_tipo(tipo)
+            if not classe:
+                return None, 400
+            return classe.query.all(), 200
+
+        usuarios = []
+        for classe in CLASSES_POR_TIPO.values():
+            usuarios.extend(classe.query.all())
         return usuarios, 200
 
     def buscar_por_id(self, tipo, usuario_id):
-        if not self.repository.classe_por_tipo(tipo):
+        classe = self._classe_por_tipo(tipo)
+        if not classe:
             return None, 400
 
-        usuario = self.repository.buscar_por_id(tipo, usuario_id)
+        usuario = classe.query.get(usuario_id)
         if not usuario:
             return None, 404
         return usuario, 200
@@ -76,11 +91,13 @@ class UserService:
 
         novo_email = info.get('email', usuario.email)
         novo_cpf = info.get('cpf', usuario.cpf)
-        if self.repository.email_ou_cpf_existe(novo_email, novo_cpf, usuario_id=usuario.id):
+        if self._email_ou_cpf_existe(
+            novo_email, novo_cpf, usuario_id=usuario.id, tipo_atual=tipo
+        ):
             return None, 409
 
         _aplicar_dados(usuario, info)
-        self.repository.salvar()
+        db.session.commit()
         return usuario, 200
 
     def deletar(self, tipo, usuario_id):
@@ -88,7 +105,8 @@ class UserService:
         if status != 200:
             return None, status
 
-        self.repository.deletar(usuario)
+        db.session.delete(usuario)
+        db.session.commit()
         return None, 204
 
     def registrar(self, info):
@@ -96,5 +114,4 @@ class UserService:
 
 
 def registroPadrao(info):
-    usuario, status = UserService().criar(info)
-    return status if status != 201 else usuario
+    return UserService().criar(info)
