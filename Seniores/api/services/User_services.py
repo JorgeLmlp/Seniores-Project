@@ -1,7 +1,6 @@
 from extensions import db
 from werkzeug.security import generate_password_hash
 
-from models.user import _aplicar_dados
 from models.cuidador import Cuidador
 from models.paciente import Paciente
 from models.responsavel import Responsavel
@@ -12,6 +11,24 @@ CLASSES_POR_TIPO = {
     'paciente': Paciente,
     'responsavel': Responsavel,
 }
+def _aplicar_dados(usuario, info):
+    if 'nome' in info:
+        usuario.name = info.get('nome')
+    if 'name' in info:
+        usuario.name = info.get('name')
+    if 'email' in info:
+        usuario.email = info.get('email')
+    if 'telefone' in info:
+        usuario.phoneNumber = info.get('telefone')
+    if 'phoneNumber' in info:
+        usuario.phoneNumber = info.get('phoneNumber')
+    if 'cpf' in info:
+        usuario.cpf = info.get('cpf')
+    if 'senha' in info and info.get('senha'):
+        usuario.password = generate_password_hash(info.get('senha'))
+    if 'password' in info and info.get('password'):
+        usuario.password = generate_password_hash(info.get('password'))
+
 
 
 class UserService:
