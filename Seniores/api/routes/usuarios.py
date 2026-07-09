@@ -8,9 +8,9 @@ from controllers.user_controller import (
 )
 
 
-usuarios = Blueprint('users', __name__)
-usuarios.route('/users/', methods=['POST'])(criar_usuario)
-usuarios.route('/users/', methods=['GET'])(listar_usuarios)
-usuarios.route('/users/<tipo>/<int:usuario_id>/', methods=['GET'])(buscar_usuario)
-usuarios.route('/users/<tipo>/<int:usuario_id>/', methods=['PUT', 'PATCH'])(atualizar_usuario)
-usuarios.route('/users/<tipo>/<int:usuario_id>/', methods=['DELETE'])(deletar_usuario)
+usuariosbp = Blueprint('users', __name__)
+usuariosbp.route('/users/', methods=['POST'])(criar_usuario)
+usuariosbp.route('/users/', methods=['GET'])(listar_usuarios)
+usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['GET'])(buscar_usuario)
+usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['PUT', 'PATCH'])(atualizar_usuario)
+usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['DELETE'])(deletar_usuario)
