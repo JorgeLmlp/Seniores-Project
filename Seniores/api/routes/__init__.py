@@ -1,9 +1,9 @@
-from .registrar import registrar_cuidador
+from .registrar import registrar_bp
 from .home import main
 from .usuarios import usuarios
 
 blueprints = [
-        registrar_cuidador, 
+        registrar_bp, 
         usuarios,
         main
     ]
