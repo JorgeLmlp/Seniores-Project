@@ -9,8 +9,7 @@ def pesquisarCpfParaRelacionamento(tipo, cpf):
     
     if usuario:
         return usuario.id
-    else:
-        #cpf nao cadastrado
-        return 404
     
+    #cpf nao cadastrado
+    return jsonify({"erro": "CPF não cadastrado"}), 404    
     
