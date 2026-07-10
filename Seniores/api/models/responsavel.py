@@ -1,4 +1,4 @@
-from .cuidador import Usuario
+from .cuidador.cuidador import Usuario
 from extensions import db
 
 
