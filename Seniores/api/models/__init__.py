@@ -1,5 +1,6 @@
-from .cuidador.cuidador import Cuidador
-from .paciente.paciente import Paciente
-from .responsavel.responsavel import Responsavel
-from .paciente.remedio import Remedio
+from .cuidador import *
+from .paciente import *
+from .relacionamento import *
+from .responsavel import *
 
+__all__ = [Cuidador, Remedio, Paciente, Paciente_responsavel, Responsavel]
