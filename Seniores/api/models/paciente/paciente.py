@@ -1,6 +1,6 @@
 import datetime
 from extensions import db
-from models.cuidador import Usuario
+from models.cuidador.cuidador import Usuario
 
 
 # Tabela de relacionamento entre Paciente e Responsavel

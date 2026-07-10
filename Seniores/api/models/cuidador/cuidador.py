@@ -1,6 +1,6 @@
 
 from extensions import db
-from .user import Usuario
+from ..user import Usuario
 
 
 
