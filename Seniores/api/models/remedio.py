@@ -1,5 +1,3 @@
-
-from .cuidador import Usuario
 from extensions import db
 
 class Remedio(db.Model):
