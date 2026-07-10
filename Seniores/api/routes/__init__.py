@@ -1,10 +1,10 @@
 from .registrar import *
 from .usuarios import usuariosbp
-from registrar_relacionamentos import registrar_relacionamento
+from .registrar_relacionamentos import registrar_relacionamento
 blueprints = [
         registrarbp, 
-        registrar_relacionamento,
         usuariosbp,
+        registrar_relacionamento
     ]
 
 __all__ = ["blueprints"]

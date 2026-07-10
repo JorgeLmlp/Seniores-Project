@@ -1,26 +1,10 @@
 import datetime
 from extensions import db
 from models.cuidador.cuidador import Usuario
+from ..relacionamento.paciente_responsavel import Paciente_responsavel
 
 
 # Tabela de relacionamento entre Paciente e Responsavel
-paciente_responsavel = db.Table(
-    "paciente_responsavel",
-
-    db.Column(
-        "paciente_id",
-        db.Integer,
-        db.ForeignKey("pacientes.id"),
-        primary_key=True
-    ),
-
-    db.Column(
-        "responsavel_id",
-        db.Integer,
-        db.ForeignKey("responsaveis.id"),
-        primary_key=True
-    )
-)
 
 
 class Paciente(Usuario):
@@ -33,7 +17,7 @@ class Paciente(Usuario):
 
     responsaveis = db.relationship(
         "Responsavel",
-        secondary=paciente_responsavel,
+        secondary=Paciente_responsavel,
         back_populates="pacientes"
     )
 

@@ -1,9 +1,8 @@
 from extensions import db
 from werkzeug.security import generate_password_hash
-
 from models.cuidador.cuidador import Cuidador
 from models.paciente.paciente import Paciente
-from models.responsavel import Responsavel
+from models.responsavel.responsavel import Responsavel
 
 
 CLASSES_POR_TIPO = {

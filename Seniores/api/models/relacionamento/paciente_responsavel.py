@@ -1,6 +1,7 @@
 from extensions import db
-paciente_responsavel = db.Table(
-    "paciente_responsavel",
+
+class Paciente_responsavel(db.Model):
+    __tablename__ = "paciente_responsavel"
     db.Column(
         "paciente_id",
         db.Integer,
@@ -13,4 +14,4 @@ paciente_responsavel = db.Table(
         db.ForeignKey("responsaveis.id"),
         primary_key=True
     )
-)
+    
