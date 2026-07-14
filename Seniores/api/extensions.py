@@ -7,10 +7,12 @@ db = SQLAlchemy()
 
 app = Flask(__name__)
 load_dotenv()
-db_url = os.getenv("url")
-db_pwd = os.getenv("password")
-
 pasta = os.path.abspath(os.path.join(os.path.dirname(__file__), "database"))
+db_url = (
+    os.getenv("DATABASE_URL")
+    or os.getenv("url")
+    or f"sqlite:///{os.path.join(pasta, 'seniores.db')}"
+)
 
 app.config['SQLALCHEMY_DATABASE_URI'] = db_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False

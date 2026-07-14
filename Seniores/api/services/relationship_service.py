@@ -1,37 +1,39 @@
-from models.relacionamento.paciente_responsavel import Paciente_responsavel
-from repositories.relationship_repository import pesquisarPorCpf
 from extensions import db
-TIPOS_RELACIONAMENTO= {
-    "paciente_responsavel" : Paciente_responsavel,
-}
+from models.relacionamento.paciente_responsavel import Paciente_responsavel
+from repositories.relationship_repository import pesquisar_por_cpf
+
 
 class RelationshipService:
-    """dados devem ser algo como: 
-    {
-        "cpfResponsavel" : "208.168.010-61"
-        "cpfPaciente" : "418.779.130-22"
-    }
-    """
-    def vincularResponsavel(self, info):
-        cpfResponsavel = info.get("cpfResponsavel")
-        cpfPaciente = info.get("cpfPaciente")
-        if cpfResponsavel and cpfPaciente:    
-            resp_id = pesquisarPorCpf("responsavel", cpfResponsavel)
-            paci_id = pesquisarPorCpf("paciente", cpfPaciente)
-        if resp_id == 404 or paci_id == 404:
-            return {"erro": "Um ou ambos os CPFs não foram encontrados"}, 404
-        
-        try:
-            
-            paciente_responsavel = {
-                "responsavel_id" : resp_id,
-                "paciente_id" : paci_id,
-            }
-            
-            db.session.add(paciente_responsavel)
+    def vincular_responsavel(self, info):
+        cpf_responsavel = info.get("cpfResponsavel")
+        cpf_paciente = info.get("cpfPaciente")
+        if not cpf_responsavel or not cpf_paciente:
+            return None, 400
+
+        responsavel = pesquisar_por_cpf("responsavel", cpf_responsavel)
+        paciente = pesquisar_por_cpf("paciente", cpf_paciente)
+        if not responsavel or not paciente:
+            return None, 404
+
+        # Mantém o responsável principal acessível diretamente em pacientes.
+        paciente.responsavel_id = responsavel.id
+
+        vinculo = db.session.get(
+            Paciente_responsavel, (paciente.id, responsavel.id)
+        )
+        if vinculo:
             db.session.commit()
-        except Exception as e:
+            return vinculo, 200
+
+        vinculo = Paciente_responsavel(
+            paciente_id=paciente.id,
+            responsavel_id=responsavel.id,
+        )
+        try:
+            db.session.add(vinculo)
+            db.session.commit()
+        except Exception:
             db.session.rollback()
-            return {"erro": f"Erro ao salvar no banco: {str(e)}"}, 500
-            
-                                
+            return None, 500
+
+        return vinculo, 201

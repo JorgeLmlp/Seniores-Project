@@ -1,2 +1,2 @@
 from .cuidador import Cuidador
-__all__ = [Cuidador]
+__all__ = ["Cuidador"]
