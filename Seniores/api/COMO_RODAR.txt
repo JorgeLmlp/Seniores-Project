@@ -1,0 +1,40 @@
+=== COMO RODAR O CONTAINER ===
+
+MÉTODO 1: Comando Rápido (Mais Fácil)
+  docker compose up -d
+
+MÉTODO 2: Com Script
+  ./start.sh
+
+MÉTODO 3: Passo a Passo
+  1. Abra o terminal na pasta do projeto
+  2. Digite: docker compose up -d
+  3. Aguarde 5-10 segundos
+  4. Acesse: http://localhost:5001
+
+PARAR O CONTAINER:
+  docker compose down
+
+VER LOGS (Erros/Status):
+  docker compose logs -f
+
+VER STATUS:
+  docker compose ps
+
+COMANDOS ÚTEIS:
+  docker compose logs app              # Logs só do Flask
+  docker compose logs db               # Logs só do MySQL
+  docker compose restart               # Reiniciar
+  docker compose down -v               # Parar e limpar tudo
+  docker compose exec app bash         # Entrar no container
+
+VERIFICAR SE ESTÁ FUNCIONANDO:
+  1. Abra: http://localhost:5001
+  2. Ou: curl http://localhost:5001
+  3. MySQL: localhost:3306
+
+CREDENCIAIS (do arquivo .env):
+  User: flask_user
+  Password: flaskpass456
+  Database: flaskdb
+
