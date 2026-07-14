@@ -1,6 +1,6 @@
 services:
   app:
-    image: node:20-alpine
+    image: python:3.13-slim
     container_name: seniores_api
     working_dir: /usr/src/app
     volumes:
@@ -10,8 +10,8 @@ services:
     environment:
       - FLASK_APP=app.py
       - FLASK_DEBUG=1
-      - DB_PASS=secret
       - DATABASE_URL=mysql+pymysql://root:secret@db:3306/flaskdb
+    command: sh -c "pip install --no-cache-dir -r requirements.txt && flask run --host=0.0.0.0"
     depends_on:
       - db
 

@@ -5,7 +5,7 @@ import 'package:device_preview/device_preview.dart';
 
 void main() {
   runApp(
-    DevicePreview(builder: (context) => MyApp())
+    DevicePreview(builder: (context) => const MyApp()),
   );
 }
 
@@ -22,9 +22,11 @@ class MyApp extends StatelessWidget {
         textTheme: GoogleFonts.poppinsTextTheme(
           Theme.of(context).textTheme,
         ),
-        colorScheme: .fromSeed(seedColor: const Color.fromRGBO(39, 93, 173, 1)),
+        colorScheme: ColorScheme.fromSeed(
+          seedColor: const Color.fromRGBO(39, 93, 173, 1),
+        ),
       ),
-      home: HomePage(),
+      home: const HomePage(),
     );
   }
 }

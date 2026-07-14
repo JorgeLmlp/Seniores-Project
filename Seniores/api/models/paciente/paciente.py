@@ -1,7 +1,6 @@
 import datetime
 from extensions import db
-from models.cuidador.cuidador import Usuario
-from ..relacionamento.paciente_responsavel import Paciente_responsavel
+from ..user import Usuario
 
 
 # Tabela de relacionamento entre Paciente e Responsavel
@@ -15,9 +14,23 @@ class Paciente(Usuario):
         primary_key=True
     )
 
+    # Responsável principal, disponível diretamente na tabela pacientes.
+    # A relação muitos-para-muitos em ``responsaveis`` continua sendo usada
+    # para os demais vínculos.
+    responsavel_id = db.Column(
+        db.Integer,
+        db.ForeignKey("responsaveis.id"),
+        nullable=True,
+    )
+
+    responsavel = db.relationship(
+        "Responsavel",
+        foreign_keys=[responsavel_id],
+    )
+
     responsaveis = db.relationship(
         "Responsavel",
-        secondary=Paciente_responsavel,
+        secondary="paciente_responsavel",
         back_populates="pacientes"
     )
 

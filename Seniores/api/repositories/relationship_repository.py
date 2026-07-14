@@ -1,15 +1,16 @@
 from extensions import db
-from flask import jsonify
+from models.paciente.paciente import Paciente
+from models.responsavel.responsavel import Responsavel
 
 
+MODELOS_POR_TIPO = {
+    "paciente": Paciente,
+    "responsavel": Responsavel,
+}
 
-def pesquisarCpfParaRelacionamento(tipo, cpf):
-    query = db.select(tipo).where(tipo.cpf == cpf)
-    usuario = db.session.scalars(query).first()
-    
-    if usuario:
-        return usuario.id
-    
-    #cpf nao cadastrado
-    return jsonify({"erro": "CPF não cadastrado"}), 404    
-    
+
+def pesquisar_por_cpf(tipo, cpf):
+    modelo = MODELOS_POR_TIPO.get((tipo or "").lower())
+    if not modelo:
+        return None
+    return db.session.scalar(db.select(modelo).where(modelo.cpf == cpf))
