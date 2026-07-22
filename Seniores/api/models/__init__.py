@@ -1,3 +1,5 @@
+"""Importa os models para que o SQLAlchemy registre todas as tabelas."""
+
 from .cuidador import *
 from .paciente import *
 from .relacionamento import *

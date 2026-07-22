@@ -5,6 +5,8 @@ from ..user import Usuario
 
 
 class Cuidador(Usuario):
+    """Usuario que presta cuidados e pode estar associado a um paciente."""
+
     __tablename__ = 'cuidadores'
     __allow_unmapped__ = True
     id = db.Column(db.Integer, primary_key=True)
@@ -15,22 +17,3 @@ class Cuidador(Usuario):
     }
 
     
-#TODO
-#     def registrar_sinais_vit(
-#     self,
-#     data: datetime,
-#     freq_cardiaca: str,
-#     saturacao: str,
-#     pressao_art: str,
-#     glicemia: str,
-#     temperatura: str
-# ):
-#         cuidadores = db.relationship(
-            
-#         )
-#         from models.paciente import SinalVital
-        
-        
-
-    
-        

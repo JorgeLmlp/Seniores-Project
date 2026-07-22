@@ -6,6 +6,7 @@ relationship_service = RelationshipService()
 
 
 def vincular_responsavel():
+    """Recebe os dois CPFs e devolve os IDs que formam o vinculo."""
     vinculo, status = relationship_service.vincular_responsavel(
         request.get_json(silent=True) or {}
     )

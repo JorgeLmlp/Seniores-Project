@@ -9,6 +9,7 @@ from controllers.user.user_controller import (
 
 
 usuariosbp = Blueprint('users', __name__)
+# Rotas gerais: `tipo` seleciona a tabela correta nos endpoints por ID.
 usuariosbp.route('/users/', methods=['POST'])(criar_usuario)
 usuariosbp.route('/users/', methods=['GET'])(listar_usuarios)
 usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['GET'])(buscar_usuario)

@@ -4,7 +4,10 @@ from repositories.relationship_repository import pesquisar_por_cpf
 
 
 class RelationshipService:
+    """Cria e consulta o vinculo entre paciente e responsavel pelo CPF."""
+
     def vincular_responsavel(self, info):
+        """Define o responsavel principal e registra o vinculo muitos-para-muitos."""
         cpf_responsavel = info.get("cpfResponsavel")
         cpf_paciente = info.get("cpfPaciente")
         if not cpf_responsavel or not cpf_paciente:
@@ -15,12 +18,14 @@ class RelationshipService:
         if not responsavel or not paciente:
             return None, 404
 
+        # Campo direto para acesso rapido ao responsavel principal.
         paciente.responsavel_id = responsavel.id
 
         vinculo = db.session.get(
             Paciente_responsavel, (paciente.id, responsavel.id)
         )
         if vinculo:
+            # O vinculo ja existe: apenas persiste a possivel troca do principal.
             db.session.commit()
             return vinculo, 200
 

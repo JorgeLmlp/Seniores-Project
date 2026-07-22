@@ -6,11 +6,16 @@ from models.responsavel.responsavel import Responsavel
 
 
 CLASSES_POR_TIPO = {
+    # Toda entrada de tipo aceita pela API precisa apontar para um model valido.
     'cuidador': Cuidador,
     'paciente': Paciente,
     'responsavel': Responsavel,
 }
 def _aplicar_dados(usuario, info):
+    """Aplica apenas os campos enviados em uma atualizacao parcial.
+
+    Os pares em portugues/ingles mantem compatibilidade com clientes antigos.
+    """
     if 'nome' in info:
         usuario.name = info.get('nome')
     if 'name' in info:
@@ -31,15 +36,21 @@ def _aplicar_dados(usuario, info):
 
 
 class UserService:
+    """Regras de cadastro, consulta, alteracao e exclusao de usuarios."""
+
     def _normalizar_tipo(self, tipo):
+        """Evita que maiusculas e minusculas mudem o tipo do usuario."""
         return (tipo or '').lower()
 
     def _classe_por_tipo(self, tipo):
+        """Converte o texto do request para a classe SQLAlchemy correspondente."""
         return CLASSES_POR_TIPO.get(self._normalizar_tipo(tipo))
 
     def _email_ou_cpf_existe(self, email, cpf, usuario_id=None, tipo_atual=None):
-        # tipo_atual identifica de qual classe é o usuario_id, para a
-        # exclusão do próprio registro só valer dentro da mesma tabela.
+        """Verifica duplicidade nas tres tabelas de usuario.
+
+        Em uma edicao, ignora o proprio registro para nao acusar duplicidade falsa.
+        """
         tipo_normalizado = self._normalizar_tipo(tipo_atual) if tipo_atual else None
 
         for tipo_chave, modelo in CLASSES_POR_TIPO.items():
@@ -51,6 +62,7 @@ class UserService:
         return False
 
     def criar(self, info):
+        """Valida os dados, cria a subclasse correta e guarda a senha em hash."""
         nome = info.get('nome') or info.get('name')
         email = info.get('email')
         senha = info.get('senha') or info.get('password')
@@ -68,6 +80,7 @@ class UserService:
         usuario = classe(
             name=nome,
             email=email,
+            # A senha nunca e persistida em texto puro.
             password=generate_password_hash(senha),
             phoneNumber=telefone,
             cpf=cpf,
@@ -79,6 +92,7 @@ class UserService:
         return usuario, 201
 
     def listar(self, tipo=None):
+        """Lista um tipo especifico ou combina os tres tipos quando omitido."""
         if tipo:
             classe = self._classe_por_tipo(tipo)
             if not classe:
@@ -91,6 +105,7 @@ class UserService:
         return usuarios, 200
 
     def buscar_por_id(self, tipo, usuario_id):
+        """Busca na tabela indicada, pois IDs podem se repetir entre tabelas."""
         classe = self._classe_por_tipo(tipo)
         if not classe:
             return None, 400
@@ -101,6 +116,7 @@ class UserService:
         return usuario, 200
 
     def atualizar(self, tipo, usuario_id, info):
+        """Atualiza campos enviados e protege email/CPF contra duplicacao."""
         usuario, status = self.buscar_por_id(tipo, usuario_id)
         if status != 200:
             return None, status
@@ -117,6 +133,7 @@ class UserService:
         return usuario, 200
 
     def deletar(self, tipo, usuario_id):
+        """Remove o usuario encontrado e confirma a exclusao."""
         usuario, status = self.buscar_por_id(tipo, usuario_id)
         if status != 200:
             return None, status
@@ -126,8 +143,10 @@ class UserService:
         return None, 204
 
     def registrar(self, info):
+        """Alias mantido para chamadas antigas que usam o nome registrar."""
         return self.criar(info)
 
 
 def registroPadrao(info):
+    """Atalho legado para cadastrar um usuario fora do controller."""
     return UserService().criar(info)

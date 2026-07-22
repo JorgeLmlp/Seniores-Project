@@ -6,10 +6,12 @@ user_service = UserService()
 
 
 def _usuario_json(usuario):
+    """Converte o model para resposta sem expor a senha."""
     return usuario.to_dict
 
 
 def criar_usuario():
+    """Recebe o JSON de cadastro e converte os status do service em HTTP."""
     info = request.get_json(silent=True) or {}
     usuario, status = user_service.criar(info)
 
@@ -22,6 +24,7 @@ def criar_usuario():
 
 
 def listar_usuarios():
+    """Usa `?tipo=` quando o cliente quer filtrar por paciente, cuidador ou responsavel."""
     tipo = request.args.get('tipo')
     usuarios, status = user_service.listar(tipo)
 
@@ -32,6 +35,7 @@ def listar_usuarios():
 
 
 def buscar_usuario(tipo, usuario_id):
+    """Busca um usuario pela combinacao de tipo e ID presente na rota."""
     usuario, status = user_service.buscar_por_id(tipo, usuario_id)
 
     if status == 400:
@@ -43,6 +47,7 @@ def buscar_usuario(tipo, usuario_id):
 
 
 def atualizar_usuario(tipo, usuario_id):
+    """Encaminha atualizacao parcial ou completa para o service."""
     info = request.get_json() or {}
     usuario, status = user_service.atualizar(tipo, usuario_id, info)
 
@@ -57,6 +62,7 @@ def atualizar_usuario(tipo, usuario_id):
 
 
 def deletar_usuario(tipo, usuario_id):
+    """Exclui e retorna 204, resposta HTTP sem corpo."""
     _, status = user_service.deletar(tipo, usuario_id)
 
     if status == 400:

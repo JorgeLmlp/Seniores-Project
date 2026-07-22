@@ -1,11 +1,11 @@
 from extensions import db
-from werkzeug.security import generate_password_hash
-
-
-
-
-## classe abstrata usuario ##
 class Usuario(db.Model):
+    """Campos compartilhados pelas tres tabelas de usuarios.
+
+    A classe e abstrata: ela nao cria uma tabela `usuarios`; cada tipo possui
+    sua propria tabela, mas reutiliza estas colunas.
+    """
+
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String(100), nullable=False)
@@ -16,6 +16,7 @@ class Usuario(db.Model):
     cpf = db.Column(db.String(14), unique=True, nullable=False)
 
     __mapper_args__ = {
+        # SQLAlchemy usa `tipo` para identificar a subclasse carregada.
         'polymorphic_on': 'tipo',
         'polymorphic_identity': 'user'
     }
@@ -31,6 +32,7 @@ class Usuario(db.Model):
 
     @property
     def to_dict(self):
+        # Nunca devolve password, mesmo ela existindo no registro.
         return {
             'id': self.id,
             'name': self.name,
