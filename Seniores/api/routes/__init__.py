@@ -1,6 +1,6 @@
-from .registrar import *
-from .usuarios import usuariosbp
-from .registrar_relacionamentos import registrar_relacionamento
+from .usuario.registrar import *
+from .usuario.usuarios import usuariosbp
+from .usuario.registrar_relacionamentos import registrar_relacionamento
 blueprints = [
         registrarbp, 
         usuariosbp,

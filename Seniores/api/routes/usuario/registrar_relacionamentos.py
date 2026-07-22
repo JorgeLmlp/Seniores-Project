@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.relationship_controller import vincular_responsavel
+from controllers.user.relationship_controller import vincular_responsavel
 
 registrar_relacionamento = Blueprint("registrar_relacionamento", __name__)
 

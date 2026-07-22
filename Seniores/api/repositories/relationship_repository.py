@@ -1,4 +1,5 @@
 from extensions import db
+from models.cuidador.cuidador import Cuidador
 from models.paciente.paciente import Paciente
 from models.responsavel.responsavel import Responsavel
 
@@ -6,6 +7,7 @@ from models.responsavel.responsavel import Responsavel
 MODELOS_POR_TIPO = {
     "paciente": Paciente,
     "responsavel": Responsavel,
+    "cuidador": Cuidador,
 }
 
 

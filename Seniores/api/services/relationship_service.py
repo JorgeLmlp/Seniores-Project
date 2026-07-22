@@ -15,7 +15,6 @@ class RelationshipService:
         if not responsavel or not paciente:
             return None, 404
 
-        # Mantém o responsável principal acessível diretamente em pacientes.
         paciente.responsavel_id = responsavel.id
 
         vinculo = db.session.get(
