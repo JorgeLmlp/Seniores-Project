@@ -3,6 +3,8 @@ from extensions import db
 
 
 class Responsavel(Usuario):
+    """Usuario que acompanha um ou mais pacientes."""
+
     __tablename__ = "responsaveis"
 
     id = db.Column(
@@ -17,6 +19,7 @@ class Responsavel(Usuario):
 
     pacientes = db.relationship(
         "Paciente",
+        # A tabela intermediaria permite que paciente e responsavel tenham varios vinculos.
         secondary="paciente_responsavel",
         back_populates="responsaveis"
     )

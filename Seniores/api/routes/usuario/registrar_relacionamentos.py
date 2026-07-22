@@ -3,6 +3,7 @@ from controllers.user.relationship_controller import vincular_responsavel
 
 registrar_relacionamento = Blueprint("registrar_relacionamento", __name__)
 
+# O controller recebe cpfPaciente e cpfResponsavel no JSON.
 registrar_relacionamento.route(
     "/registrar_relacionamento", methods=["POST"]
 )(vincular_responsavel)

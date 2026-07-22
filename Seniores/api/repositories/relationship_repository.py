@@ -5,6 +5,7 @@ from models.responsavel.responsavel import Responsavel
 
 
 MODELOS_POR_TIPO = {
+    # Centraliza a traducao do tipo recebido pela API para sua tabela.
     "paciente": Paciente,
     "responsavel": Responsavel,
     "cuidador": Cuidador,
@@ -12,6 +13,7 @@ MODELOS_POR_TIPO = {
 
 
 def pesquisar_por_cpf(tipo, cpf):
+    """Localiza um usuario de um tipo especifico pelo CPF."""
     modelo = MODELOS_POR_TIPO.get((tipo or "").lower())
     if not modelo:
         return None

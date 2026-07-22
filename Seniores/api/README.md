@@ -287,6 +287,69 @@ DELETE /users/responsavel/3/
 - `404`: usuario nao encontrado;
 - `409`: ja existe usuario com o mesmo email ou CPF.
 
+## Medicamentos do paciente
+
+### Cadastrar e relacionar medicamento
+
+```http
+POST /pacientes/<paciente_id>/medicamentos
+```
+
+```json
+{
+  "nome": "Losartana",
+  "dosagem": "50 mg",
+  "descricao": "Tomar uma vez ao dia",
+  "fabricante": "Exemplo Farma",
+  "lote": "L123",
+  "quantidade": 30
+}
+```
+
+`nome` e `dosagem` sao obrigatorios. O `paciente_id` na URL cria o vinculo com o paciente.
+
+### Modelo de medicamento
+
+As respostas de cadastro, consulta e alteracao retornam o medicamento neste formato:
+
+```json
+{
+  "id": 1,
+  "paciente_id": 2,
+  "nome": "Losartana",
+  "descricao": "Tomar uma vez ao dia",
+  "dosagem": "50 mg",
+  "fabricante": "Exemplo Farma",
+  "lote": "L123",
+  "quantidade": 30
+}
+```
+
+- `id`: identificador do medicamento.
+- `paciente_id`: identificador do paciente ao qual o medicamento pertence.
+- `nome` e `dosagem`: campos obrigatorios.
+- `descricao`, `fabricante`, `lote` e `quantidade`: campos opcionais.
+
+> Para um banco MySQL que ja existia antes deste recurso, execute uma vez o
+> script `database/migrations/001_medicamentos_paciente.sql`. O
+> `db.create_all()` cria tabelas novas, mas nao adiciona colunas a tabelas que
+> ja existem.
+
+### Exibir a lista de medicamentos
+
+```http
+GET /pacientes/<paciente_id>/medicamentos
+```
+
+### Consultar, alterar ou excluir um medicamento
+
+```http
+GET    /medicamentos/<medicamento_id>
+PATCH  /medicamentos/<medicamento_id>
+PUT    /medicamentos/<medicamento_id>
+DELETE /medicamentos/<medicamento_id>
+```
+
 ## Observacoes
 
 - O projeto usa SQLite local em `database/seniores.db`.

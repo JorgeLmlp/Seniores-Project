@@ -7,6 +7,8 @@ from ..user import Usuario
 
 
 class Paciente(Usuario):
+    """Usuario que possui responsaveis, medicamentos e sinais vitais."""
+
     __tablename__ = "pacientes"
 
     id = db.Column(
@@ -34,6 +36,15 @@ class Paciente(Usuario):
         back_populates="pacientes"
     )
 
+    remedios = db.relationship(
+        "Remedio",
+        back_populates="paciente",
+        # Ao remover um paciente, remove tambem medicamentos que nao fazem sentido sem ele.
+        cascade="all, delete-orphan",
+        # A lista recebida pelo codigo ja vem em ordem alfabetica.
+        order_by="Remedio.nome",
+    )
+
     __mapper_args__ = {
         "polymorphic_identity": "paciente"
     }
@@ -42,6 +53,7 @@ class Paciente(Usuario):
 
 
 class SinalVital(db.Model):
+    """Registro pontual das medidas clinicas de um paciente."""
     __tablename__ = "sinais_vitais"
 
     id = db.Column(
