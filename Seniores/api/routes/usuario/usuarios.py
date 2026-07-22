@@ -1,5 +1,5 @@
 from flask import Blueprint
-from controllers.user_controller import (
+from controllers.user.user_controller import (
     atualizar_usuario,
     buscar_usuario,
     criar_usuario,

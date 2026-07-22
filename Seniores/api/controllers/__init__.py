@@ -1,3 +1,3 @@
 
-from .user_controller import UserService
+from .user.user_controller import UserService
 

@@ -43,7 +43,7 @@ def buscar_usuario(tipo, usuario_id):
 
 
 def atualizar_usuario(tipo, usuario_id):
-    info = request.get_json(silent=True) or {}
+    info = request.get_json() or {}
     usuario, status = user_service.atualizar(tipo, usuario_id, info)
 
     if status == 400:
