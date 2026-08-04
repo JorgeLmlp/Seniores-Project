@@ -16,6 +16,15 @@ class Paciente(Usuario):
         primary_key=True
     )
 
+    # Um paciente possui um cuidador; um cuidador pode acompanhar varios pacientes.
+    cuidador_id = db.Column(
+        db.Integer,
+        db.ForeignKey("cuidadores.id"),
+        nullable=True,
+        index=True,
+    )
+    cuidador = db.relationship("Cuidador", back_populates="pacientes")
+
     # Responsável principal, disponível diretamente na tabela pacientes.
     # A relação muitos-para-muitos em ``responsaveis`` continua sendo usada
     # para os demais vínculos.
@@ -49,6 +58,21 @@ class Paciente(Usuario):
         "polymorphic_identity": "paciente"
     }
 
+    def vincular_cuidador(self, cuidador):
+        try:
+            self.cuidador_id = cuidador.id
+            db.session.commit()
+            return self
+        except Exception:
+            db.session.rollback()
+            return None
+
+    @classmethod
+    def listar_por_cuidador(cls, cuidador_id):
+        """Retorna todos os pacientes associados ao cuidador informado."""
+        consulta = db.select(cls).where(cls.cuidador_id == cuidador_id).order_by(cls.name)
+        return db.session.scalars(consulta).all()
+
     
 
 
@@ -65,14 +89,34 @@ class SinalVital(db.Model):
         db.DateTime,
         default=datetime.datetime.now
     )
-    db.relationship(
-        "Paciente",
-        back_populates="sinais_vitais"
-    )
     freq_cardiaca = db.Column(db.String(30))
     saturacao = db.Column(db.String(30))
     pressao_art = db.Column(db.String(30))
     glicemia = db.Column(db.String(30))
     temperatura = db.Column(db.String(30))
+
+    @property
+    def to_dict(self):
+        """Representacao segura para as respostas da API."""
+        return {
+            "id": self.id,
+            "data": self.data.isoformat() if self.data else None,
+            "freq_cardiaca": self.freq_cardiaca,
+            "saturacao": self.saturacao,
+            "pressao_art": self.pressao_art,
+            "glicemia": self.glicemia,
+            "temperatura": self.temperatura,
+        }
+
+    @classmethod
+    def criar(cls, dados):
+        sinal_vital = cls(**dados)
+        try:
+            db.session.add(sinal_vital)
+            db.session.commit()
+            return sinal_vital
+        except Exception:
+            db.session.rollback()
+            return None
 
 

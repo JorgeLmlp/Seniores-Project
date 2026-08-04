@@ -24,6 +24,12 @@ class Responsavel(Usuario):
         back_populates="responsaveis"
     )
 
+    cuidadores = db.relationship(
+        "Cuidador",
+        secondary="cuidador_responsavel",
+        back_populates="responsaveis",
+    )
+
     __mapper_args__ = {
         "polymorphic_identity": "responsavel"
     }

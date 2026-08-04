@@ -5,3 +5,16 @@
 CREATE DATABASE IF NOT EXISTS db_seniores
     CHARACTER SET utf8mb4
     COLLATE utf8mb4_unicode_ci;
+
+
+
+DELIMITER $$
+
+CREATE PROCEDURE sp_listar_pacientes_com_responsavel()
+BEGIN
+    SELECT p.*
+    FROM pacientes p
+    INNER JOIN paciente_responsavel pr ON p.id = pr.paciente_id;
+END $$
+
+DELIMITER ;
