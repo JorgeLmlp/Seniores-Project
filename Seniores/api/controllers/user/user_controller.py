@@ -19,17 +19,20 @@ def criar_usuario():
         return jsonify({'erro': 'Dados obrigatorios ausentes ou tipo invalido'}), 400
     if status == 409:
         return jsonify({'erro': 'Usuario ja cadastrado com este email ou CPF'}), 409
+    if status == 500:
+        return jsonify({'erro': 'Nao foi possivel salvar o usuario'}), 500
 
     return jsonify(_usuario_json(usuario)), 201
 
 
 def listar_usuarios():
-    """Usa `?tipo=` quando o cliente quer filtrar por paciente, cuidador ou responsavel."""
+    """Lista usuarios e permite filtrar pacientes pelo cuidador vinculado."""
     tipo = request.args.get('tipo')
-    usuarios, status = user_service.listar(tipo)
+    cuidador_id = request.args.get('cuidador_id')
+    usuarios, status = user_service.listar(tipo, cuidador_id)
 
     if status == 400:
-        return jsonify({'erro': 'Tipo de usuario invalido'}), 400
+        return jsonify({'erro': 'Tipo de usuario ou cuidador_id invalido'}), 400
 
     return jsonify([_usuario_json(usuario) for usuario in usuarios]), 200
 
@@ -46,6 +49,16 @@ def buscar_usuario(tipo, usuario_id):
     return jsonify(_usuario_json(usuario)), 200
 
 
+def login():
+    """Autentica um usuario sem retornar nem comparar senha em texto puro."""
+    usuario, status = user_service.login(request.get_json(silent=True) or {})
+    if status == 400:
+        return jsonify({'erro': 'Email e senha sao obrigatorios; tipo deve ser valido'}), 400
+    if status == 401:
+        return jsonify({'erro': 'Email ou senha invalidos'}), 401
+    return jsonify(_usuario_json(usuario)), 200
+
+
 def atualizar_usuario(tipo, usuario_id):
     """Encaminha atualizacao parcial ou completa para o service."""
     info = request.get_json() or {}
@@ -57,6 +70,8 @@ def atualizar_usuario(tipo, usuario_id):
         return jsonify({'erro': 'Usuario nao encontrado'}), 404
     if status == 409:
         return jsonify({'erro': 'Usuario ja cadastrado com este email ou CPF'}), 409
+    if status == 500:
+        return jsonify({'erro': 'Nao foi possivel atualizar o usuario'}), 500
 
     return jsonify(_usuario_json(usuario)), 200
 
@@ -69,5 +84,7 @@ def deletar_usuario(tipo, usuario_id):
         return jsonify({'erro': 'Tipo de usuario invalido'}), 400
     if status == 404:
         return jsonify({'erro': 'Usuario nao encontrado'}), 404
+    if status == 500:
+        return jsonify({'erro': 'Nao foi possivel remover o usuario'}), 500
 
     return '', 204

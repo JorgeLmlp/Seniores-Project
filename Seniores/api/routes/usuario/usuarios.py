@@ -4,6 +4,7 @@ from controllers.user.user_controller import (
     buscar_usuario,
     criar_usuario,
     deletar_usuario,
+    login,
     listar_usuarios,
 )
 
@@ -15,4 +16,5 @@ usuariosbp.route('/users/', methods=['GET'])(listar_usuarios)
 usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['GET'])(buscar_usuario)
 usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['PUT', 'PATCH'])(atualizar_usuario)
 usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['DELETE'])(deletar_usuario)
-usuariosbp.route('/users/login/', methods=['GET'])(buscar_usuario)
+# Credenciais seguem no corpo JSON; usar POST evita expo-las na URL.
+usuariosbp.route('/users/login/', methods=['POST'])(login)

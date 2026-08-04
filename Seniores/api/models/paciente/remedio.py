@@ -41,5 +41,48 @@ class Remedio(db.Model):
 
     def __repr__(self):
         return self.__str__()
-    
+
+    @classmethod
+    def buscar_por_id(cls, medicamento_id):
+        return db.session.get(cls, medicamento_id)
+
+    @classmethod
+    def listar_por_paciente(cls, paciente_id):
+        return db.session.scalars(
+            db.select(cls).where(cls.paciente_id == paciente_id).order_by(cls.nome)
+        ).all()
+
+    @classmethod
+    def criar(cls, paciente_id, info):
+        medicamento = cls(
+            paciente_id=paciente_id, nome=info["nome"],
+            descricao=info.get("descricao"), dosagem=info["dosagem"],
+            fabricante=info.get("fabricante"), lote=info.get("lote"),
+            quantidade=info.get("quantidade"),
+        )
+        return medicamento.salvar()
+
+    def atualizar(self, info, campos_editaveis):
+        for campo in campos_editaveis:
+            if campo in info:
+                setattr(self, campo, info[campo])
+        return self.salvar()
+
+    def salvar(self):
+        try:
+            db.session.add(self)
+            db.session.commit()
+            return self
+        except Exception:
+            db.session.rollback()
+            return None
+
+    def deletar(self):
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            return False
     
