@@ -15,14 +15,13 @@ class Cpf extends TextInputFormatter {
     }
 
     if (texto.length > 9) {
-      texto =
-          '${texto.substring(0, 3)}.${texto.substring(3, 6)}.${texto.substring(6, 9)}-${texto.substring(9)}';
-    } else if (texto.length > 6) {
-      texto =
-          '${texto.substring(0, 3)}.${texto.substring(3, 6)}.${texto.substring(6)}';
-    } else if (texto.length > 3) {
-      texto =
-          '${texto.substring(0, 3)}.${texto.substring(3)}';
+      texto = '${texto.substring(0, 3)}.${texto.substring(3, 6)}.${texto.substring(6, 9)}-${texto.substring(9)}';
+    }
+    else if (texto.length > 6) {
+      texto = '${texto.substring(0, 3)}.${texto.substring(3, 6)}.${texto.substring(6)}';
+    }
+    else if (texto.length > 3) {
+      texto = '${texto.substring(0, 3)}.${texto.substring(3)}';
     }
 
     return TextEditingValue(
