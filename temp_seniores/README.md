@@ -1,4 +1,4 @@
-# senioress
+# seniores
 
 A new Flutter project.
 
