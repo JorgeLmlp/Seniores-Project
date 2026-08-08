@@ -4,6 +4,7 @@ import '../widgets/custom_textos.dart';
 import '../widgets/custom_textField.dart';
 import '../widgets/custom_botao.dart';
 import '../utils/mascaras.dart';
+import '../services/api_service.dart';
 import 'tela_login.dart';
 
 class Cadastro extends StatefulWidget {
@@ -24,12 +25,13 @@ final TextEditingController telefoneController = TextEditingController();
   String mensagemErro = '';
   String? tipoUsuario;
   bool concordouTermos = false;
+  bool enviando = false;
+  final ApiService apiService = ApiService();
 
   final List<String> tiposUsuario = [
       "Paciente",
       "Cuidador",
       "Responsável",
-      "Médico",
       ];
 
   bool validarEmail(String email) {
@@ -106,6 +108,46 @@ void dispose() {
       //     builder: (_) => const Home(),
       //   ),
       // ); // tela home
+    }
+  }
+
+  Future<void> cadastrar() async {
+    final nome = nomeController.text.trim();
+    final email = emailController.text.trim();
+    final senha = senhaController.text;
+    final cpf = cpfController.text.trim();
+    final telefone = telefoneController.text.trim();
+
+    if (nome.isEmpty || !validarEmail(email) || senha.length < 6 || cpf.isEmpty || telefone.isEmpty || tipoUsuario == null || senha != confirmarSenhaController.text || !concordouTermos) {
+      setState(() => mensagemErro = 'Revise todos os campos e aceite os Termos de Uso.');
+      return;
+    }
+
+    setState(() {
+      mensagemErro = '';
+      enviando = true;
+    });
+    try {
+      await apiService.cadastrarUsuario(
+        nome: nome,
+        email: email,
+        senha: senha,
+        telefone: telefone,
+        cpf: cpf,
+        tipo: tipoUsuario!.toLowerCase(),
+      );
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+      );
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (_) => const Login()),
+      );
+    } on ApiException catch (erro) {
+      if (mounted) setState(() => mensagemErro = erro.message);
+    } finally {
+      if (mounted) setState(() => enviando = false);
     }
   }
 
@@ -311,8 +353,8 @@ void dispose() {
                 ),
 
               Botao(
-                texto: 'Cadastrar',
-                onPressed: fazerLogin,
+                texto: enviando ? 'Cadastrando...' : 'Cadastrar',
+                onPressed: enviando ? () {} : cadastrar,
               ),
            
            const SizedBox(height: 20),
