@@ -14,6 +14,7 @@ class Checklist_higiene(Base_info):
     
     def concluir(self):
         self.status = StatusChecklist.CONCLUIDA
-        self.alterar()        
+        self.alterar({'status': StatusChecklist.CONCLUIDA})
+
         
         

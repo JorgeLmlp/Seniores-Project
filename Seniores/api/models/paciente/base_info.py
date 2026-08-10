@@ -18,8 +18,8 @@ class Base_info(db.Model):
         db.session.delete(self)
         db.session.commit()
 
-    def alterar(self):
-        """Atualiza a data de alteração e salva as modificações"""
-        self.data_alteracao = datetime.now()
-        db.session.add(self)
-        db.session.commit()
+    def alterar(self, new_info):
+        """Atualiza as informações do registro."""
+        for campo, valor in new_info.items():
+            if hasattr(self, campo) and campo not in ['id', 'data_criacao']:
+                setattr(self, campo, valor)
