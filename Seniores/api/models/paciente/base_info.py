@@ -4,7 +4,7 @@ from datetime import datetime
 class Base_info(db.Model):
     __abstract__ = True
     id = db.Column(db.Integer, primary_key=True)
-    paciente_id = db.Column(db.ForeignKey('paciente.id'))
+    paciente_id = db.Column(db.ForeignKey('pacientes.id'))
     data_criacao = db.Column(db.DateTime, default=datetime.now)
     data_alteracao = db.Column(db.DateTime, nullable=True)
 
