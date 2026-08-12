@@ -5,6 +5,7 @@ from .usuario.usuarios import usuariosbp
 from .usuario.registrar_relacionamentos import registrar_relacionamento
 from .paciente.medicamento import medicamentobp
 from .paciente.sinais_vitais import sinais_vitaisbp
+from .paciente.registros import registros_pacientebp
 blueprints = [
         # A ordem nao altera as URLs; ela apenas organiza os grupos de rotas.
         registrarbp, 
@@ -12,6 +13,7 @@ blueprints = [
         registrar_relacionamento,
         medicamentobp,
         sinais_vitaisbp,
+        registros_pacientebp,
     ]
 
 __all__ = ["blueprints"]

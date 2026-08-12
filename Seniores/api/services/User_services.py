@@ -1,6 +1,7 @@
 from models.cuidador.cuidador import Cuidador
 from models.paciente.paciente import Paciente
 from models.responsavel.responsavel import Responsavel
+from repositories.login_repository import buscar_por_email
 
 
 CLASSES_POR_TIPO = {
@@ -78,11 +79,7 @@ class UserService:
         else:
             classes = CLASSES_POR_TIPO.values()
 
-        usuario = None
-        for classe in classes:
-            usuario = classe.buscar_por_email(email)
-            if usuario:
-                break
+        usuario = buscar_por_email(email, tipo)
         if not usuario or not usuario.senha_confere(senha):
             return None, 401
         return usuario, 200

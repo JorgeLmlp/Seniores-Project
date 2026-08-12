@@ -134,7 +134,10 @@ void dispose() {
         senha: senha,
         telefone: telefone,
         cpf: cpf,
-        tipo: tipoUsuario!.toLowerCase(),
+        // A API usa o identificador sem acento.
+        tipo: tipoUsuario == 'Responsável'
+            ? 'responsavel'
+            : tipoUsuario!.toLowerCase(),
       );
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(

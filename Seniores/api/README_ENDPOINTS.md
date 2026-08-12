@@ -84,6 +84,10 @@ aceita `paciente`, `responsavel` ou `cuidador`.
 
 Retorna o usuario sem a senha. Credenciais invalidas retornam `401`.
 
+As senhas cadastradas sao armazenadas como hash. No login, a API compara a
+senha enviada com esse hash usando `check_password_hash`; a senha nunca e
+retornada nem revertida para texto puro.
+
 ## Relacionamentos
 
 ### `POST /registrar_relacionamento`
@@ -170,3 +174,40 @@ Cria um registro de sinais vitais. Informe pelo menos uma medida. O campo
   "temperatura": "36.6 C"
 }
 ```
+
+Os sinais vitais pertencem a um paciente e tambem podem ser consultados,
+alterados ou excluidos:
+
+```http
+POST   /pacientes/{paciente_id}/sinais-vitais
+GET    /pacientes/{paciente_id}/sinais-vitais
+GET    /sinais-vitais/{sinal_vital_id}
+PATCH  /sinais-vitais/{sinal_vital_id}
+DELETE /sinais-vitais/{sinal_vital_id}
+```
+
+## Registros do paciente
+
+Todos os recursos abaixo seguem o mesmo CRUD: `POST` e `GET` na URL do
+paciente; `GET`, `PUT`/`PATCH` e `DELETE` na URL do item.
+
+```text
+/pacientes/{paciente_id}/diarios-saude       /diarios-saude/{registro_id}
+/pacientes/{paciente_id}/checklists-higiene  /checklists-higiene/{registro_id}
+/pacientes/{paciente_id}/estoque             /estoque/{registro_id}
+/pacientes/{paciente_id}/lesoes              /lesoes/{registro_id}
+/pacientes/{paciente_id}/registros-financeiros
+                                             /registros-financeiros/{registro_id}
+```
+
+- Diário de saúde: `humor`, `dor`, `fome` e `mobilidade` obrigatórios;
+  valores aceitos: `bom`, `ruim`, `pessimo`, `razoavel`.
+- Checklist de higiene: `tarefa`, `descricao`, `frequencia`; `status` é
+  `pendente` ou `concluida`.
+- Estoque: `nome` e `quantidade` (inteiro não negativo).
+- Lesão: `localizacao` e `descricao`; aceita também `gravidade` e `status`.
+- Lesão também aceita `foto_base64` (ou uma data URL Base64) e `foto_mime`
+  (`image/jpeg`, `image/png`, `image/webp` ou `image/gif`), até 5 MB. A foto
+  pode ser visualizada em `GET /lesoes/{registro_id}/foto`.
+- Registro financeiro: `descricao`, `valor` e `tipo` (`receita` ou `despesa`);
+  aceita `data` em ISO 8601.
