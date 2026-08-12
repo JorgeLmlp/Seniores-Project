@@ -54,6 +54,11 @@ class Paciente(Usuario):
         order_by="Remedio.nome",
     )
 
+    sinais_vitais = db.relationship(
+        "SinalVital", back_populates="paciente", cascade="all, delete-orphan",
+        order_by="SinalVital.data.desc()",
+    )
+
     __mapper_args__ = {
         "polymorphic_identity": "paciente"
     }
@@ -89,6 +94,10 @@ class SinalVital(db.Model):
         db.DateTime,
         default=datetime.datetime.now
     )
+    paciente_id = db.Column(
+        db.Integer, db.ForeignKey("pacientes.id"), nullable=False, index=True
+    )
+    paciente = db.relationship("Paciente", back_populates="sinais_vitais")
     freq_cardiaca = db.Column(db.String(30))
     saturacao = db.Column(db.String(30))
     pressao_art = db.Column(db.String(30))
@@ -109,12 +118,40 @@ class SinalVital(db.Model):
         }
 
     @classmethod
-    def criar(cls, dados):
-        sinal_vital = cls(**dados)
+    def buscar_por_id(cls, sinal_vital_id):
+        return db.session.get(cls, sinal_vital_id)
+
+    @classmethod
+    def listar_por_paciente(cls, paciente_id):
+        return db.session.scalars(
+            db.select(cls).where(cls.paciente_id == paciente_id).order_by(cls.data.desc())
+        ).all()
+
+    @classmethod
+    def criar(cls, paciente_id, dados):
+        sinal_vital = cls(paciente_id=paciente_id, **dados)
+        return sinal_vital.salvar()
+
+    def atualizar(self, dados):
+        for campo in ("data", "freq_cardiaca", "saturacao", "pressao_art", "glicemia", "temperatura"):
+            if campo in dados:
+                setattr(self, campo, dados[campo])
+        return self.salvar()
+
+    def salvar(self):
         try:
-            db.session.add(sinal_vital)
+            db.session.add(self)
             db.session.commit()
-            return sinal_vital
+            return self
         except Exception:
             db.session.rollback()
             return None
+
+    def deletar(self):
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            return False

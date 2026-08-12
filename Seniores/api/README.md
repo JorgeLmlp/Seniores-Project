@@ -350,10 +350,176 @@ PUT    /medicamentos/<medicamento_id>
 DELETE /medicamentos/<medicamento_id>
 ```
 
+## Login
+
+```http
+POST /users/login/
+Content-Type: application/json
+```
+
+```json
+{
+  "email": "maria@example.com",
+  "senha": "Senha@123",
+  "tipo": "paciente"
+}
+```
+
+`tipo` e opcional e pode ser `paciente`, `cuidador` ou `responsavel`. Quando
+nao informado, a busca e feita entre todos os tipos de usuario. O retorno e o
+usuario autenticado sem o campo de senha. Credenciais invalidas retornam
+`401`; corpo ausente, incompleto ou com tipo invalido retorna `400`.
+
+As senhas sao persistidas somente como hash do Werkzeug. O login usa
+`check_password_hash` para comparar a senha recebida com o hash salvo; hashes
+nao sao descriptografados nem enviados na resposta.
+
+## Sinais vitais do paciente
+
+Cada sinal vital pertence a um paciente. `data` e opcional e deve estar no
+formato ISO 8601. Informe ao menos uma das medidas: `freq_cardiaca`,
+`saturacao`, `pressao_art`, `glicemia` ou `temperatura`.
+
+```http
+POST   /pacientes/<paciente_id>/sinais-vitais
+GET    /pacientes/<paciente_id>/sinais-vitais
+GET    /sinais-vitais/<sinal_vital_id>
+PUT    /sinais-vitais/<sinal_vital_id>
+PATCH  /sinais-vitais/<sinal_vital_id>
+DELETE /sinais-vitais/<sinal_vital_id>
+```
+
+Exemplo de cadastro:
+
+```json
+{
+  "pressao_art": "120/80 mmHg",
+  "temperatura": "36.5 C",
+  "data": "2026-08-12T10:30:00"
+}
+```
+
+## Registros do paciente
+
+Os registros abaixo usam o mesmo padrao: `POST` cria e `GET` lista na rota do
+paciente; as operacoes sobre um item usam sua rota por ID.
+
+| Recurso | Colecao | Item |
+| --- | --- | --- |
+| Diario de saude | `/pacientes/<paciente_id>/diarios-saude` | `/diarios-saude/<registro_id>` |
+| Checklist de higiene | `/pacientes/<paciente_id>/checklists-higiene` | `/checklists-higiene/<registro_id>` |
+| Estoque | `/pacientes/<paciente_id>/estoque` | `/estoque/<registro_id>` |
+| Lesoes | `/pacientes/<paciente_id>/lesoes` | `/lesoes/<registro_id>` |
+| Registro financeiro | `/pacientes/<paciente_id>/registros-financeiros` | `/registros-financeiros/<registro_id>` |
+
+Para cada recurso, as rotas disponiveis sao:
+
+```http
+POST   <colecao>
+GET    <colecao>
+GET    <item>
+PUT    <item>
+PATCH  <item>
+DELETE <item>
+```
+
+Um `paciente_id` inexistente retorna `404` ao criar ou listar. Um ID de
+registro inexistente tambem retorna `404`. Dados ausentes ou invalidos retornam
+`400`; erros de persistencia retornam `500`.
+
+### Diario de saude
+
+Campos obrigatorios: `humor`, `dor`, `fome` e `mobilidade`. Cada um aceita
+`bom`, `ruim`, `pessimo` ou `razoavel`. `descricao` e opcional.
+
+```json
+{
+  "humor": "bom",
+  "dor": "razoavel",
+  "fome": "bom",
+  "mobilidade": "ruim",
+  "descricao": "Caminhou com auxilio."
+}
+```
+
+### Checklist de higiene
+
+Campos obrigatorios: `tarefa`, `descricao` e `frequencia`. O campo opcional
+`status` aceita `pendente` (padrao) ou `concluida`.
+
+```json
+{
+  "tarefa": "Banho",
+  "descricao": "Auxiliar no banho da manha",
+  "frequencia": "diaria",
+  "status": "pendente"
+}
+```
+
+### Estoque
+
+Campos obrigatorios: `nome` e `quantidade`. `quantidade` e
+`quantidade_minima` devem ser inteiros nao negativos. `descricao` e opcional.
+
+```json
+{
+  "nome": "Luvas descartaveis",
+  "quantidade": 50,
+  "quantidade_minima": 10
+}
+```
+
+### Lesoes e fotos
+
+Campos obrigatorios: `localizacao` e `descricao`. Tambem aceita `gravidade` e
+`status` (o padrao e `aberta`). A foto e opcional e fica armazenada no banco.
+Envie-a em `foto_base64`, como Base64 puro com `foto_mime` ou como data URL.
+Sao aceitos JPEG, PNG, WebP e GIF, ate 5 MB.
+
+```json
+{
+  "localizacao": "Braco esquerdo",
+  "descricao": "Escoriacao superficial",
+  "gravidade": "leve",
+  "foto_base64": "data:image/jpeg;base64,/9j/4AAQ..."
+}
+```
+
+As respostas de lesao retornam `foto_url` quando houver imagem, sem incluir o
+conteudo Base64. Use a rota abaixo para obter o arquivo com o `Content-Type`
+correto:
+
+```http
+GET /lesoes/<registro_id>/foto
+```
+
+Para remover somente a foto durante uma atualizacao, envie:
+
+```json
+{ "foto_base64": null }
+```
+
+### Registro financeiro
+
+Campos obrigatorios: `descricao`, `valor` e `tipo`. `tipo` aceita apenas
+`receita` ou `despesa`; `valor` deve ser numerico e nao negativo. `data` e
+opcional e, quando enviada, usa ISO 8601.
+
+```json
+{
+  "descricao": "Compra de medicamentos",
+  "valor": 89.90,
+  "tipo": "despesa",
+  "data": "2026-08-12T10:30:00"
+}
+```
+
 ## Observacoes
 
 - O projeto usa SQLite local em `database/seniores.db`.
 - As senhas sao salvas com hash, nao em texto puro.
+- Para bancos ja existentes, a inicializacao aplica uma migracao aditiva das
+  colunas de foto de lesoes (`foto` e `foto_mime`).
 - A pasta `.agents`, quando existir, nao faz parte da API Flask. Ela deve ser tratada como pasta de ferramenta/configuracao externa.
 - A pasta `repositories` deve ser usada para consultas e alteracoes no banco.
 - A pasta `services` deve ser usada para regras de negocio.
