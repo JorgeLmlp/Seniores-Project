@@ -23,9 +23,7 @@ class Bolinhas extends StatelessWidget {
           width: 10,
           height: 10,
           decoration: BoxDecoration(
-            color: index < preenchidas
-                ? cor
-                : Colors.grey.shade300,
+            color: index < preenchidas ? cor : Colors.grey.shade300,
             shape: BoxShape.circle,
           ),
         ),
@@ -37,43 +35,62 @@ class Bolinhas extends StatelessWidget {
 class IndicadorPontos extends StatelessWidget {
   final String label;
   final double valor;
-  final Color corAtiva;
+  final bool inverso;
 
   const IndicadorPontos({
     super.key,
     required this.label,
     required this.valor,
-    required this.corAtiva,
+    this.inverso = false,
   });
+
+  Color _cor(int pontuacao) {
+    if (inverso) {
+      //Dor: 0-3 verde, 4-6 amarelo, 7-10 vermelho
+      if (pontuacao <= 3) return Colors.green;
+      if (pontuacao <= 6) return Colors.amber;
+
+      return Colors.red;
+    }
+
+    //Humor, apetite e mobilidade: 0-3 vermelho, 4-6 amarelo, 7-10 verde
+    if (pontuacao <= 3) return Color(0xFFEB5757); 
+    if (pontuacao <= 6) return Color(0xFFF2C946); 
+    return Colors.green;
+  }
 
   @override
   Widget build(BuildContext context) {
-    int totalPreenchidos = valor.toInt();
+    final int quantidade = valor.round().clamp(0, 10);
+    final cor = _cor(quantidade);
 
     return Padding(
       padding: const EdgeInsets.symmetric(vertical: 2.0),
       child: Row(
         children: [
           SizedBox(
-            width: 80,
+            width: 70,
             child: Text(
-              "$label:",
-              style: const TextStyle(fontSize: 13, color: Colors.black87),
+              '$label:',
+              style: const TextStyle(
+                fontSize: 12,
+                color: Color(0xFF636E72),
+              ),
             ),
           ),
           Row(
-            children: List.generate(5, (index) {
-              final bool isActive = index < totalPreenchidos;
-              return Container(
-                margin: const EdgeInsets.only(right: 4.0),
-                width: 10,
-                height: 10,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  color: isActive ? corAtiva : Colors.grey.shade400,
+            children: [
+              for(int index = 0; index < 10; index++)
+                Container(
+                  margin: const EdgeInsets.only(right: 3),
+                  width: 9,
+                  height: 9,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: (index < quantidade) ? cor : Color.fromARGB(255, 120, 133, 138), 
+                  ),
                 ),
-              );
-            }),
+            ],
           ),
         ],
       ),
