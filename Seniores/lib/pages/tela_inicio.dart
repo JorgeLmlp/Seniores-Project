@@ -311,11 +311,27 @@ class _HomeState extends State<Home> {
                                       Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          IndicadorPontos(label: "Humor", valor: registroAtual!.humor, corAtiva: Colors.amber),
-                                          IndicadorPontos(label: "Dor", valor: registroAtual!.dor, corAtiva: Colors.green),
-                                          IndicadorPontos(label: "Apetite", valor: registroAtual!.apetite, corAtiva: Colors.redAccent),
-                                          IndicadorPontos(label: "Mobilidade", valor: registroAtual!.mobilidade, corAtiva: Colors.green),
-                                        ],
+                                        IndicadorPontos(
+                                          label: "Humor",
+                                          valor: registroAtual!.humor,
+                                        ),
+
+                                        IndicadorPontos(
+                                          label: "Dor",
+                                          valor: registroAtual!.dor,
+                                          inverso: true,
+                                        ),
+
+                                        IndicadorPontos(
+                                          label: "Apetite",
+                                          valor: registroAtual!.apetite,
+                                        ),
+
+                                        IndicadorPontos(
+                                          label: "Mobilidade",
+                                          valor: registroAtual!.mobilidade,
+                                        ),
+                                       ],
                                       ),
                                     ],
                                   ),
