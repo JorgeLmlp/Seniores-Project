@@ -222,16 +222,16 @@ class _RegistroDiarioState extends State<RegistroDiario> {
                   altura: 45,
                   borderRadius: 12,
                   onPressed: () {
-                    final novoRegistro = RegistroModel(
-                      humor: humor,
-                      dor: dor,
-                      apetite: apetite,
-                      mobilidade: mobilidade,
-                      totalIncidentes: listaIncidentes.length,
-                      tendencia: "Leve piora",
-                    );
-                    Navigator.pop(context, novoRegistro);
-                  },
+                  final novoRegistro = RegistroModel(
+                    humor: humor <= 1.0 ? humor * 10 : humor,
+                    dor: dor <= 1.0 ? dor * 10 : dor,
+                    apetite: apetite <= 1.0 ? apetite * 10 : apetite,
+                    mobilidade: mobilidade <= 1.0 ? mobilidade * 10 : mobilidade,
+                    totalIncidentes: listaIncidentes.length,
+                    tendencia: "Leve piora",
+                  );
+                  Navigator.pop(context, novoRegistro);
+                },
                 ),
               ),
               const SizedBox(height: 20),
