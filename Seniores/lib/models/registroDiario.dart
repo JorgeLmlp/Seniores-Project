@@ -1,4 +1,4 @@
-import 'incidente.dart'; // Se estiver no mesmo diretório. Caso contrário, use: import '../models/incidente.dart';
+import 'incidente.dart';
 
 class Registro {
   final String? dataFormatada;
