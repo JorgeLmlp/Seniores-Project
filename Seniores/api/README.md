@@ -1,32 +1,84 @@
 # Seniores API
 
-API em Flask para cadastro e gerenciamento de usuarios do projeto Seniores.
+API REST em Flask para cadastro de usuarios e gerenciamento dos cuidados de
+pacientes do projeto Seniores.
 
-O projeto esta organizado em camadas para separar responsabilidades: rotas recebem as chamadas HTTP, controllers montam as respostas, services cuidam das regras de negocio, repositories acessam o banco de dados e models representam as tabelas.
+O projeto esta organizado em camadas para separar responsabilidades: rotas
+recebem as chamadas HTTP, controllers montam as respostas, services cuidam das
+regras de negocio, repositories acessam o banco de dados e models representam
+as tabelas.
+
+## Principais funcionalidades
+
+1. **Cadastro de usuarios por perfil:** permite cadastrar pacientes, cuidadores
+   e responsaveis, com validacao dos campos obrigatorios.
+2. **Autenticacao de usuarios:** realiza login por e-mail e senha, com filtro
+   opcional pelo tipo de usuario.
+3. **Protecao de senhas:** armazena as senhas como hash do Werkzeug e nunca as
+   devolve nas respostas da API.
+4. **Gerenciamento completo de usuarios:** oferece operacoes para criar, listar,
+   consultar, atualizar e excluir usuarios.
+5. **Filtro de usuarios:** permite filtrar a listagem por perfil e consultar os
+   pacientes vinculados a um cuidador.
+6. **Relacionamento entre paciente e responsavel:** vincula o paciente ao seu
+   responsavel principal e mantem a relacao entre os dois.
+7. **Relacionamento entre paciente e cuidador:** associa cada paciente a um
+   cuidador, que pode acompanhar varios pacientes.
+8. **Relacionamento entre cuidadores e responsaveis:** mantem vinculos muitos
+   para muitos entre esses dois perfis.
+9. **Controle de medicamentos:** cadastra, lista, consulta, atualiza e remove os
+   medicamentos associados a cada paciente.
+10. **Monitoramento de sinais vitais:** registra historicos de frequencia
+    cardiaca, saturacao, pressao arterial, glicemia e temperatura.
+11. **Diario de saude:** acompanha humor, dor, fome e mobilidade do paciente,
+    com descricao opcional de cada registro.
+12. **Checklist de higiene:** organiza tarefas recorrentes e permite controlar
+    se cada atividade esta pendente ou concluida.
+13. **Controle de estoque:** registra itens, quantidades disponiveis e quantidade
+    minima para os cuidados do paciente.
+14. **Acompanhamento de lesoes:** registra localizacao, descricao, gravidade,
+    status e foto da lesao em JPEG, PNG, WebP ou GIF.
+15. **Registros financeiros:** controla receitas e despesas relacionadas ao
+    paciente, incluindo valor, descricao e data.
+16. **Integracao com clientes web:** disponibiliza CORS para consumo da API por
+    aplicacoes como o frontend Flutter Web.
 
 ## Tecnologias
 
 - Python
 - Flask
 - Flask-SQLAlchemy
-- SQLite
+- MySQL
+- PyMySQL
+- Flask-CORS
 - Werkzeug, usado para gerar hash de senha
 
 ## Como rodar
 
-1. Instale as dependencias:
+1. Entre na pasta da API e instale as dependencias:
 
 ```bash
+cd api
 pip install -r requirements.txt
 ```
 
-2. Rode a aplicacao:
+2. Crie o arquivo de configuracao local a partir do exemplo:
+
+```bash
+cp .env.example .env
+```
+
+Edite `DATABASE_URL` no arquivo `.env` com as credenciais do seu MySQL. O
+usuario configurado deve ter permissao para criar o banco caso ele ainda nao
+exista.
+
+3. Rode a aplicacao:
 
 ```bash
 python app.py
 ```
 
-3. A API ficara disponivel em:
+4. A API ficara disponivel em:
 
 ```text
 http://127.0.0.1:5000
@@ -516,8 +568,11 @@ opcional e, quando enviada, usa ISO 8601.
 
 ## Observacoes
 
-- O projeto usa SQLite local em `database/seniores.db`.
+- O projeto usa MySQL, configurado pela variavel `DATABASE_URL` no arquivo
+  `.env`.
 - As senhas sao salvas com hash, nao em texto puro.
+- A lista detalhada de rotas tambem esta disponivel em
+  [`README_ENDPOINTS.md`](README_ENDPOINTS.md).
 - Para bancos ja existentes, a inicializacao aplica uma migracao aditiva das
   colunas de foto de lesoes (`foto` e `foto_mime`).
 - A pasta `.agents`, quando existir, nao faz parte da API Flask. Ela deve ser tratada como pasta de ferramenta/configuracao externa.
