@@ -218,8 +218,9 @@ paciente; `GET`, `PUT`/`PATCH` e `DELETE` na URL do item.
 ## Registros das telas Flutter
 
 Consultas, exames, agendas de cuidadores, destinatários e comunicados seguem o
-mesmo CRUD. O corpo é um objeto JSON e é preservado integralmente em
-`registros_app`.
+mesmo formato de rotas. Cada recurso possui um service próprio, responsável
+por validar seus campos e suas regras. Para manter compatibilidade com os dados
+existentes, todos ainda são persistidos na tabela `registros_app`.
 
 ```text
 POST/GET /pacientes/{paciente_id}/{recurso}
@@ -228,3 +229,12 @@ GET/PATCH/DELETE /{recurso}/{registro_id}
 
 Recursos aceitos: `consultas`, `exames`, `cuidadores`, `destinatarios` e
 `comunicados`.
+
+Campos obrigatórios por recurso:
+
+- `consultas`: `nomeDoutor`, `especialidade` e `dataHora` em ISO 8601;
+- `exames`: `nomeExame`, `local` e `dataHora` em ISO 8601;
+- `cuidadores`: `nome`, `funcao`, `frequencia` com sete booleanos,
+  `horaInicio` e `horaFim`;
+- `destinatarios`: `nome`, `vinculo` e `telefone`;
+- `comunicados`: `mensagem` e uma lista não vazia de `destinatarios`.

@@ -44,7 +44,7 @@ class PersistenciaIntegracaoTest(unittest.TestCase):
         self.assertEqual(listagem.status_code, 200, listagem.get_json())
         self.assertIn(registro_id, [item["id"] for item in listagem.get_json()])
 
-    def test_persiste_medicamento_diario_e_registro_flexivel(self):
+    def test_persiste_medicamento_diario_e_consulta(self):
         self._criar_e_confirmar(
             "medicamentos",
             {
@@ -77,6 +77,73 @@ class PersistenciaIntegracaoTest(unittest.TestCase):
                 "dataHora": "2026-08-28T10:00:00",
             },
         )
+
+    def test_persiste_cada_dominio_do_aplicativo(self):
+        self._criar_e_confirmar(
+            "exames",
+            {
+                "nomeExame": "Hemograma",
+                "local": "Laboratório Central",
+                "dataHora": "2026-08-29T08:30:00",
+                "concluido": False,
+            },
+        )
+        self._criar_e_confirmar(
+            "cuidadores",
+            {
+                "nome": "Cuidadora Teste",
+                "funcao": "Cuidadora diurna",
+                "frequencia": [False, True, True, True, True, True, False],
+                "horaInicio": "08:00",
+                "horaFim": "18:00",
+            },
+        )
+        self._criar_e_confirmar(
+            "destinatarios",
+            {
+                "nome": "Responsável Teste",
+                "vinculo": "Filho",
+                "telefone": "31999999999",
+            },
+        )
+        self._criar_e_confirmar(
+            "comunicados",
+            {
+                "mensagem": "Mensagem de integração",
+                "destinatarios": [
+                    {
+                        "nome": "Responsável Teste",
+                        "vinculo": "Filho",
+                        "telefone": "31999999999",
+                    }
+                ],
+            },
+        )
+
+    def test_rejeita_dados_invalidos_por_dominio(self):
+        casos = {
+            "consultas": {"nomeDoutor": "Sem data"},
+            "exames": {
+                "nomeExame": "Hemograma",
+                "local": "Laboratório",
+                "dataHora": "data-invalida",
+            },
+            "cuidadores": {
+                "nome": "Cuidador",
+                "funcao": "Noturno",
+                "frequencia": [True],
+                "horaInicio": "20:00",
+                "horaFim": "08:00",
+            },
+            "destinatarios": {"nome": "Sem contato", "vinculo": "Filho"},
+            "comunicados": {"mensagem": "", "destinatarios": []},
+        }
+        for recurso, dados in casos.items():
+            with self.subTest(recurso=recurso):
+                resposta = self.client.post(
+                    f"/pacientes/{self.paciente_id}/{recurso}", json=dados
+                )
+                self.assertEqual(resposta.status_code, 400, resposta.get_json())
 
 
 if __name__ == "__main__":
