@@ -81,7 +81,7 @@ python app.py
 4. A API ficara disponivel em:
 
 ```text
-http://127.0.0.1:5000
+http://127.0.0.1:5001
 ```
 
 ## Estrutura do projeto
@@ -93,9 +93,6 @@ api/
 |-- requirements.txt
 |-- controllers/
 |   |-- user_controller.py
-|-- database/
-|   |-- seniores.db
-|   |-- create_database.sql
 |-- models/
 |   |-- cuidador.py
 |   |-- paciente.py
@@ -127,7 +124,7 @@ Neste arquivo o projeto:
 
 - cria a instancia `db`;
 - cria a instancia `app`;
-- configura o banco SQLite em `database/seniores.db`;
+- configura o MySQL pela variável `DATABASE_URL`;
 - registra os blueprints de `routes`;
 - cria as tabelas com `db.create_all()`.
 
@@ -197,12 +194,11 @@ Arquivos principais:
 - `remedio.py`: define o model relacionado a remedios;
 - `__init__.py`: importa os models para que o SQLAlchemy consiga registra-los.
 
-### database/
+### Banco de dados
 
-Guarda arquivos relacionados ao banco.
-
-- `seniores.db`: banco SQLite usado pela API;
-- `create_database.sql`: script SQL para criacao/consulta da estrutura do banco.
+O banco é MySQL e sua conexão é definida por `DATABASE_URL`. As tabelas
+inexistentes são criadas pelo SQLAlchemy; migrações aditivas para instalações
+anteriores são executadas na inicialização por `extensions.py`.
 
 ## Fluxo de uma requisicao
 
@@ -382,10 +378,8 @@ As respostas de cadastro, consulta e alteracao retornam o medicamento neste form
 - `nome` e `dosagem`: campos obrigatorios.
 - `descricao`, `fabricante`, `lote` e `quantidade`: campos opcionais.
 
-> Para um banco MySQL que ja existia antes deste recurso, execute uma vez o
-> script `database/migrations/001_medicamentos_paciente.sql`. O
-> `db.create_all()` cria tabelas novas, mas nao adiciona colunas a tabelas que
-> ja existem.
+> Bancos MySQL existentes recebem as novas colunas pela migração aditiva de
+> `extensions.py` quando a API é iniciada. Nenhuma coluna ou dado é removido.
 
 ### Exibir a lista de medicamentos
 

@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_textos.dart';
-import '../widgets/custom_textField.dart';
-import '../widgets/custom_botao.dart';
-import '../utils/cores.dart';
+import '../../widgets/custom_textos.dart';
+import '../../widgets/custom_textField.dart';
+import '../../widgets/custom_botao.dart';
+import '../../utils/cores.dart';
 import 'tela_cadastro.dart';
-import 'tela_inicio.dart';
+import '../tela_inicio.dart';
+import '../../services/api_service.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -19,6 +20,8 @@ class _LoginState extends State<Login> {
 
   String mensagemErro = '';
   bool lembrarDados = true;
+  bool enviando = false;
+  final ApiService apiService = ApiService();
 
   bool validarEmail(String email) {
     final regex = RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
@@ -29,11 +32,10 @@ class _LoginState extends State<Login> {
   void dispose() {
     emailController.dispose();
     senhaController.dispose();
-
     super.dispose();
   }
 
-  void fazerLogin() {
+  Future<void> fazerLogin() async {
     String email = emailController.text.trim();
     String senha = senhaController.text;
 
@@ -41,50 +43,45 @@ class _LoginState extends State<Login> {
       setState(() {
         mensagemErro = 'Digite seu e-mail.';
       });
-    }
-
-     else if (!validarEmail(email)) {
+    } else if (!validarEmail(email)) {
       setState(() {
         mensagemErro = 'Digite um e-mail válido.';
       });
-    }
-    
-    else if (senha.isEmpty) {
+    } else if (senha.isEmpty) {
       setState(() {
         mensagemErro = 'Digite sua senha.';
       });
-    }
-
-     else if (senha.length < 6) {
+    } else if (senha.length < 6) {
       setState(() {
         mensagemErro = 'A senha deve possuir pelo menos 6 caracteres.';
       });
-    }
-     
-    else {
+    } else {
       setState(() {
         mensagemErro = '';
+        enviando = true;
       });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login realizado com sucesso!'),
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const Home(),
-        ),
-      );
+      try {
+        await apiService.login(email: email, senha: senha);
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Login realizado com sucesso!')),
+        );
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Home()),
+        );
+      } on ApiException catch (erro) {
+        if (mounted) setState(() => mensagemErro = erro.message);
+      } finally {
+        if (mounted) setState(() => enviando = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Cores.fundoTela,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -92,7 +89,6 @@ class _LoginState extends State<Login> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 60),
-
               const AppText(
                 texto: 'Seniores',
                 tamanho: 70,
@@ -100,9 +96,7 @@ class _LoginState extends State<Login> {
                 cor: Cores.azul,
                 estilo: AppText.titulo,
               ),
-
               const SizedBox(height: 10),
-
               const AppText(
                 texto: 'Bem-vindo de volta!',
                 tamanho: 28,
@@ -110,18 +104,14 @@ class _LoginState extends State<Login> {
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-
               const SizedBox(height: 10),
-
               const AppText(
                 texto: 'Faça login para acessar sua conta.',
                 tamanho: 16,
                 cor: Cores.cinza,
                 estilo: AppText.corpo,
               ),
-
               const SizedBox(height: 40),
-
               CampoTexto(
                 controller: emailController,
                 hintText: 'E-mail',
@@ -131,9 +121,7 @@ class _LoginState extends State<Login> {
                   color: Cores.azul,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               CampoTexto(
                 controller: senhaController,
                 hintText: 'Senha',
@@ -143,9 +131,7 @@ class _LoginState extends State<Login> {
                   color: Cores.azul,
                 ),
               ),
-              
               const SizedBox(height: 10),
-
               Row(
                 children: [
                   Checkbox(
@@ -157,14 +143,11 @@ class _LoginState extends State<Login> {
                       });
                     },
                   ),
-
                   const Text(
                     'Lembrar-me',
                     style: TextStyle(color: Cores.preto),
                   ),
-
                   const Spacer(),
-
                   TextButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
@@ -182,9 +165,7 @@ class _LoginState extends State<Login> {
                   ),
                 ],
               ),
-              
               const SizedBox(height: 20),
-             
               if (mensagemErro.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 15),
@@ -196,49 +177,44 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                 ),
-
               Botao(
-                texto: 'Entrar',
-                onPressed: fazerLogin,
+                texto: enviando ? 'Entrando...' : 'Entrar',
+                onPressed: enviando ? () {} : fazerLogin,
               ),
-
               const SizedBox(height: 20),
-
-              const Row(
+              Row(
                 children: [
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.branco,
+                      color: Cores.cinza.withOpacity(0.3),
                     ),
                   ),
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
-                      'OU',
+                      'ou', // Em minúsculo igual na imagem
                       style: TextStyle(
                         color: Cores.cinza,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.branco,
+                      color: Cores.cinza.withOpacity(0.3),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               Botao(
                 texto: 'Criar uma conta',
-                backgroundColor: Cores.branco,
+                backgroundColor: Colors.white,
                 textColor: Cores.azul,
                 borderColor: Cores.azul,
-                borderWidth: 2,
+                borderWidth: 1.5,
                 onPressed: () {
                   Navigator.push(
                     context,

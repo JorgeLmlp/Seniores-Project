@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:widgets/pages/registro%20diario/tela_registroDiario.dart';
 import '../pages/tela_inicio.dart';
-import '../pages/tela_medicamentos.dart';
-import '../pages/tela_cuidados.dart';
-import '../pages/tela_registroDiario.dart';
-// import '../pages/tela_notificacoes.dart';
+import '../pages/medicamentos/tela_medicamentos.dart';
+import '../pages/cuidados/tela_cuidados.dart';
+import '../utils/cores.dart';
+import '../pages/tela_notificacoes.dart';
 
 class Menu extends StatelessWidget {
   final int paginaAtual;
@@ -23,7 +24,7 @@ class Menu extends StatelessWidget {
         proximaTela = const Home();
 
         break;
-        
+
       case 1:
         proximaTela = const Medicamentos();
 
@@ -40,12 +41,11 @@ class Menu extends StatelessWidget {
         break;
 
       case 4:
-        //proximaTela = const Notificacoes();
+        proximaTela = const Notificacoes();
 
-        return;
+        break;
 
       default:
-
         return;
     }
 
@@ -57,14 +57,13 @@ class Menu extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Retornando diretamente o BottomNavigationBar sem SizedBox fixo
     return BottomNavigationBar(
       currentIndex: paginaAtual,
       onTap: (index) => _navegar(context, index),
       type: BottomNavigationBarType.fixed,
       backgroundColor: Colors.white,
-      selectedItemColor: const Color(0xFF275DAD),
-      unselectedItemColor: const Color(0xFF636E72),
+      selectedItemColor: Cores.azul,
+      unselectedItemColor: Cores.cinza,
       selectedFontSize: 11,
       unselectedFontSize: 11,
       items: const [
@@ -72,22 +71,18 @@ class Menu extends StatelessWidget {
           icon: Icon(Icons.home, size: 22),
           label: "Início",
         ),
-
         BottomNavigationBarItem(
           icon: Icon(Icons.medication, size: 22),
           label: "Medicamentos",
         ),
-
         BottomNavigationBarItem(
           icon: Icon(Icons.health_and_safety, size: 22),
           label: "Cuidados",
         ),
-
         BottomNavigationBarItem(
           icon: Icon(Icons.calendar_today, size: 22),
           label: "Diário",
         ),
-        
         BottomNavigationBarItem(
           icon: Icon(Icons.notifications, size: 22),
           label: "Notificações",

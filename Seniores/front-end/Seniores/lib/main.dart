@@ -7,7 +7,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 // import 'pages/tela_inicio.dart';
 // import 'pages/tela_cadastro.dart';
- import 'pages/tela_login.dart';
+import 'pages/auth/tela_login.dart';
 
 void main() {
   runApp(

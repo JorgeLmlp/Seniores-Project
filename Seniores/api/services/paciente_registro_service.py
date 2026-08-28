@@ -50,6 +50,18 @@ class PacienteRegistroService:
                         dados[campo] = STATUS_DIARIO(str(dados[campo]).lower())
                     except ValueError:
                         return None
+            for campo in ("humor_nivel", "dor_nivel", "apetite_nivel", "mobilidade_nivel"):
+                if campo in dados and (
+                    not isinstance(dados[campo], int)
+                    or isinstance(dados[campo], bool)
+                    or not 0 <= dados[campo] <= 10
+                ):
+                    return None
+            if "incidentes" in dados and (
+                not isinstance(dados["incidentes"], list)
+                or not all(isinstance(item, dict) for item in dados["incidentes"])
+            ):
+                return None
         elif recurso == "checklists-higiene" and "status" in dados:
             try:
                 dados["status"] = StatusChecklist(str(dados["status"]).lower())

@@ -1,12 +1,11 @@
 import 'package:flutter/material.dart';
+import '../utils/cores.dart';
 
 class ItemNivelSaude extends StatelessWidget {
   final String titulo;
   final double valor;
   final ValueChanged<double> onChanged;
-
-  // true = quanto maior, pior
-  final bool inverso;
+  final bool inverso; //quanto maior, pior
 
   const ItemNivelSaude({
     super.key,
@@ -17,26 +16,25 @@ class ItemNivelSaude extends StatelessWidget {
   });
 
   Color get corBarra {
-    // Converte 0.0 - 1.0 para 0 - 10
     final nivel = (valor * 10).round();
 
     if (inverso) {
-      // Dor
+      //Dor
       if (nivel <= 3) {
-        return Colors.green;
+        return Cores.verde;
       } else if (nivel <= 6) {
-        return Colors.amber;
+        return Cores.amarelo;
       } else {
-        return Colors.red;
+        return Cores.vermelho;
       }
     } else {
-      // Humor, apetite e mobilidade
+      //Humor apetite e mobilidade
       if (nivel <= 3) {
-        return Colors.red;
+        return Cores.vermelho;
       } else if (nivel <= 6) {
-        return Colors.amber;
+        return Cores.amarelo;
       } else {
-        return Colors.green;
+        return Cores.verde;
       }
     }
   }
@@ -81,7 +79,6 @@ class ItemNivelSaude extends StatelessWidget {
                   fontWeight: FontWeight.bold,
                 ),
               ),
-
               Text(
                 '$descricao • ${(valor * 10).round()}/10',
                 style: TextStyle(
@@ -93,25 +90,20 @@ class ItemNivelSaude extends StatelessWidget {
               ),
             ],
           ),
-
           const SizedBox(height: 4),
-
           SliderTheme(
             data: SliderTheme.of(context).copyWith(
               activeTrackColor: corBarra,
               inactiveTrackColor: Colors.grey.shade300,
               thumbColor: corBarra,
               trackHeight: 6,
-
               thumbShape: const RoundSliderThumbShape(
                 enabledThumbRadius: 9,
               ),
-
               overlayShape: const RoundSliderOverlayShape(
                 overlayRadius: 18,
               ),
             ),
-
             child: Slider(
               value: valor,
               min: 0,

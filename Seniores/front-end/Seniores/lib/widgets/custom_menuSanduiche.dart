@@ -1,7 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:widgets/pages/cuidados/tela_cuidados.dart';
+import '../pages/medicamentos/tela_medicamentos.dart';
+import '../pages/registro diario/tela_relatorio.dart';
+import '../pages/cuidadores/tela_cuidadores.dart';
+import '../pages/comunicados/tela_comunicados.dart';
 import '../utils/cores.dart';
-import '../pages/tela_medicamentos.dart';
-import '../pages/tela_registroDiario.dart';
 
 class MenuSanduiche extends StatelessWidget {
   const MenuSanduiche({super.key});
@@ -29,65 +32,86 @@ class MenuSanduiche extends StatelessWidget {
             _buildMenuItem(
               icon: Icons.health_and_safety,
               title: "Exames e consultas",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => const Cuidados()),
+                );
+              },
             ),
             _buildMenuItem(
               icon: Icons.calendar_today,
               title: "Diário de saúde",
               onTap: () {
-                  Navigator.pop(context);
+                Navigator.pop(context);
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => const RegistroDiario()),
+                  MaterialPageRoute(
+                    builder: (context) => const Relatorio(),
+                  ),
                 );
               },
             ),
             _buildMenuItem(
-              icon: Icons.people,
-              title: "Cuidadores",
-              onTap: () {},
-            ),
+                icon: Icons.people,
+                title: "Cuidadores",
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => const Cuidadores(),
+                    ),
+                  );
+                }),
             const SizedBox(height: 20),
             _buildSectionHeader("Controle"),
             _buildMenuItem(
               icon: Icons.campaign,
               title: "Comunicados",
-              onTap: () {},
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const Destinatarios(),
+                  ),
+                );
+              },
             ),
             _buildMenuItem(
               icon: Icons.attach_money,
               title: "Gastos",
               onTap: () {},
             ),
-            _buildMenuItem(
-              icon: Icons.description,
-              title: "Relatórios",
-              onTap: () {},
-            ),
-            const SizedBox(height: 20),
-            _buildSectionHeader("Apoio"),
-            _buildMenuItem(
-              icon: Icons.menu_book,
-              title: "Dicionário",
-              onTap: () {},
-            ),
-            _buildMenuItem(
-              icon: Icons.help_outline,
-              title: "Ajuda",
-              onTap: () {},
-            ),
-            const SizedBox(height: 20),
-            _buildSectionHeader("Configurações"),
-            _buildMenuItem(
-              icon: Icons.settings,
-              title: "Configurações",
-              onTap: () {},
-            ),
-            _buildMenuItem(
-              icon: Icons.account_circle,
-              title: "Minha conta",
-              onTap: () {},
-            ),
+            // _buildMenuItem(
+            //   icon: Icons.description,
+            //   title: "Relatórios",
+            //   onTap: () {},
+            // ),
+            // const SizedBox(height: 20),
+            // _buildSectionHeader("Apoio"),
+            // _buildMenuItem(
+            //   icon: Icons.menu_book,
+            //   title: "Dicionário",
+            //   onTap: () {},
+            // ),
+            // _buildMenuItem(
+            //   icon: Icons.help_outline,
+            //   title: "Ajuda",
+            //   onTap: () {},
+            // ),
+            // const SizedBox(height: 20),
+            // _buildSectionHeader("Configurações"),
+            // _buildMenuItem(
+            //   icon: Icons.settings,
+            //   title: "Configurações",
+            //   onTap: () {},
+            // ),
+            // _buildMenuItem(
+            //   icon: Icons.account_circle,
+            //   title: "Minha conta",
+            //   onTap: () {},
+            // ),
           ],
         ),
       ),

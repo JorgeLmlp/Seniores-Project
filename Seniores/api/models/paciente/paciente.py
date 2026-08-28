@@ -15,6 +15,7 @@ class Paciente(Usuario):
         db.Integer,
         primary_key=True
     )
+    preferiencias = db.Column(db.Text, nullable = True)
 
     # Um paciente possui um cuidador; um cuidador pode acompanhar varios pacientes.
     cuidador_id = db.Column(

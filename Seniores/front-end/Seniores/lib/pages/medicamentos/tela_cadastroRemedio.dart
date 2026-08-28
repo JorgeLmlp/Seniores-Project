@@ -1,10 +1,11 @@
 import 'package:flutter/material.dart';
-import '../widgets/custom_textos.dart';
-import '../widgets/custom_textField.dart';
-import '../widgets/custom_botao.dart';
-import '../widgets/custom_menu.dart';
-import '../models/medicamento.dart';
-import '../utils/cores.dart';
+import '../../widgets/custom_textos.dart';
+import '../../widgets/custom_textField.dart';
+import '../../widgets/custom_botao.dart';
+import '../../widgets/custom_menu.dart';
+import '../../models/medicamento.dart';
+import '../../utils/cores.dart';
+import '../../services/api_service.dart';
 
 class CadastroRemedio extends StatefulWidget {
   const CadastroRemedio({super.key});
@@ -22,6 +23,8 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
   final TextEditingController _alertaController = TextEditingController();
   final List<String> _horarios = [];
   final List<String> _alertas = [];
+  final ApiService _apiService = ApiService();
+  bool _salvando = false;
 
   @override
   void dispose() {
@@ -31,10 +34,12 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
     super.dispose();
   }
 
-  void _salvarMedicamento() {
-    if (_nomeController.text.trim().isEmpty) {
+  Future<void> _salvarMedicamento() async {
+    if (_nomeController.text.trim().isEmpty ||
+        _dosagemController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, digite o nome do medicamento.')),
+        const SnackBar(
+            content: Text('Informe o nome e a dosagem do medicamento.')),
       );
       return;
     }
@@ -47,7 +52,20 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
       alertas: List.from(_alertas),
     );
 
-    Navigator.pop(context, novoMedicamento);
+    setState(() => _salvando = true);
+    try {
+      final salvo =
+          await _apiService.criarMedicamento(novoMedicamento.toJson());
+      if (mounted) Navigator.pop(context, Medicamento.fromJson(salvo));
+    } on ApiException catch (erro) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(erro.message)),
+        );
+      }
+    } finally {
+      if (mounted) setState(() => _salvando = false);
+    }
   }
 
   @override
@@ -67,7 +85,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                     padding: EdgeInsets.zero,
                     constraints: const BoxConstraints(),
                     icon: const Icon(
-                      Icons.keyboard_double_arrow_left,
+                      Icons.arrow_back_ios_new,
                       size: 28,
                       color: Cores.preto,
                     ),
@@ -82,9 +100,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 25),
-
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -117,9 +133,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               const AppText(
                 texto: "Nome do medicamento",
                 tamanho: 18,
@@ -132,9 +146,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                 hintText: "Digite aqui...",
                 controller: _nomeController,
               ),
-
               const SizedBox(height: 20),
-
               const AppText(
                 texto: "Frequencia",
                 tamanho: 18,
@@ -152,9 +164,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   });
                 },
               ),
-
               const SizedBox(height: 20),
-
               const AppText(
                 texto: "Horarios",
                 tamanho: 18,
@@ -205,9 +215,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               const AppText(
                 texto: "Dosagem",
                 tamanho: 18,
@@ -220,9 +228,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                 hintText: "Digite aqui...",
                 controller: _dosagemController,
               ),
-
               const SizedBox(height: 20),
-
               const AppText(
                 texto: "Alertas",
                 tamanho: 18,
@@ -276,9 +282,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   );
                 }).toList(),
               ),
-
               const SizedBox(height: 30),
-
               Center(
                 child: Botao(
                   texto: "Concluir",
@@ -287,7 +291,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   borderRadius: 12,
                   backgroundColor: Cores.azul,
                   textColor: Cores.branco,
-                  onPressed: _salvarMedicamento,
+                  onPressed: _salvando ? () {} : _salvarMedicamento,
                 ),
               ),
               const SizedBox(height: 20),

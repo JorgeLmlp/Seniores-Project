@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/cores.dart';
 
 class Bolinhas extends StatelessWidget {
   final int quantidade;
@@ -46,16 +47,16 @@ class IndicadorPontos extends StatelessWidget {
 
   Color _cor(int pontuacao) {
     if (inverso) {
-      if (pontuacao <= 3) return Color(0XFF27AE60);
-      if (pontuacao <= 6) return Color(0XFFF2C946);
+      if (pontuacao <= 3) return Cores.verde;
+      if (pontuacao <= 6) return Cores.amarelo;
 
-      return Color(0XFFEB5757);
+      return Cores.vermelho;
     }
 
-    if (pontuacao <= 3) return Color(0XFFEB5757); 
-    if (pontuacao <= 6) return Color(0XFFF2C946);
+    if (pontuacao <= 3) return Cores.vermelho;
+    if (pontuacao <= 6) return Cores.amarelo;
 
-    return Color(0XFF27AE60);
+    return Cores.verde;
   }
 
   @override
@@ -73,20 +74,20 @@ class IndicadorPontos extends StatelessWidget {
               '$label:',
               style: const TextStyle(
                 fontSize: 12,
-                color: Color(0xFF636E72),
+                color: Cores.cinza,
               ),
             ),
           ),
           Row(
             children: [
-              for(int index = 0; index < 10; index++)
+              for (int index = 0; index < 10; index++)
                 Container(
                   margin: const EdgeInsets.only(right: 3),
                   width: 9,
                   height: 9,
                   decoration: BoxDecoration(
                     shape: BoxShape.circle,
-                    color: (index < quantidade) ? cor : Color.fromARGB(255, 120, 133, 138), 
+                    color: (index < quantidade) ? cor : Cores.cinza,
                   ),
                 ),
             ],
@@ -99,7 +100,7 @@ class IndicadorPontos extends StatelessWidget {
 
 class BarraIndicador extends StatelessWidget {
   final String label;
-  final double valor; 
+  final double valor;
   final bool inverso;
 
   const BarraIndicador({
@@ -111,14 +112,16 @@ class BarraIndicador extends StatelessWidget {
 
   Color _obterCor(int blocosPreenchidos) {
     if (inverso) {
-      if (blocosPreenchidos <= 1) return Color(0xFF27AE60);
-      if (blocosPreenchidos <= 3) return Color(0XFFF2C946);
-      return Color(0XFFEB5757);
+      if (blocosPreenchidos <= 1) return Cores.verde;
+      if (blocosPreenchidos <= 3) return Cores.vermelho;
+
+      return Cores.vermelho;
     }
 
-    if (blocosPreenchidos <= 1) return Color(0XFFEB5757);
-    if (blocosPreenchidos <= 3) return Color(0XFFF2C946);
-    return Color(0XFF27AE60);
+    if (blocosPreenchidos <= 1) return Cores.vermelho;
+    if (blocosPreenchidos <= 3) return Cores.amarelo;
+
+    return Cores.verde;
   }
 
   @override
@@ -136,7 +139,7 @@ class BarraIndicador extends StatelessWidget {
             style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
-              color: Color(0xFF275DAD),
+              color: Cores.azul,
             ),
           ),
           const SizedBox(height: 6),
@@ -145,14 +148,14 @@ class BarraIndicador extends StatelessWidget {
               for (int i = 0; i < 5; i++) ...[
                 Expanded(
                   child: Container(
-                    height: 10,
-                    decoration: BoxDecoration(
-                      color: i < blocos ? cor : const Color(0xFFBDC8D6),
-                      borderRadius: BorderRadius.circular(4),
-                    ),
-                  ),
+                      height: 10,
+                      decoration: BoxDecoration(
+                        color: i < blocos ? cor : const Color(0xFFBDC8D6),
+                        borderRadius: BorderRadius.circular(4),
+                      )),
                 ),
-                if (i < 4) const SizedBox(width: 4), // Espaçamento entre os blocos
+                if (i < 4)
+                  const SizedBox(width: 4), // Espaçamento entre os blocos
               ],
             ],
           ),

@@ -7,7 +7,8 @@ class MedicamentoService:
 
     # Apenas estes campos podem ser alterados depois do cadastro.
     CAMPOS_EDITAVEIS = {
-        "nome", "descricao", "dosagem", "fabricante", "lote", "quantidade"
+        "nome", "descricao", "dosagem", "fabricante", "lote", "quantidade",
+        "frequencia", "horarios", "alertas",
     }
 
     def criar(self, paciente_id, info):
@@ -23,6 +24,8 @@ class MedicamentoService:
 
         quantidade = info.get("quantidade")
         if quantidade is not None and not self._quantidade_valida(quantidade):
+            return None, 400
+        if not self._listas_validas(info):
             return None, 400
 
         medicamento = Remedio.criar(paciente.id, info)
@@ -48,6 +51,8 @@ class MedicamentoService:
         if "quantidade" in info and info["quantidade"] is not None:
             if not self._quantidade_valida(info["quantidade"]):
                 return None, 400
+        if not self._listas_validas(info):
+            return None, 400
 
         novo_nome = info.get("nome", medicamento.nome)
         nova_dosagem = info.get("dosagem", medicamento.dosagem)
@@ -67,3 +72,14 @@ class MedicamentoService:
     def _quantidade_valida(quantidade):
         """Aceita estoque inteiro maior ou igual a zero; bool nao conta como inteiro."""
         return isinstance(quantidade, int) and not isinstance(quantidade, bool) and quantidade >= 0
+
+    @staticmethod
+    def _listas_validas(info):
+        return all(
+            campo not in info
+            or (
+                isinstance(info[campo], list)
+                and all(isinstance(item, str) for item in info[campo])
+            )
+            for campo in ("horarios", "alertas")
+        )

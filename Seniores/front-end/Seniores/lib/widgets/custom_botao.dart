@@ -8,7 +8,7 @@ class Botao extends StatelessWidget {
   final Color textColor;
   final Color borderColor;
 
-  final double largura;
+  final double? largura;
   final double altura;
   final double fontSize;
   final double borderRadius;
@@ -24,9 +24,9 @@ class Botao extends StatelessWidget {
     this.textColor = Colors.white,
     this.borderColor = Colors.transparent,
     this.largura = double.infinity,
-    this.altura = 55,
-    this.fontSize = 16,
-    this.borderRadius = 12,
+    this.altura = 45,
+    this.fontSize = 14,
+    this.borderRadius = 8,
     this.borderWidth = 0,
     this.icone,
   });
@@ -42,6 +42,7 @@ class Botao extends StatelessWidget {
           backgroundColor: backgroundColor,
           foregroundColor: textColor,
           elevation: 0,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
           shape: RoundedRectangleBorder(
             borderRadius: BorderRadius.circular(borderRadius),
             side: BorderSide(
@@ -57,18 +58,21 @@ class Botao extends StatelessWidget {
             if (icone != null) ...[
               Icon(
                 icone,
-                size: 20,
+                size: fontSize + 4,
                 color: textColor,
               ),
-              const SizedBox(width: 8),
+              const SizedBox(width: 6),
             ],
-            Text(
-              texto,
-              style: TextStyle(
-                fontFamily: 'Inter',
-                fontSize: fontSize,
-                fontWeight: FontWeight.bold,
-                color: textColor,
+            Flexible(
+              child: Text(
+                texto,
+                overflow: TextOverflow.ellipsis,
+                style: TextStyle(
+                  fontFamily: 'Inter',
+                  fontSize: fontSize,
+                  fontWeight: FontWeight.bold,
+                  color: textColor,
+                ),
               ),
             ),
           ],
@@ -78,7 +82,6 @@ class Botao extends StatelessWidget {
   }
 }
 
-// Grupo de botões
 class GrupoBotoes extends StatelessWidget {
   final List<String> itens;
   final int selecionado;
@@ -111,13 +114,10 @@ class GrupoBotoes extends StatelessWidget {
                 onTap: () => onSelecionado(index),
                 child: Container(
                   decoration: BoxDecoration(
-                    color: ativo
-                        ? const Color(0xFF275DAD)
-                        : Colors.white,
+                    color: ativo ? const Color(0xFF275DAD) : Colors.white,
                     borderRadius: BorderRadius.horizontal(
-                      left: index == 0
-                          ? const Radius.circular(25)
-                          : Radius.zero,
+                      left:
+                          index == 0 ? const Radius.circular(25) : Radius.zero,
                       right: index == itens.length - 1
                           ? const Radius.circular(25)
                           : Radius.zero,
@@ -128,11 +128,10 @@ class GrupoBotoes extends StatelessWidget {
                       child: Text(
                         itens[index],
                         style: TextStyle(
+                          fontFamily: 'Inter',
                           fontSize: 14,
                           fontWeight: FontWeight.w600,
-                          color: ativo
-                              ? Colors.white
-                              : const Color(0xFF275DAD),
+                          color: ativo ? Colors.white : const Color(0xFF275DAD),
                         ),
                       ),
                     ),

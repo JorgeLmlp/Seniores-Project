@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../widgets/custom_textos.dart';
-import '../widgets/custom_textField.dart';
-import '../widgets/custom_botao.dart';
-import '../utils/mascaras.dart';
-import '../utils/cores.dart';
-import '../services/api_service.dart';
+import '../../widgets/custom_textos.dart';
+import '../../widgets/custom_textField.dart';
+import '../../widgets/custom_botao.dart';
+import '../../utils/mascaras.dart';
+import '../../utils/cores.dart';
+import '../../services/api_service.dart';
 import 'tela_login.dart';
-import 'tela_inicio.dart';
 
 class Cadastro extends StatefulWidget {
   const Cadastro({super.key});
@@ -20,8 +19,9 @@ class _CadastroState extends State<Cadastro> {
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController senhaController = TextEditingController();
-  final TextEditingController confirmarSenhaController = TextEditingController();
-  final TextEditingController cpfController = TextEditingController(); 
+  final TextEditingController confirmarSenhaController =
+      TextEditingController();
+  final TextEditingController cpfController = TextEditingController();
   final TextEditingController telefoneController = TextEditingController();
 
   String mensagemErro = '';
@@ -38,7 +38,6 @@ class _CadastroState extends State<Cadastro> {
 
   bool validarEmail(String email) {
     final regex = RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
-
     return regex.hasMatch(email);
   }
 
@@ -50,68 +49,7 @@ class _CadastroState extends State<Cadastro> {
     confirmarSenhaController.dispose();
     cpfController.dispose();
     telefoneController.dispose();
-
     super.dispose();
-  }
-
-  void fazerLogin() {
-    String email = emailController.text.trim();
-    String senha = senhaController.text;
-
-    if (email.isEmpty) {
-      setState(() {
-        mensagemErro = 'Digite seu e-mail.';
-      });
-    }
-
-    else if (!validarEmail(email)) {
-      setState(() {
-        mensagemErro = 'Digite um e-mail válido.';
-      });
-    } 
-
-    else if (senha.isEmpty) {
-      setState(() {
-        mensagemErro = 'Digite sua senha.';
-      });
-    } 
-
-    else if (senha.length < 6) {
-      setState(() {
-        mensagemErro = 'A senha deve possuir pelo menos 6 caracteres.';
-      });
-    }
-
-     else if (senha != confirmarSenhaController.text) {
-      setState(() {
-        mensagemErro = 'As senhas não coincidem.';
-      });
-    } 
-
-    else if (!concordouTermos) {
-      setState(() {
-        mensagemErro = 'Você deve aceitar os Termos de Uso.';
-      });
-    }
-
-     else {
-      setState(() {
-        mensagemErro = '';
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login realizado com sucesso!'),
-        ),
-      );
-
-      Navigator.pushReplacement(
-        context,
-        MaterialPageRoute(
-          builder: (_) => const Home(),
-        ),
-      );
-    }
   }
 
   Future<void> cadastrar() async {
@@ -121,8 +59,16 @@ class _CadastroState extends State<Cadastro> {
     final cpf = cpfController.text.trim();
     final telefone = telefoneController.text.trim();
 
-    if (nome.isEmpty || !validarEmail(email) || senha.length < 6 || cpf.isEmpty || telefone.isEmpty || tipoUsuario == null || senha != confirmarSenhaController.text || !concordouTermos) {
-      setState(() => mensagemErro = 'Revise todos os campos e aceite os Termos de Uso.');
+    if (nome.isEmpty ||
+        !validarEmail(email) ||
+        senha.length < 6 ||
+        cpf.isEmpty ||
+        telefone.isEmpty ||
+        tipoUsuario == null ||
+        senha != confirmarSenhaController.text ||
+        !concordouTermos) {
+      setState(() =>
+          mensagemErro = 'Revise todos os campos e aceite os Termos de Uso.');
       return;
     }
 
@@ -138,7 +84,9 @@ class _CadastroState extends State<Cadastro> {
         senha: senha,
         telefone: telefone,
         cpf: cpf,
-        tipo: tipoUsuario!.toLowerCase(),
+        tipo: tipoUsuario == 'Responsável'
+            ? 'responsavel'
+            : tipoUsuario!.toLowerCase(),
       );
 
       if (!mounted) return;
@@ -151,9 +99,7 @@ class _CadastroState extends State<Cadastro> {
       );
     } on ApiException catch (erro) {
       if (mounted) setState(() => mensagemErro = erro.message);
-    }
-    
-     finally {
+    } finally {
       if (mounted) setState(() => enviando = false);
     }
   }
@@ -161,7 +107,7 @@ class _CadastroState extends State<Cadastro> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.white,
+      backgroundColor: Cores.fundoTela,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -169,7 +115,6 @@ class _CadastroState extends State<Cadastro> {
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const SizedBox(height: 60),
-
               const AppText(
                 texto: 'Seniores',
                 tamanho: 70,
@@ -177,7 +122,6 @@ class _CadastroState extends State<Cadastro> {
                 cor: Cores.azul,
                 estilo: AppText.titulo,
               ),
-
               const AppText(
                 texto: 'Crie sua conta!',
                 tamanho: 28,
@@ -185,18 +129,14 @@ class _CadastroState extends State<Cadastro> {
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-
               const SizedBox(height: 10),
-
               const AppText(
                 texto: 'Preencha os dados abaixo para se cadastrar.',
                 tamanho: 16,
                 cor: Cores.cinza,
                 estilo: AppText.corpo,
               ),
-
               const SizedBox(height: 40),
-              
               CampoTexto(
                 controller: nomeController,
                 hintText: 'Nome completo',
@@ -206,9 +146,7 @@ class _CadastroState extends State<Cadastro> {
                   color: Cores.azul,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               CampoTexto(
                 controller: emailController,
                 hintText: 'E-mail',
@@ -218,9 +156,7 @@ class _CadastroState extends State<Cadastro> {
                   color: Cores.azul,
                 ),
               ),
-
               const SizedBox(height: 20),
-
               CampoTexto(
                 controller: cpfController,
                 hintText: 'CPF',
@@ -234,9 +170,7 @@ class _CadastroState extends State<Cadastro> {
                   Cpf(),
                 ],
               ),
-
               const SizedBox(height: 20),
-              
               Row(
                 children: [
                   Expanded(
@@ -255,15 +189,14 @@ class _CadastroState extends State<Cadastro> {
                       ],
                     ),
                   ),
-
                   const SizedBox(width: 10),
-
                   Expanded(
                     flex: 7,
                     child: CampoDropdown(
                       hintText: "Tipo",
                       valor: tipoUsuario,
-                      prefixIcon: const Icon(Icons.person_outline, color: Cores.azul),
+                      prefixIcon:
+                          const Icon(Icons.person_outline, color: Cores.azul),
                       itens: tiposUsuario,
                       onChanged: (valor) {
                         setState(() {
@@ -274,9 +207,7 @@ class _CadastroState extends State<Cadastro> {
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               CampoTexto(
                 controller: senhaController,
                 hintText: 'Senha',
@@ -286,9 +217,7 @@ class _CadastroState extends State<Cadastro> {
                   color: Cores.azul,
                 ),
               ),
-                
               const SizedBox(height: 20),
-
               CampoTexto(
                 controller: confirmarSenhaController,
                 hintText: 'Confirmar senha',
@@ -298,9 +227,7 @@ class _CadastroState extends State<Cadastro> {
                   color: Cores.azul,
                 ),
               ),
-                
               const SizedBox(height: 20),
-
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -344,9 +271,7 @@ class _CadastroState extends State<Cadastro> {
                   ),
                 ],
               ),
-                            
               const SizedBox(height: 20),
-
               if (mensagemErro.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 15),
@@ -358,49 +283,44 @@ class _CadastroState extends State<Cadastro> {
                     ),
                   ),
                 ),
-
               Botao(
-                texto: enviando ? 'Cadastrando...' : 'Cadastrar',
+                texto: 'Cadastrar',
                 onPressed: enviando ? () {} : cadastrar,
               ),
-            
               const SizedBox(height: 20),
-
-              const Row(
+              Row(
                 children: [
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.branco,
+                      color: Cores.cinza.withOpacity(0.3),
                     ),
                   ),
-                  Padding(
+                  const Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
-                      'OU',
+                      'ou',
                       style: TextStyle(
                         color: Cores.cinza,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 12,
                       ),
                     ),
                   ),
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.branco,
+                      color: Cores.cinza.withOpacity(0.3),
                     ),
                   ),
                 ],
               ),
-
               const SizedBox(height: 20),
-
               Botao(
-                texto: 'Fazer login',
-                backgroundColor: Cores.branco,
+                texto: 'Já tem uma conta? Entrar',
+                backgroundColor: Colors.white,
                 textColor: Cores.azul,
                 borderColor: Cores.azul,
-                borderWidth: 2,
+                borderWidth: 1.5,
                 onPressed: () {
                   Navigator.push(
                     context,

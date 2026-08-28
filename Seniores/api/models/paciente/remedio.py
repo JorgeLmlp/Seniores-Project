@@ -12,6 +12,9 @@ class Remedio(db.Model):
     fabricante = db.Column(db.String(100), nullable=True)
     lote = db.Column(db.String(60), nullable=True)
     quantidade = db.Column(db.Integer, nullable=True)
+    frequencia = db.Column(db.String(30), nullable=True)
+    horarios = db.Column(db.JSON, nullable=True)
+    alertas = db.Column(db.JSON, nullable=True)
     paciente_id = db.Column(
         db.Integer,
         db.ForeignKey("pacientes.id"),
@@ -34,6 +37,9 @@ class Remedio(db.Model):
             "fabricante": self.fabricante,
             "lote": self.lote,
             "quantidade": self.quantidade,
+            "frequencia": self.frequencia,
+            "horarios": self.horarios or [],
+            "alertas": self.alertas or [],
         }
 
     def __str__(self):
@@ -59,6 +65,8 @@ class Remedio(db.Model):
             descricao=info.get("descricao"), dosagem=info["dosagem"],
             fabricante=info.get("fabricante"), lote=info.get("lote"),
             quantidade=info.get("quantidade"),
+            frequencia=info.get("frequencia"), horarios=info.get("horarios") or [],
+            alertas=info.get("alertas") or [],
         )
         return medicamento.salvar()
 
@@ -85,4 +93,3 @@ class Remedio(db.Model):
         except Exception:
             db.session.rollback()
             return False
-    

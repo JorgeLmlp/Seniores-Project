@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../utils/cores.dart';
 
 class CardPadrao extends StatelessWidget {
   final Widget child;
@@ -22,12 +23,12 @@ class CardPadrao extends StatelessWidget {
       padding: padding ?? const EdgeInsets.all(16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(18),
-        boxShadow: const [
+        borderRadius: BorderRadius.circular(24),
+        boxShadow: [
           BoxShadow(
-            color: Colors.black12,
-            blurRadius: 8,
-            offset: Offset(0, 3),
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 12,
+            offset: const Offset(0, 4),
           ),
         ],
       ),
@@ -49,25 +50,24 @@ class CardTitulo extends StatelessWidget {
     super.key,
     required this.titulo,
     this.data,
-    this.corFundo = const Color(0xFF275DAD),
+    this.corFundo = Cores.azul,
     this.corTexto = Colors.white,
-    this.tamanhoTitulo = 20,
-    this.tamanhoData = 20,
-    this.raio = 20,
+    this.tamanhoTitulo = 18,
+    this.tamanhoData = 16,
+    this.raio = 16,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
+      margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.symmetric(
-        horizontal: 18,
-        vertical: 14,
+        horizontal: 20,
+        vertical: 16,
       ),
       decoration: BoxDecoration(
         color: corFundo,
-        borderRadius: BorderRadius.vertical(
-          top: Radius.circular(raio),
-        ),
+        borderRadius: BorderRadius.circular(raio),
       ),
       child: Row(
         children: [
@@ -82,7 +82,8 @@ class CardTitulo extends StatelessWidget {
               ),
             ),
           ),
-          if (data != null)
+          if (data != null) ...[
+            const SizedBox(width: 8),
             Text(
               data!,
               style: TextStyle(
@@ -91,6 +92,7 @@ class CardTitulo extends StatelessWidget {
                 fontWeight: FontWeight.bold,
               ),
             ),
+          ],
         ],
       ),
     );

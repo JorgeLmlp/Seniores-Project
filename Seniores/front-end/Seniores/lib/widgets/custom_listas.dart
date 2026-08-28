@@ -2,8 +2,8 @@ import 'package:flutter/material.dart';
 import 'custom_card.dart';
 import 'custom_textos.dart';
 import 'custom_botao.dart';
+import '../utils/cores.dart';
 
-//Divisor Reutilizável
 class CustomDivider extends StatelessWidget {
   final double altura;
   final double espessura;
@@ -33,8 +33,7 @@ class CustomDivider extends StatelessWidget {
   }
 }
 
-// Lista sem Card
-class ListaPadrao extends StatelessWidget {
+class ListaSemCard extends StatelessWidget {
   final String titulo;
   final String subtitulo;
   final String textoBotao;
@@ -42,14 +41,14 @@ class ListaPadrao extends StatelessWidget {
   final Color corIndicador;
   final Color corBotao;
 
-  const ListaPadrao({
+  const ListaSemCard({
     super.key,
     required this.titulo,
     required this.subtitulo,
     required this.textoBotao,
     this.onPressed,
-    this.corIndicador = const Color(0xFF275DAD),
-    this.corBotao = const Color(0xFF275DAD),
+    this.corIndicador = Cores.azul,
+    this.corBotao = Cores.azul,
   });
 
   @override
@@ -58,7 +57,7 @@ class ListaPadrao extends StatelessWidget {
       children: [
         Padding(
           padding: const EdgeInsets.symmetric(
-            horizontal: 16,
+            horizontal: 12,
             vertical: 10,
           ),
           child: Row(
@@ -71,46 +70,45 @@ class ListaPadrao extends StatelessWidget {
                   shape: BoxShape.circle,
                 ),
               ),
-
-              const SizedBox(width: 10),
-
+              const SizedBox(width: 8),
               Expanded(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     AppText(
                       texto: titulo,
-                      tamanho: 15,
-                      peso: FontWeight.w600,
+                      tamanho: 13,
+                      peso: FontWeight.bold,
                     ),
+                    const SizedBox(height: 2),
                     AppText(
                       texto: subtitulo,
-                      tamanho: 12,
+                      tamanho: 11,
                       cor: Colors.grey,
                     ),
                   ],
                 ),
               ),
-
-              Botao(
-                texto: textoBotao,
-                largura: 100,
-                altura: 32,
-                fontSize: 12,
-                backgroundColor: corBotao,
-                onPressed: onPressed ?? () {},
+              const SizedBox(width: 8),
+              SizedBox(
+                height: 30,
+                child: Botao(
+                  texto: textoBotao,
+                  fontSize: 11,
+                  backgroundColor: corBotao,
+                  largura: 95,
+                  onPressed: onPressed ?? () {},
+                ),
               ),
             ],
           ),
         ),
-
-        const CustomDivider(altura: 1), // Utilizando CustomDivider
+        const CustomDivider(altura: 1),
       ],
     );
   }
 }
 
-// Lista com Card
 class ListaComCard extends StatelessWidget {
   final String tituloCard;
   final List<Widget> itens;

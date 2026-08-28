@@ -82,6 +82,7 @@ def migrar_schema_existente():
     colunas_novas = {
         "cuidador_id": "INTEGER",
         "responsavel_id": "INTEGER",
+        "preferiencias": "TEXT",
     }
     with db.engine.begin() as conexao:
         for nome, tipo in colunas_novas.items():
@@ -98,6 +99,26 @@ def migrar_schema_existente():
             if nome not in colunas_lesoes:
                 conexao.execute(text(f"ALTER TABLE lesoes ADD COLUMN {nome} {tipo} NULL"))
 
+        tabelas_colunas = {
+            "tbl_remedio": {
+                "frequencia": "VARCHAR(30)", "horarios": "JSON", "alertas": "JSON",
+            },
+            "diarios_saude": {
+                "humor_nivel": "INTEGER", "dor_nivel": "INTEGER",
+                "apetite_nivel": "INTEGER", "mobilidade_nivel": "INTEGER",
+                "incidentes": "JSON", "duvidas": "TEXT",
+            },
+        }
+        for tabela, definicoes in tabelas_colunas.items():
+            existentes = {
+                coluna["name"] for coluna in inspect(db.engine).get_columns(tabela)
+            }
+            for nome, tipo in definicoes.items():
+                if nome not in existentes:
+                    conexao.execute(
+                        text(f"ALTER TABLE {tabela} ADD COLUMN {nome} {tipo} NULL")
+                    )
+
 
 with app.app_context():
     # Importar os models faz o SQLAlchemy conhecer todas as tabelas antes do create_all.
@@ -105,5 +126,3 @@ with app.app_context():
     # Cria apenas tabelas inexistentes; alteracoes em tabelas ja criadas exigem migracao.
     db.create_all()
     migrar_schema_existente()
-
-

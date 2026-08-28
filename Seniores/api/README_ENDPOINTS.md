@@ -1,6 +1,6 @@
 # Endpoints da API Seniores
 
-Base local: `http://127.0.0.1:5000`.
+Base local: `http://127.0.0.1:5001`.
 
 Todos os endpoints que recebem corpo usam JSON e devem ser enviados com o
 header `Content-Type: application/json`.
@@ -131,7 +131,8 @@ cuidador pode ter varios responsaveis e vice-versa.
 ### `POST /pacientes/{paciente_id}/medicamentos`
 
 Cadastra um medicamento para o paciente. `nome` e `dosagem` sao obrigatorios;
-tambem aceita `descricao`, `fabricante`, `lote` e `quantidade`.
+tambem aceita `descricao`, `fabricante`, `lote`, `quantidade`, `frequencia`,
+`horarios` e `alertas`.
 
 ```json
 {
@@ -201,7 +202,9 @@ paciente; `GET`, `PUT`/`PATCH` e `DELETE` na URL do item.
 ```
 
 - Diário de saúde: `humor`, `dor`, `fome` e `mobilidade` obrigatórios;
-  valores aceitos: `bom`, `ruim`, `pessimo`, `razoavel`.
+  valores aceitos: `bom`, `ruim`, `pessimo`, `razoavel`. O Flutter também
+  envia `humor_nivel`, `dor_nivel`, `apetite_nivel`, `mobilidade_nivel` (0 a
+  10), `incidentes` e `duvidas`.
 - Checklist de higiene: `tarefa`, `descricao`, `frequencia`; `status` é
   `pendente` ou `concluida`.
 - Estoque: `nome` e `quantidade` (inteiro não negativo).
@@ -211,3 +214,17 @@ paciente; `GET`, `PUT`/`PATCH` e `DELETE` na URL do item.
   pode ser visualizada em `GET /lesoes/{registro_id}/foto`.
 - Registro financeiro: `descricao`, `valor` e `tipo` (`receita` ou `despesa`);
   aceita `data` em ISO 8601.
+
+## Registros das telas Flutter
+
+Consultas, exames, agendas de cuidadores, destinatários e comunicados seguem o
+mesmo CRUD. O corpo é um objeto JSON e é preservado integralmente em
+`registros_app`.
+
+```text
+POST/GET /pacientes/{paciente_id}/{recurso}
+GET/PATCH/DELETE /{recurso}/{registro_id}
+```
+
+Recursos aceitos: `consultas`, `exames`, `cuidadores`, `destinatarios` e
+`comunicados`.
