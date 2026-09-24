@@ -1,8 +1,12 @@
 from flask import Blueprint
 
 from controllers.paciente.registro_controller import (
-    atualizar_registro, buscar_registro, criar_registro, deletar_registro,
-    listar_registros, buscar_foto_lesao,
+    atualizar_registro,
+    buscar_foto_lesao,
+    buscar_registro,
+    criar_registro,
+    deletar_registro,
+    listar_registros,
 )
 
 

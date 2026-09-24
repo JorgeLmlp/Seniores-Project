@@ -44,4 +44,3 @@ for recurso in ("consultas", "exames", "cuidadores", "destinatarios", "comunicad
         methods=["DELETE"],
         view_func=lambda registro_id, r=recurso: deletar_registro_app(r, registro_id),
     )
-

@@ -1,6 +1,6 @@
 from flask import jsonify, request
 
-from services.sinal_vital_service import SinalVitalService
+from services.paciente.sinal_vital_service import SinalVitalService
 
 
 sinal_vital_service = SinalVitalService()

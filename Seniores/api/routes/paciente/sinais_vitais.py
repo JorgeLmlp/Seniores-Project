@@ -1,8 +1,11 @@
 from flask import Blueprint
 
 from controllers.paciente.sinal_vital_controller import (
-    atualizar_sinal_vital, buscar_sinal_vital, criar_sinal_vital,
-    deletar_sinal_vital, listar_sinais_vitais,
+    atualizar_sinal_vital,
+    buscar_sinal_vital,
+    criar_sinal_vital,
+    deletar_sinal_vital,
+    listar_sinais_vitais,
 )
 
 

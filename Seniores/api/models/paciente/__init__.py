@@ -1,5 +1,5 @@
 from .paciente import Paciente, SinalVital
-from .remedio import Remedio
+from models.medicamento.remedio import Remedio
 from .checklist_higiene import Checklist_higiene, StatusChecklist
 from .diario_saude import DiarioSaude, STATUS_DIARIO
 from .estoque import Estoque

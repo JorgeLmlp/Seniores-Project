@@ -12,16 +12,6 @@ class Base_info(db.Model):
     data_alteracao = db.Column(db.DateTime, nullable=True)
 
     @classmethod
-    def buscar_por_id(cls, registro_id):
-        return db.session.get(cls, registro_id)
-
-    @classmethod
-    def listar_por_paciente(cls, paciente_id):
-        return db.session.scalars(
-            db.select(cls).where(cls.paciente_id == paciente_id).order_by(cls.data_criacao.desc())
-        ).all()
-
-    @classmethod
     def criar(cls, paciente_id, dados):
         return cls(paciente_id=paciente_id, **dados).salvar()
 

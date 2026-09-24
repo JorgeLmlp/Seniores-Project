@@ -119,16 +119,6 @@ class SinalVital(db.Model):
         }
 
     @classmethod
-    def buscar_por_id(cls, sinal_vital_id):
-        return db.session.get(cls, sinal_vital_id)
-
-    @classmethod
-    def listar_por_paciente(cls, paciente_id):
-        return db.session.scalars(
-            db.select(cls).where(cls.paciente_id == paciente_id).order_by(cls.data.desc())
-        ).all()
-
-    @classmethod
     def criar(cls, paciente_id, dados):
         sinal_vital = cls(paciente_id=paciente_id, **dados)
         return sinal_vital.salvar()

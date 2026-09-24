@@ -2,7 +2,7 @@ from io import BytesIO
 
 from flask import jsonify, request, send_file
 
-from services.paciente_registro_service import PacienteRegistroService
+from services.paciente.paciente_registro_service import PacienteRegistroService
 
 
 registro_service = PacienteRegistroService()

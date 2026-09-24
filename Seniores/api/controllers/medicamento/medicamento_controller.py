@@ -1,5 +1,5 @@
 from flask import jsonify, request
-from services.medicamento_service import MedicamentoService
+from services.medicamento.medicamento_service import MedicamentoService
 
 
 medicamento_service = MedicamentoService()
