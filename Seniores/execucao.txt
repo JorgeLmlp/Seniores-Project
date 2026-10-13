@@ -1,6 +1,0 @@
-python:
-cd .\api\
-python app.py
-
-flutter:
-flutter run -d chrome --dart-define=API_URL=http://127.0.0.1:5001\
