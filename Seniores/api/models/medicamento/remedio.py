@@ -15,6 +15,8 @@ class Remedio(db.Model):
     frequencia = db.Column(db.String(30), nullable=True)
     horarios = db.Column(db.JSON, nullable=True)
     alertas = db.Column(db.JSON, nullable=True)
+    alerta_sonoro = db.Column(db.Boolean, nullable=False, default=False)
+    som_alerta = db.Column(db.String(120), nullable=True)
     paciente_id = db.Column(
         db.Integer,
         db.ForeignKey("pacientes.id"),
@@ -40,6 +42,8 @@ class Remedio(db.Model):
             "frequencia": self.frequencia,
             "horarios": self.horarios or [],
             "alertas": self.alertas or [],
+            "alerta_sonoro": self.alerta_sonoro,
+            "som_alerta": self.som_alerta,
         }
 
     def __str__(self):
@@ -47,16 +51,6 @@ class Remedio(db.Model):
 
     def __repr__(self):
         return self.__str__()
-
-    @classmethod
-    def buscar_por_id(cls, medicamento_id):
-        return db.session.get(cls, medicamento_id)
-
-    @classmethod
-    def listar_por_paciente(cls, paciente_id):
-        return db.session.scalars(
-            db.select(cls).where(cls.paciente_id == paciente_id).order_by(cls.nome)
-        ).all()
 
     @classmethod
     def criar(cls, paciente_id, info):
@@ -67,6 +61,8 @@ class Remedio(db.Model):
             quantidade=info.get("quantidade"),
             frequencia=info.get("frequencia"), horarios=info.get("horarios") or [],
             alertas=info.get("alertas") or [],
+            alerta_sonoro=info.get("alerta_sonoro", False),
+            som_alerta=info.get("som_alerta"),
         )
         return medicamento.salvar()
 

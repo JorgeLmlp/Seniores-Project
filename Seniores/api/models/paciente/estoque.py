@@ -15,9 +15,13 @@ class Estoque(Base_info):
     CAMPOS_EDITAVEIS = {"nome", "quantidade", "quantidade_minima", "descricao"}
 
     @property
+    def estoque_baixo(self):
+        return self.quantidade_minima is not None and self.quantidade <= self.quantidade_minima
+
+    @property
     def to_dict(self):
         return {"id": self.id, "paciente_id": self.paciente_id, "nome": self.nome,
                 "quantidade": self.quantidade, "quantidade_minima": self.quantidade_minima,
-                "descricao": self.descricao,
+                "descricao": self.descricao, "estoque_baixo": self.estoque_baixo,
                 "data_criacao": self.data_criacao.isoformat() if self.data_criacao else None,
                 "data_alteracao": self.data_alteracao.isoformat() if self.data_alteracao else None}

@@ -1,6 +1,7 @@
 from datetime import datetime
 
-from repositories.paciente import sinal_vital_repository
+from models.paciente.paciente import SinalVital
+from repositories import paciente_repository
 
 
 class SinalVitalService:
@@ -9,7 +10,7 @@ class SinalVitalService:
     CAMPOS = ("freq_cardiaca", "saturacao", "pressao_art", "glicemia", "temperatura")
 
     def criar(self, paciente_id, info):
-        if not sinal_vital_repository.buscar_paciente(paciente_id):
+        if not paciente_repository.buscar_paciente(paciente_id):
             return None, 404
         dados = {campo: info.get(campo) for campo in self.CAMPOS}
         if not any(dados.values()):
@@ -22,16 +23,16 @@ class SinalVitalService:
             except (TypeError, ValueError):
                 return None, 400
 
-        sinal_vital = sinal_vital_repository.criar(paciente_id, dados)
+        sinal_vital = SinalVital.criar(paciente_id, dados)
         return (sinal_vital, 201) if sinal_vital else (None, 500)
 
     def listar(self, paciente_id):
-        if not sinal_vital_repository.buscar_paciente(paciente_id):
+        if not paciente_repository.buscar_paciente(paciente_id):
             return None, 404
-        return sinal_vital_repository.listar_por_paciente(paciente_id), 200
+        return paciente_repository.listar_sinais_vitais(paciente_id), 200
 
     def buscar(self, sinal_vital_id):
-        sinal_vital = sinal_vital_repository.buscar(sinal_vital_id)
+        sinal_vital = paciente_repository.buscar_registro(SinalVital, sinal_vital_id)
         return (sinal_vital, 200) if sinal_vital else (None, 404)
 
     def atualizar(self, sinal_vital_id, info):
@@ -46,7 +47,7 @@ class SinalVitalService:
                 return None, 400
         if not dados:
             return None, 400
-        sinal_vital = sinal_vital_repository.atualizar(sinal_vital, dados)
+        sinal_vital = sinal_vital.atualizar(dados)
         return (sinal_vital, 200) if sinal_vital else (None, 500)
 
     def deletar(self, sinal_vital_id):
@@ -55,6 +56,6 @@ class SinalVitalService:
             return None, status
         return (
             (None, 204)
-            if sinal_vital_repository.deletar(sinal_vital)
+            if sinal_vital.deletar()
             else (None, 500)
         )

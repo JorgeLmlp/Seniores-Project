@@ -56,7 +56,10 @@ def criar_banco_mysql_se_necessario(url_banco):
         raise RuntimeError("Instale as dependencias com `pip install -r requirements.txt`.") from erro
 
 
-criar_banco_mysql_se_necessario(database_url)
+if database_url.startswith("mysql"):
+    criar_banco_mysql_se_necessario(database_url)
+elif not (database_url.startswith("sqlite") and os.getenv("API_TESTING") == "1"):
+    raise RuntimeError("DATABASE_URL deve apontar para MySQL (SQLite e aceito apenas em testes).")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -83,6 +86,9 @@ def migrar_schema_existente():
         "cuidador_id": "INTEGER",
         "responsavel_id": "INTEGER",
         "preferiencias": "TEXT",
+        "idade": "INTEGER",
+        "tipo_sanguineo": "VARCHAR(5)",
+        "preferencias": "JSON",
     }
     with db.engine.begin() as conexao:
         for nome, tipo in colunas_novas.items():
@@ -102,11 +108,13 @@ def migrar_schema_existente():
         tabelas_colunas = {
             "tbl_remedio": {
                 "frequencia": "VARCHAR(30)", "horarios": "JSON", "alertas": "JSON",
+                "alerta_sonoro": "BOOLEAN NOT NULL DEFAULT 0", "som_alerta": "VARCHAR(120)",
             },
             "diarios_saude": {
                 "humor_nivel": "INTEGER", "dor_nivel": "INTEGER",
                 "apetite_nivel": "INTEGER", "mobilidade_nivel": "INTEGER",
                 "incidentes": "JSON", "duvidas": "TEXT",
+                "sono": "VARCHAR(8)", "sono_nivel": "INTEGER",
             },
         }
         for tabela, definicoes in tabelas_colunas.items():

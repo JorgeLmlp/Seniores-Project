@@ -15,7 +15,11 @@ class Paciente(Usuario):
         db.Integer,
         primary_key=True
     )
-    preferiencias = db.Column(db.Text, nullable = True)
+    idade = db.Column(db.Integer, nullable=True)
+    tipo_sanguineo = db.Column(db.String(5), nullable=True)
+    preferencias = db.Column(db.JSON, nullable=True)
+    # Mantida durante a migracao para bancos antigos que possuam o nome incorreto.
+    preferiencias = db.Column(db.Text, nullable=True)
 
     # Um paciente possui um cuidador; um cuidador pode acompanhar varios pacientes.
     cuidador_id = db.Column(
@@ -73,11 +77,28 @@ class Paciente(Usuario):
             db.session.rollback()
             return None
 
-    @classmethod
-    def listar_por_cuidador(cls, cuidador_id):
-        """Retorna todos os pacientes associados ao cuidador informado."""
-        consulta = db.select(cls).where(cls.cuidador_id == cuidador_id).order_by(cls.name)
-        return db.session.scalars(consulta).all()
+    @property
+    def to_dict(self):
+        dados = super().to_dict
+        dados.update({
+            "idade": self.idade,
+            "tipo_sanguineo": self.tipo_sanguineo,
+            "preferencias": self.preferencias or {},
+        })
+        return dados
+
+    def _aplicar_campos_especificos(self, dados):
+        if "idade" in dados:
+            self.idade = dados["idade"]
+        if "tipo_sanguineo" in dados:
+            self.tipo_sanguineo = dados["tipo_sanguineo"].upper() if dados["tipo_sanguineo"] else None
+        if "preferencias" in dados:
+            self.preferencias = dados["preferencias"]
+        return self
+
+    def atualizar_perfil(self, dados):
+        self._aplicar_campos_especificos(dados)
+        return self.salvar(self)
 
     
 

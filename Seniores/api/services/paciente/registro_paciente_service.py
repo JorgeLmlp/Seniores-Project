@@ -7,7 +7,8 @@ cada service concreto continua responsável por validar seus próprios campos.
 
 from datetime import datetime
 
-from repositories.paciente import registro_app_repository
+from models.paciente.registro_app import RegistroApp
+from repositories import paciente_repository
 
 
 class RegistroPacienteService:
@@ -45,29 +46,27 @@ class RegistroPacienteService:
         if dados is None:
             return None, 400
         # Não permite criar um registro para um paciente inexistente.
-        if not registro_app_repository.buscar_paciente(paciente_id):
+        if not paciente_repository.buscar_paciente(paciente_id):
             return None, 404
 
         # Os campos específicos permanecem no JSON `dados`. O campo `recurso`
         # permite distinguir consultas, exames e os demais tipos na tabela.
-        registro = registro_app_repository.criar(
-            paciente_id, self.RECURSO, dados
-        )
+        registro = RegistroApp.criar(paciente_id, self.RECURSO, dados)
         # O model retorna None quando ocorre algum erro ao gravar no banco.
         return (registro, 201) if registro else (None, 500)
 
     def listar(self, paciente_id):
         """Lista somente os registros deste recurso e deste paciente."""
-        if not registro_app_repository.buscar_paciente(paciente_id):
+        if not paciente_repository.buscar_paciente(paciente_id):
             return None, 404
 
         # Os dois filtros são necessários porque vários recursos compartilham
         # a tabela `registros_app`.
-        return registro_app_repository.listar(paciente_id, self.RECURSO), 200
+        return paciente_repository.listar_registros_app(paciente_id, self.RECURSO), 200
 
     def buscar(self, registro_id):
         """Busca por ID e impede acessar o registro pela rota de outro tipo."""
-        registro = registro_app_repository.buscar(registro_id)
+        registro = paciente_repository.buscar_registro_app(registro_id)
         # Exemplo: um registro de exame não pode ser retornado por /consultas.
         if not registro or registro.recurso != self.RECURSO:
             return None, 404
@@ -85,9 +84,7 @@ class RegistroPacienteService:
             return None, 400
 
         # As chaves novas substituem apenas as chaves correspondentes antigas.
-        registro.dados = {**registro.dados, **dados}
-        registro.data_alteracao = datetime.now()
-        registro = registro_app_repository.salvar(registro)
+        registro = registro.atualizar(dados)
         return (registro, 200) if registro else (None, 500)
 
     def deletar(self, registro_id):
@@ -97,7 +94,7 @@ class RegistroPacienteService:
             return None, status
         return (
             (None, 204)
-            if registro_app_repository.deletar(registro)
+            if registro.deletar()
             else (None, 500)
         )
 

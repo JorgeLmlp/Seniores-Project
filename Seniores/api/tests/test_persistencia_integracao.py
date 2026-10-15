@@ -74,6 +74,7 @@ class PersistenciaIntegracaoTest(unittest.TestCase):
             {
                 "nomeDoutor": "Dra. Teste",
                 "especialidade": "Clínica geral",
+                "local": "Clínica Central",
                 "dataHora": "2026-08-28T10:00:00",
             },
         )

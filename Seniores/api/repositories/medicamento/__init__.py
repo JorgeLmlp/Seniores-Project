@@ -1,2 +1,0 @@
-"""Repositórios de medicamentos."""
-

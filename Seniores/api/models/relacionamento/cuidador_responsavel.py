@@ -14,9 +14,8 @@ class CuidadorResponsavel(db.Model):
     )
 
     @classmethod
-    def criar_ou_buscar(cls, cuidador, responsavel):
+    def criar_ou_buscar(cls, cuidador, responsavel, vinculo=None):
         try:
-            vinculo = db.session.get(cls, (cuidador.id, responsavel.id))
             if vinculo:
                 return vinculo, False
             vinculo = cls(cuidador_id=cuidador.id, responsavel_id=responsavel.id)

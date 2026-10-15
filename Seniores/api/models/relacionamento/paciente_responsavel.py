@@ -13,11 +13,10 @@ class Paciente_responsavel(db.Model):
     )
 
     @classmethod
-    def criar_ou_atualizar(cls, paciente, responsavel):
+    def criar_ou_atualizar(cls, paciente, responsavel, vinculo=None):
         """Persiste o responsavel principal e o vinculo em uma transacao."""
         try:
             paciente.responsavel_id = responsavel.id
-            vinculo = db.session.get(cls, (paciente.id, responsavel.id))
             criado = vinculo is None
             if criado:
                 vinculo = cls(paciente_id=paciente.id, responsavel_id=responsavel.id)

@@ -25,10 +25,13 @@ class DiarioSaude(Base_info):
     mobilidade_nivel = db.Column(db.Integer, nullable=True)
     incidentes = db.Column(db.JSON, nullable=True)
     duvidas = db.Column(db.Text, nullable=True)
+    sono = db.Column(db.Enum(STATUS_DIARIO), nullable=True)
+    sono_nivel = db.Column(db.Integer, nullable=True)
 
     CAMPOS_EDITAVEIS = {
         "humor", "dor", "fome", "mobilidade", "descricao", "humor_nivel",
         "dor_nivel", "apetite_nivel", "mobilidade_nivel", "incidentes", "duvidas",
+        "sono", "sono_nivel",
     }
 
     @property
@@ -42,6 +45,8 @@ class DiarioSaude(Base_info):
             "apetite_nivel": self.apetite_nivel,
             "mobilidade_nivel": self.mobilidade_nivel,
             "incidentes": self.incidentes or [], "duvidas": self.duvidas,
+            "sono": self.sono.value if self.sono else None,
+            "sono_nivel": self.sono_nivel,
             "data_criacao": self.data_criacao.isoformat() if self.data_criacao else None,
             "data_alteracao": self.data_alteracao.isoformat() if self.data_alteracao else None,
         }

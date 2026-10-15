@@ -1,4 +1,9 @@
-from repositories.relacionamento import relacionamento_repository
+from models.cuidador.cuidador import Cuidador
+from models.paciente.paciente import Paciente
+from models.relacionamento.cuidador_responsavel import CuidadorResponsavel
+from models.relacionamento.paciente_responsavel import Paciente_responsavel
+from models.responsavel.responsavel import Responsavel
+from repositories import relacionamento_repository, usuario_repository
 
 
 class RelacionamentoService:
@@ -11,18 +16,13 @@ class RelacionamentoService:
         if not cpf_responsavel or not cpf_paciente:
             return None, 400
 
-        responsavel = relacionamento_repository.pesquisar_por_cpf(
-            "responsavel", cpf_responsavel
-        )
-        paciente = relacionamento_repository.pesquisar_por_cpf(
-            "paciente", cpf_paciente
-        )
+        responsavel = usuario_repository.buscar_por_cpf(Responsavel, cpf_responsavel)
+        paciente = usuario_repository.buscar_por_cpf(Paciente, cpf_paciente)
         if not responsavel or not paciente:
             return None, 404
 
-        vinculo, criado = relacionamento_repository.vincular_paciente_responsavel(
-            paciente, responsavel
-        )
+        existente = relacionamento_repository.buscar_paciente_responsavel(paciente.id, responsavel.id)
+        vinculo, criado = Paciente_responsavel.criar_ou_atualizar(paciente, responsavel, existente)
         if not vinculo:
             return None, 500
         return vinculo, 201 if criado else 200
@@ -33,18 +33,12 @@ class RelacionamentoService:
         if not cpf_paciente or not cpf_cuidador:
             return None, 400
 
-        paciente = relacionamento_repository.pesquisar_por_cpf(
-            "paciente", cpf_paciente
-        )
-        cuidador = relacionamento_repository.pesquisar_por_cpf(
-            "cuidador", cpf_cuidador
-        )
+        paciente = usuario_repository.buscar_por_cpf(Paciente, cpf_paciente)
+        cuidador = usuario_repository.buscar_por_cpf(Cuidador, cpf_cuidador)
         if not paciente or not cuidador:
             return None, 404
 
-        paciente = relacionamento_repository.vincular_paciente_cuidador(
-            paciente, cuidador
-        )
+        paciente = paciente.vincular_cuidador(cuidador)
         return (paciente, 200) if paciente else (None, 500)
 
     def vincular_cuidador_responsavel(self, info):
@@ -53,18 +47,13 @@ class RelacionamentoService:
         if not cpf_cuidador or not cpf_responsavel:
             return None, 400
 
-        cuidador = relacionamento_repository.pesquisar_por_cpf(
-            "cuidador", cpf_cuidador
-        )
-        responsavel = relacionamento_repository.pesquisar_por_cpf(
-            "responsavel", cpf_responsavel
-        )
+        cuidador = usuario_repository.buscar_por_cpf(Cuidador, cpf_cuidador)
+        responsavel = usuario_repository.buscar_por_cpf(Responsavel, cpf_responsavel)
         if not cuidador or not responsavel:
             return None, 404
 
-        vinculo, criado = relacionamento_repository.vincular_cuidador_responsavel(
-            cuidador, responsavel
-        )
+        existente = relacionamento_repository.buscar_cuidador_responsavel(cuidador.id, responsavel.id)
+        vinculo, criado = CuidadorResponsavel.criar_ou_buscar(cuidador, responsavel, existente)
         if not vinculo:
             return None, 500
         return vinculo, 201 if criado else 200

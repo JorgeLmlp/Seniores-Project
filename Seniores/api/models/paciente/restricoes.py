@@ -1,8 +1,7 @@
-from base_info import Base_info
-from extensions import db
+"""Compatibilidade com o nome antigo do cadastro de restricoes."""
 
-class Restricoes(Base_info):
-    alergias = db.Column(db.Text, nullable = False)
-    
+from .cuidados import DietaRestricao
 
-    
+Restricoes = DietaRestricao
+
+__all__ = ["Restricoes"]

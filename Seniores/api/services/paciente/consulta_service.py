@@ -8,12 +8,12 @@ from services.paciente.registro_paciente_service import (
 
 
 class ConsultaService(RegistroPacienteService):
-    """Valida consultas antes de usar o CRUD da classe base."""
+    """Valida anotacoes de consultas futuras (nao realiza agendamento externo)."""
 
     # Identifica os registros deste service na tabela compartilhada.
     RECURSO = "consultas"
     # Estes três campos são exigidos somente na criação da consulta.
-    CAMPOS_OBRIGATORIOS = frozenset({"nomeDoutor", "especialidade", "dataHora"})
+    CAMPOS_OBRIGATORIOS = frozenset({"nomeDoutor", "especialidade", "local", "dataHora"})
 
     def _normalizar(self, dados, parcial=False):
         """Valida os tipos da consulta e limpa espaços dos textos principais."""
@@ -23,7 +23,7 @@ class ConsultaService(RegistroPacienteService):
             return None
 
         # Médico e especialidade não podem ser textos vazios.
-        for campo in ("nomeDoutor", "especialidade"):
+        for campo in ("nomeDoutor", "especialidade", "local"):
             if campo in dados and not texto_preenchido(dados[campo]):
                 return None
             if campo in dados:

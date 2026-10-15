@@ -30,6 +30,15 @@ class RegistroApp(db.Model):
             ),
         }
 
+    @classmethod
+    def criar(cls, paciente_id, recurso, dados):
+        return cls(paciente_id=paciente_id, recurso=recurso, dados=dados).salvar()
+
+    def atualizar(self, dados):
+        self.dados = {**self.dados, **dados}
+        self.data_alteracao = datetime.now()
+        return self.salvar()
+
     def salvar(self):
         try:
             db.session.add(self)
@@ -47,4 +56,3 @@ class RegistroApp(db.Model):
         except Exception:
             db.session.rollback()
             return False
-

@@ -1,4 +1,5 @@
-from repositories.medicamento import medicamento_repository
+from models.medicamento.remedio import Remedio
+from repositories import medicamento_repository, paciente_repository
 
 
 class MedicamentoService:
@@ -8,11 +9,12 @@ class MedicamentoService:
     CAMPOS_EDITAVEIS = {
         "nome", "descricao", "dosagem", "fabricante", "lote", "quantidade",
         "frequencia", "horarios", "alertas",
+        "alerta_sonoro", "som_alerta",
     }
 
     def criar(self, paciente_id, info):
         """Cria o medicamento somente se o paciente da URL existir."""
-        paciente = medicamento_repository.buscar_paciente(paciente_id)
+        paciente = paciente_repository.buscar_paciente(paciente_id)
         if not paciente:
             return None, 404
 
@@ -26,19 +28,21 @@ class MedicamentoService:
             return None, 400
         if not self._listas_validas(info):
             return None, 400
+        if "alerta_sonoro" in info and not isinstance(info["alerta_sonoro"], bool):
+            return None, 400
 
-        medicamento = medicamento_repository.criar(paciente.id, info)
+        medicamento = Remedio.criar(paciente.id, info)
         return (medicamento, 201) if medicamento else (None, 500)
 
     def listar(self, paciente_id):
         """Impede que uma lista vazia esconda um ID de paciente inexistente."""
-        if not medicamento_repository.buscar_paciente(paciente_id):
+        if not paciente_repository.buscar_paciente(paciente_id):
             return None, 404
         return medicamento_repository.listar_por_paciente(paciente_id), 200
 
     def buscar(self, medicamento_id):
         """Busca pelo identificador unico do medicamento."""
-        medicamento = medicamento_repository.buscar_medicamento(medicamento_id)
+        medicamento = medicamento_repository.buscar_por_id(medicamento_id)
         return (medicamento, 200) if medicamento else (None, 404)
 
     def atualizar(self, medicamento_id, info):
@@ -52,14 +56,14 @@ class MedicamentoService:
                 return None, 400
         if not self._listas_validas(info):
             return None, 400
+        if "alerta_sonoro" in info and not isinstance(info["alerta_sonoro"], bool):
+            return None, 400
 
         novo_nome = info.get("nome", medicamento.nome)
         nova_dosagem = info.get("dosagem", medicamento.dosagem)
         if not novo_nome or not nova_dosagem:
             return None, 400
-        medicamento = medicamento_repository.atualizar(
-            medicamento, info, self.CAMPOS_EDITAVEIS
-        )
+        medicamento = medicamento.atualizar(info, self.CAMPOS_EDITAVEIS)
         return (medicamento, 200) if medicamento else (None, 500)
 
     def deletar(self, medicamento_id):
@@ -69,7 +73,7 @@ class MedicamentoService:
             return None, status
         return (
             (None, 204)
-            if medicamento_repository.deletar(medicamento)
+            if medicamento.deletar()
             else (None, 500)
         )
 

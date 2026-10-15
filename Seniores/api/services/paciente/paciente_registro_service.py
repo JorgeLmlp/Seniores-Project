@@ -10,7 +10,7 @@ from models.paciente.diario_saude import DiarioSaude, STATUS_DIARIO
 from models.paciente.estoque import Estoque
 from models.paciente.lesao import Lesao
 from models.paciente.registro_financeiro import RegistroFinanceiro
-from repositories.paciente import paciente_repository
+from repositories import paciente_repository
 
 
 class PacienteRegistroService:
@@ -44,13 +44,13 @@ class PacienteRegistroService:
         if not dados:
             return None
         if recurso == "diarios-saude":
-            for campo in ("humor", "dor", "fome", "mobilidade"):
+            for campo in ("humor", "dor", "fome", "mobilidade", "sono"):
                 if campo in dados:
                     try:
                         dados[campo] = STATUS_DIARIO(str(dados[campo]).lower())
                     except ValueError:
                         return None
-            for campo in ("humor_nivel", "dor_nivel", "apetite_nivel", "mobilidade_nivel"):
+            for campo in ("humor_nivel", "dor_nivel", "apetite_nivel", "mobilidade_nivel", "sono_nivel"):
                 if campo in dados and (
                     not isinstance(dados[campo], int)
                     or isinstance(dados[campo], bool)

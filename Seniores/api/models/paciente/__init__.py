@@ -6,9 +6,15 @@ from .estoque import Estoque
 from .lesao import Lesao
 from .registro_financeiro import RegistroFinanceiro
 from .registro_app import RegistroApp
+from .cuidados import (
+    AdministracaoMedicamento, AlertaPanico, ContatoEmergencia, DietaRestricao,
+    ExameDocumento, Incidente, PermissaoMembro, TurnoCuidador,
+)
 
 __all__ = [
     "Paciente", "SinalVital", "Remedio", "Checklist_higiene", "StatusChecklist",
     "DiarioSaude", "STATUS_DIARIO", "Estoque", "Lesao", "RegistroFinanceiro",
-    "RegistroApp",
+    "RegistroApp", "AdministracaoMedicamento", "AlertaPanico",
+    "ContatoEmergencia", "DietaRestricao", "ExameDocumento", "Incidente",
+    "PermissaoMembro", "TurnoCuidador",
 ]

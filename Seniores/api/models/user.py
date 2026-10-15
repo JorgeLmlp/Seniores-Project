@@ -31,38 +31,9 @@ class Usuario(db.Model):
     def __repr__(self):
         return self.__str__()
 
-    @classmethod
-    def buscar_por_id(cls, usuario_id):
-        return db.session.get(cls, usuario_id)
-
-    @classmethod
-    def buscar_por_cpf(cls, cpf):
-        return db.session.scalar(db.select(cls).where(cls.cpf == cpf))
-
-    @classmethod
-    def buscar_por_email(cls, email):
-        return db.session.scalar(db.select(cls).where(cls.email == email))
-
     def senha_confere(self, senha):
         """Valida a senha recebida contra o hash armazenado no banco."""
         return check_password_hash(self.password, senha)
-
-    @classmethod
-    def listar(cls):
-        return db.session.scalars(db.select(cls)).all()
-
-    @classmethod
-    def email_ou_cpf_existe(cls, modelos, email, cpf, usuario_id=None):
-        """Verifica unicidade entre todos os tipos de usuario informados."""
-        for modelo in modelos:
-            consulta = db.select(modelo).where(
-                (modelo.email == email) | (modelo.cpf == cpf)
-            )
-            if modelo is cls and usuario_id is not None:
-                consulta = consulta.where(modelo.id != usuario_id)
-            if db.session.scalar(consulta):
-                return True
-        return False
 
     @classmethod
     def criar(cls, dados):
@@ -71,6 +42,8 @@ class Usuario(db.Model):
             password=generate_password_hash(dados["senha"]),
             phoneNumber=dados["telefone"], cpf=dados["cpf"], tipo=dados["tipo"],
         )
+        if hasattr(usuario, "_aplicar_campos_especificos"):
+            usuario._aplicar_campos_especificos(dados)
         return cls.salvar(usuario)
 
     def atualizar(self, info):
@@ -85,6 +58,8 @@ class Usuario(db.Model):
         senha = info.get("senha") or info.get("password")
         if senha:
             self.password = generate_password_hash(senha)
+        if hasattr(self, "_aplicar_campos_especificos"):
+            self._aplicar_campos_especificos(info)
         return self.salvar(self)
 
     @staticmethod
