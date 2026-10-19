@@ -1,11 +1,6 @@
 # Seniores Front-end
 
-O front-end do Seniores é desenvolvido em Flutter e constitui a camada de interação entre os usuários e o sistema de gerenciamento de cuidados para pessoas idosas. Sua principal responsabilidade é apresentar as informações de maneira organizada, receber os dados inseridos pelos usuários e encaminhar as operações necessárias para a API REST desenvolvida em Flask.
-
-A interface foi concebida para atender às necessidades de pacientes, cuidadores e responsáveis, facilitando o acompanhamento da saúde, a organização de tarefas diárias, o controle de medicamentos e a comunicação entre as pessoas envolvidas na assistência.
-
-Além da apresentação visual, o front-end é responsável pela validação inicial dos formulários, pelo gerenciamento dos estados da interface, pela navegação entre telas e pelo tratamento das respostas recebidas do servidor.
-
+Aplicativo em Flutter para centralizar a interface do usuário, interações locais e a rotina de cuidados de pessoas idosas, integrando-se à API REST principal.
 ## Funcionalidades
 
 ### 1. Login e autenticação
