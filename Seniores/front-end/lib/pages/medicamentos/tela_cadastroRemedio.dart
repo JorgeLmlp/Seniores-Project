@@ -1,3 +1,4 @@
+import '../../services/draft_state.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_textos.dart';
 import '../../widgets/custom_textField.dart';
@@ -8,13 +9,46 @@ import '../../utils/cores.dart';
 import '../../services/api_service.dart';
 
 class CadastroRemedio extends StatefulWidget {
-  const CadastroRemedio({super.key});
+  final Medicamento? medicamento;
+  const CadastroRemedio({super.key, this.medicamento});
 
   @override
   State<CadastroRemedio> createState() => _CadastroRemedioState();
 }
 
-class _CadastroRemedioState extends State<CadastroRemedio> {
+class _CadastroRemedioState extends State<CadastroRemedio>
+    with DraftState<CadastroRemedio> {
+  @override
+  Map<String, TextEditingController> get draftControllers => {
+        '_nomeController': _nomeController,
+        '_dosagemController': _dosagemController,
+        '_alertaController': _alertaController
+      };
+
+  @override
+  Map<String, dynamic> get draftValues => {
+        'frequenciaSelecionada': frequenciaSelecionada,
+        '_alertas': _alertas,
+        '_horarios': _horarios
+      };
+
+  @override
+  void restoreDraftValues(Map<String, dynamic> v) {
+    if (v['frequenciaSelecionada'] != null)
+      frequenciaSelecionada = v['frequenciaSelecionada'] as int;
+    if (v['_alertas'] is List) {
+      _alertas.clear();
+      _alertas.addAll((v['_alertas'] as List).cast<String>());
+    }
+    if (v['_horarios'] is List) {
+      _horarios.clear();
+      _horarios.addAll((v['_horarios'] as List).cast<String>());
+    }
+  }
+
+  @override
+  String get draftName => 'medicamento:${widget.medicamento?.id ?? 'novo'}';
+
   int frequenciaSelecionada = 0;
 
   final List<String> opcoesFrequencia = ["diário", "Semanal", "Mensal"];
@@ -27,7 +61,22 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
   bool _salvando = false;
 
   @override
+  void initState() {
+    super.initState();
+    final med = widget.medicamento;
+    if (med != null) {
+      _nomeController.text = med.nome;
+      _dosagemController.text = med.dosagem;
+      _horarios.addAll(med.horarios);
+      _alertas.addAll(med.alertas);
+      final index = opcoesFrequencia.indexOf(med.frequencia);
+      frequenciaSelecionada = index < 0 ? 0 : index;
+    }
+  }
+
+  @override
   void dispose() {
+    saveDraftBeforeDispose();
     _nomeController.dispose();
     _dosagemController.dispose();
     _alertaController.dispose();
@@ -38,8 +87,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
     if (_nomeController.text.trim().isEmpty ||
         _dosagemController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Informe o nome e a dosagem do medicamento.')),
+        SnackBar(content: Text('Informe o nome e a dosagem do medicamento.')),
       );
       return;
     }
@@ -54,8 +102,12 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
 
     setState(() => _salvando = true);
     try {
-      final salvo =
-          await _apiService.criarMedicamento(novoMedicamento.toJson());
+      final salvo = widget.medicamento?.id == null
+          ? await _apiService.criarMedicamento(novoMedicamento.toJson())
+          : await _apiService.requisicao(
+              'PATCH', '/medicamentos/${widget.medicamento!.id}',
+              dados: novoMedicamento.toJson()) as Map<String, dynamic>;
+      await clearDraft();
       if (mounted) Navigator.pop(context, Medicamento.fromJson(salvo));
     } on ApiException catch (erro) {
       if (mounted) {
@@ -71,11 +123,11 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.branco,
-      bottomNavigationBar: const Menu(paginaAtual: 1),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      bottomNavigationBar: Menu(paginaAtual: 1),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 25, vertical: 20),
+          padding: EdgeInsets.symmetric(horizontal: 25, vertical: 20),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -83,78 +135,46 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    constraints: BoxConstraints(),
+                    icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  Expanded(
+                      child: AppText(
                     texto: "Adicionar medicamento",
                     tamanho: 22,
                     peso: FontWeight.bold,
                     estilo: AppText.titulo,
-                  ),
+                  )),
                 ],
               ),
-              const SizedBox(height: 25),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: const [
-                      AppText(
-                        texto: "Foto",
-                        tamanho: 18,
-                        peso: FontWeight.bold,
-                        cor: Cores.azul,
-                        estilo: AppText.subtitulo,
-                      ),
-                      SizedBox(height: 4),
-                      AppText(
-                        texto: "Escolha ou tire uma foto do medicamento",
-                        tamanho: 12,
-                        cor: Cores.preto,
-                        estilo: AppText.corpo,
-                      ),
-                    ],
-                  ),
-                  IconButton(
-                    onPressed: () {},
-                    icon: const Icon(
-                      Icons.add_circle,
-                      color: Cores.azul,
-                      size: 36,
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              const AppText(
+              SizedBox(height: 25),
+              AppText(
                 texto: "Nome do medicamento",
                 tamanho: 18,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: "Digite aqui...",
                 controller: _nomeController,
               ),
-              const SizedBox(height: 20),
-              const AppText(
+              SizedBox(height: 20),
+              AppText(
                 texto: "Frequencia",
                 tamanho: 18,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               GrupoBotoes(
                 itens: opcoesFrequencia,
                 selecionado: frequenciaSelecionada,
@@ -164,15 +184,15 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   });
                 },
               ),
-              const SizedBox(height: 20),
-              const AppText(
+              SizedBox(height: 20),
+              AppText(
                 texto: "Horarios",
                 tamanho: 18,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   InkWell(
@@ -192,7 +212,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                       if (horaSelecionada != null) {
                         final horarioFormatado =
                             "${horaSelecionada.hour.toString().padLeft(2, '0')}:${horaSelecionada.minute.toString().padLeft(2, '0')}";
-                        
+
                         if (!_horarios.contains(horarioFormatado)) {
                           setState(() {
                             _horarios.add(horarioFormatado);
@@ -208,17 +228,17 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                         border: Border.all(color: Cores.cinza),
                         borderRadius: BorderRadius.circular(12),
                       ),
-                      child: const Icon(Icons.add, color: Cores.cinza),
+                      child: Icon(Icons.add, color: Cores.cinza),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Expanded(
                     child: Wrap(
                       spacing: 8,
                       runSpacing: 8,
                       children: _horarios.map((horario) {
                         return Container(
-                          padding: const EdgeInsets.symmetric(
+                          padding: EdgeInsets.symmetric(
                             horizontal: 14,
                             vertical: 8,
                           ),
@@ -231,19 +251,21 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                             children: [
                               Text(
                                 horario,
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
-                                  color: Cores.preto,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface,
                                 ),
                               ),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               GestureDetector(
                                 onTap: () {
                                   setState(() {
                                     _horarios.remove(horario);
                                   });
                                 },
-                                child: const Icon(Icons.close, size: 16, color: Colors.grey),
+                                child: Icon(Icons.close,
+                                    size: 16, color: Colors.grey),
                               ),
                             ],
                           ),
@@ -253,28 +275,28 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-              const AppText(
+              SizedBox(height: 20),
+              AppText(
                 texto: "Dosagem",
                 tamanho: 18,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: "Digite aqui...",
                 controller: _dosagemController,
               ),
-              const SizedBox(height: 20),
-              const AppText(
+              SizedBox(height: 20),
+              AppText(
                 texto: "Alertas",
                 tamanho: 18,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Stack(
                 alignment: Alignment.centerRight,
                 children: [
@@ -283,7 +305,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                     controller: _alertaController,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.add, color: Cores.cinza),
+                    icon: Icon(Icons.add, color: Cores.cinza),
                     onPressed: () {
                       if (_alertaController.text.trim().isNotEmpty) {
                         setState(() {
@@ -295,13 +317,13 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Wrap(
                 spacing: 8,
                 runSpacing: 8,
                 children: _alertas.map((alerta) {
                   return Container(
-                    padding: const EdgeInsets.symmetric(
+                    padding: EdgeInsets.symmetric(
                       horizontal: 14,
                       vertical: 8,
                     ),
@@ -311,16 +333,16 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                     ),
                     child: Text(
                       alerta,
-                      style: const TextStyle(
+                      style: TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
-                        color: Cores.preto,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
               Center(
                 child: Botao(
                   texto: "Concluir",
@@ -332,7 +354,7 @@ class _CadastroRemedioState extends State<CadastroRemedio> {
                   onPressed: _salvando ? () {} : _salvarMedicamento,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
           ),
         ),

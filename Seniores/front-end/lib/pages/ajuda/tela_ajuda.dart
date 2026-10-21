@@ -73,14 +73,16 @@ class _AjudaScreenState extends State<Ajuda> {
   Future<void> _carregarDadosAjuda() async {
     try {
       final perguntasRes = await _apiService.listarRegistros('ajuda/perguntas');
-      final categoriasRes = await _apiService.listarRegistros('ajuda/categorias');
+      final categoriasRes =
+          await _apiService.listarRegistros('ajuda/categorias');
       final canaisRes = await _apiService.listarRegistros('ajuda/canais');
 
       if (mounted) {
         setState(() {
           if (perguntasRes.isNotEmpty) {
             _perguntasFrequentes.clear();
-            _perguntasFrequentes.addAll(perguntasRes.map((e) => e['titulo'].toString()).toList());
+            _perguntasFrequentes.addAll(
+                perguntasRes.map((e) => e['titulo'].toString()).toList());
           }
           if (categoriasRes.isNotEmpty) {
             _categorias.clear();
@@ -111,22 +113,24 @@ class _AjudaScreenState extends State<Ajuda> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: _carregando
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new, size: 24, color: Cores.preto),
+                          icon: Icon(Icons.arrow_back_ios_new,
+                              size: 24,
+                              color: Theme.of(context).colorScheme.onSurface),
                           onPressed: () => Navigator.pop(context),
                         ),
-                        const AppText(
+                        AppText(
                           texto: 'Ajuda',
                           estilo: AppText.titulo,
                           tamanho: 24,
@@ -134,31 +138,31 @@ class _AjudaScreenState extends State<Ajuda> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
-                    const Text(
+                    SizedBox(height: 12),
+                    Text(
                       'Como podemos te ajudar?',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 22,
-                        color: Cores.preto,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
+                    SizedBox(height: 4),
+                    Text(
                       'Encontre respostas rapidas para suas duvidas ou entre em contato com a nossa equipe.',
                       style: TextStyle(color: Cores.cinza, fontSize: 13),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     CampoTexto(
                       hintText: 'Buscar ajuda...',
                       controller: _buscaController,
-                      prefixIcon: const Icon(Icons.search, color: Cores.cinza),
+                      prefixIcon: Icon(Icons.search, color: Cores.cinza),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Text(
+                        Text(
                           'Perguntas frequentes',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
@@ -168,7 +172,7 @@ class _AjudaScreenState extends State<Ajuda> {
                         ),
                         GestureDetector(
                           onTap: () {},
-                          child: const Text(
+                          child: Text(
                             'Ver todas >',
                             style: TextStyle(
                               color: Cores.azul,
@@ -179,33 +183,34 @@ class _AjudaScreenState extends State<Ajuda> {
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     ListView.builder(
                       shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
+                      physics: NeverScrollableScrollPhysics(),
                       itemCount: _perguntasFrequentes.length,
                       itemBuilder: (context, index) {
                         return Container(
-                          margin: const EdgeInsets.only(bottom: 8),
+                          margin: EdgeInsets.only(bottom: 8),
                           child: CardPadrao(
                             child: ListTile(
                               title: Text(
                                 _perguntasFrequentes[index],
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.bold,
                                   fontSize: 13,
                                   color: Cores.azul,
                                 ),
                               ),
-                              trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Cores.azul),
+                              trailing: Icon(Icons.arrow_forward_ios,
+                                  size: 14, color: Cores.azul),
                               onTap: () {},
                             ),
                           ),
                         );
                       },
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    Text(
                       'Categorias',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -213,58 +218,65 @@ class _AjudaScreenState extends State<Ajuda> {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     CardPadrao(
                       child: ListView.separated(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: NeverScrollableScrollPhysics(),
                         itemCount: _categorias.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+                        separatorBuilder: (context, index) =>
+                            Divider(height: 1, color: Colors.black12),
                         itemBuilder: (context, index) {
                           final cat = _categorias[index];
-                          final IconData icone = cat['icone'] is IconData ? cat['icone'] : Icons.medication;
-                          final Color cor = cat['cor'] is Color ? cat['cor'] : Cores.azul;
+                          final IconData icone = cat['icone'] is IconData
+                              ? cat['icone']
+                              : Icons.medication;
+                          final Color cor =
+                              cat['cor'] is Color ? cat['cor'] : Cores.azul;
 
                           return ListTile(
                             leading: Icon(icone, color: cor),
                             title: Text(
                               cat['titulo'] ?? '',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: Cores.preto,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             subtitle: Text(
                               cat['subtitulo'] ?? '',
-                              style: const TextStyle(color: Cores.cinza, fontSize: 11),
+                              style:
+                                  TextStyle(color: Cores.cinza, fontSize: 11),
                             ),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Cores.azul),
+                            trailing: Icon(Icons.arrow_forward_ios,
+                                size: 14, color: Cores.azul),
                             onTap: () {},
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    SizedBox(height: 24),
                     CardPadrao(
                       child: Padding(
-                        padding: const EdgeInsets.all(20.0),
+                        padding: EdgeInsets.all(20.0),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(12),
+                              padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
                                 color: Cores.azul.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.headset_mic, color: Cores.azul, size: 32),
+                              child: Icon(Icons.headset_mic,
+                                  color: Cores.azul, size: 32),
                             ),
-                            const SizedBox(height: 12, width: 16),
+                            SizedBox(height: 12, width: 16),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
+                                  Text(
                                     'Ainda precisa de ajuda?',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
@@ -272,21 +284,24 @@ class _AjudaScreenState extends State<Ajuda> {
                                       color: Cores.azul,
                                     ),
                                   ),
-                                  const SizedBox(height: 2),
-                                  const Text(
+                                  SizedBox(height: 2),
+                                  Text(
                                     'Fale com nossa equipe',
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 13,
-                                      color: Cores.preto,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
                                   ),
-                                  const SizedBox(height: 4),
-                                  const Text(
+                                  SizedBox(height: 4),
+                                  Text(
                                     'Nossa equipe esta pronta para te ajudar sempre que precisar.',
-                                    style: TextStyle(color: Cores.cinza, fontSize: 11),
+                                    style: TextStyle(
+                                        color: Cores.cinza, fontSize: 11),
                                   ),
-                                  const SizedBox(height: 16),
+                                  SizedBox(height: 16),
                                   Botao(
                                     texto: 'Falar com o suporte',
                                     largura: double.infinity,
@@ -302,8 +317,8 @@ class _AjudaScreenState extends State<Ajuda> {
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    Text(
                       'Outros canais',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -311,44 +326,50 @@ class _AjudaScreenState extends State<Ajuda> {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     CardPadrao(
                       child: ListView.separated(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: NeverScrollableScrollPhysics(),
                         itemCount: _outrosCanais.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+                        separatorBuilder: (context, index) =>
+                            Divider(height: 1, color: Colors.black12),
                         itemBuilder: (context, index) {
                           final canal = _outrosCanais[index];
-                          final IconData icone = canal['icone'] is IconData ? canal['icone'] : Icons.email;
-                          final Color cor = canal['cor'] is Color ? canal['cor'] : Cores.azul;
+                          final IconData icone = canal['icone'] is IconData
+                              ? canal['icone']
+                              : Icons.email;
+                          final Color cor =
+                              canal['cor'] is Color ? canal['cor'] : Cores.azul;
 
                           return ListTile(
                             leading: Icon(icone, color: cor),
                             title: Text(
                               canal['titulo'] ?? '',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: Cores.preto,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             subtitle: Text(
                               canal['subtitulo'] ?? '',
-                              style: const TextStyle(color: Cores.cinza, fontSize: 11),
+                              style:
+                                  TextStyle(color: Cores.cinza, fontSize: 11),
                             ),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Cores.azul),
+                            trailing: Icon(Icons.arrow_forward_ios,
+                                size: 14, color: Cores.azul),
                             onTap: () {},
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 80),
+                    SizedBox(height: 80),
                   ],
                 ),
               ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 0),
+      bottomNavigationBar: Menu(paginaAtual: 0),
     );
   }
 }

@@ -1,3 +1,5 @@
+import '../../models/gasto.dart';
+import '../../services/draft_state.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_menu.dart';
 import '../../widgets/custom_botao.dart';
@@ -8,13 +10,35 @@ import '../../services/api_service.dart';
 import '../../utils/mascaras.dart';
 
 class NovoGasto extends StatefulWidget {
-  const NovoGasto({super.key});
+  final Gasto? gasto;
+  const NovoGasto({super.key, this.gasto});
 
   @override
   State<NovoGasto> createState() => _NovoGastoScreenState();
 }
 
-class _NovoGastoScreenState extends State<NovoGasto> {
+class _NovoGastoScreenState extends State<NovoGasto>
+    with DraftState<NovoGasto> {
+  @override
+  Map<String, TextEditingController> get draftControllers => {
+        '_nomeController': _nomeController,
+        '_valorController': _valorController
+      };
+
+  @override
+  Map<String, dynamic> get draftValues => {
+        '_tipoSelecionado': _tipoSelecionado,
+        '_corSelecionada': _corSelecionada
+      };
+
+  @override
+  void restoreDraftValues(Map<String, dynamic> v) {
+    if (v['_tipoSelecionado'] != null)
+      _tipoSelecionado = v['_tipoSelecionado'] as String;
+    if (v['_corSelecionada'] != null)
+      _corSelecionada = v['_corSelecionada'] as String;
+  }
+
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _valorController = TextEditingController();
   String _tipoSelecionado = 'Mensal';
@@ -34,7 +58,23 @@ class _NovoGastoScreenState extends State<NovoGasto> {
   ];
 
   @override
+  String get draftName => 'gasto:${widget.gasto?.id ?? 'novo'}';
+  @override
+  void initState() {
+    super.initState();
+    final gasto = widget.gasto;
+    if (gasto != null) {
+      _nomeController.text = gasto.categoria;
+      _valorController.text =
+          gasto.valor.toStringAsFixed(2).replaceAll('.', ',');
+      _tipoSelecionado = gasto.tipo;
+      _corSelecionada = gasto.corHex;
+    }
+  }
+
+  @override
   void dispose() {
+    saveDraftBeforeDispose();
     _nomeController.dispose();
     _valorController.dispose();
     super.dispose();
@@ -46,7 +86,7 @@ class _NovoGastoScreenState extends State<NovoGasto> {
 
     if (nome.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, informe o nome da categoria.')),
+        SnackBar(content: Text('Por favor, informe o nome da categoria.')),
       );
       return;
     }
@@ -54,19 +94,30 @@ class _NovoGastoScreenState extends State<NovoGasto> {
     final digitsOnly = valorTexto.replaceAll(RegExp(r'\D'), '');
     final valor = digitsOnly.isEmpty ? 0.0 : double.parse(digitsOnly) / 100;
 
+    if (valor <= 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Informe um valor maior que zero.')));
+      return;
+    }
     setState(() => _salvando = true);
 
     try {
-      await _apiService.criarRegistro('gastos', {
+      final dados = {
         'nome': nome,
         'categoria': nome,
         'valor': valor,
         'tipo': _tipoSelecionado,
         'cor': _corSelecionada,
-      });
+      };
+      if (widget.gasto == null) {
+        await _apiService.criarRegistro('gastos', dados);
+      } else {
+        await _apiService.atualizarRegistro('gastos', widget.gasto!.id, dados);
+      }
 
+      await clearDraft();
       if (mounted) {
-        Navigator.pop(context, true); 
+        Navigator.pop(context, true);
       }
     } on ApiException catch (e) {
       if (mounted) {
@@ -90,68 +141,91 @@ class _NovoGastoScreenState extends State<NovoGasto> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new, size: 24, color: Cores.preto),
+                    icon: Icon(Icons.arrow_back_ios_new,
+                        size: 24,
+                        color: Theme.of(context).colorScheme.onSurface),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const AppText(texto: 'Novo gasto', estilo: AppText.titulo, tamanho: 24, peso: FontWeight.bold),
+                  AppText(
+                      texto: 'Novo gasto',
+                      estilo: AppText.titulo,
+                      tamanho: 24,
+                      peso: FontWeight.bold),
                 ],
               ),
-              const SizedBox(height: 24),
-              const Text("Nome da Categoria / Gasto", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Cores.preto)),
-              const SizedBox(height: 8),
-              
+              SizedBox(height: 24),
+              Text("Nome da Categoria / Gasto",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface)),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: "Ex: Farmácia, Consultas...",
                 controller: _nomeController,
               ),
-              
-              const SizedBox(height: 20),
-              const Text("Valor (R\$)", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Cores.preto)),
-              const SizedBox(height: 8),
-              
+              SizedBox(height: 20),
+              Text("Valor (R\$)",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface)),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: "0,00",
                 controller: _valorController,
                 keyboardType: TextInputType.number,
                 inputFormatters: [DinheiroInputFormatter()],
               ),
-
-              const SizedBox(height: 20),
-              const Text("Tipo", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Cores.preto)),
-              const SizedBox(height: 8),
+              SizedBox(height: 20),
+              Text("Tipo",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface)),
+              SizedBox(height: 8),
               Row(
                 children: ['Mensal', 'Anual'].map((tipo) {
                   bool selecionado = _tipoSelecionado == tipo;
                   return Expanded(
                     child: Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
                       child: OutlinedButton(
                         style: OutlinedButton.styleFrom(
-                          backgroundColor: selecionado ? Cores.azul : Cores.branco,
-                          side: const BorderSide(color: Cores.azul),
-                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                          backgroundColor:
+                              selecionado ? Cores.azul : Cores.branco,
+                          side: BorderSide(color: Cores.azul),
+                          shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(10)),
                         ),
-                        onPressed: () => setState(() => _tipoSelecionado = tipo),
-                        child: Text(tipo, style: TextStyle(color: selecionado ? Cores.branco : Cores.azul, fontWeight: FontWeight.bold)),
+                        onPressed: () =>
+                            setState(() => _tipoSelecionado = tipo),
+                        child: Text(tipo,
+                            style: TextStyle(
+                                color: selecionado ? Cores.branco : Cores.azul,
+                                fontWeight: FontWeight.bold)),
                       ),
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 20),
-              const Text("Cor", style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14, color: Cores.preto)),
-              const SizedBox(height: 8),
-              
+              SizedBox(height: 20),
+              Text("Cor",
+                  style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 14,
+                      color: Theme.of(context).colorScheme.onSurface)),
+              SizedBox(height: 8),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: _paletaCores.map((item) {
@@ -164,18 +238,23 @@ class _NovoGastoScreenState extends State<NovoGasto> {
                       decoration: BoxDecoration(
                         color: item['cor'],
                         shape: BoxShape.circle,
-                        border: selecionado ? Border.all(color: Cores.preto, width: 3) : null,
+                        border: selecionado
+                            ? Border.all(
+                                color: Theme.of(context).colorScheme.onSurface,
+                                width: 3)
+                            : null,
                       ),
-                      child: selecionado ? const Icon(Icons.check, color: Colors.white) : null,
+                      child: selecionado
+                          ? Icon(Icons.check, color: Colors.white)
+                          : null,
                     ),
                   );
                 }).toList(),
               ),
-
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               Center(
                 child: _salvando
-                    ? const CircularProgressIndicator()
+                    ? CircularProgressIndicator()
                     : Botao(
                         texto: 'Concluir',
                         largura: 160,
@@ -184,12 +263,12 @@ class _NovoGastoScreenState extends State<NovoGasto> {
                         textColor: Cores.branco,
                         onPressed: _salvarGasto,
                       ),
-                    ),
-                  ],
-                ),
               ),
-            ),
-            bottomNavigationBar: const Menu(paginaAtual: 0),
-          );
-        }
-      }
+            ],
+          ),
+        ),
+      ),
+      bottomNavigationBar: Menu(paginaAtual: 0),
+    );
+  }
+}

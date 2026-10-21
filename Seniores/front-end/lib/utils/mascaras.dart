@@ -123,7 +123,7 @@ class DinheiroInputFormatter extends TextInputFormatter {
         selection: TextSelection.collapsed(offset: 0),
       );
     }
-     
+
     final digitsOnly = newValue.text.replaceAll(RegExp(r'\D'), '');
     if (digitsOnly.isEmpty) {
       return const TextEditingValue(

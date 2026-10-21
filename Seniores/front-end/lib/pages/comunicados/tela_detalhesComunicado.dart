@@ -17,38 +17,39 @@ class DetalhesComunicado extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(24.0),
+          padding: EdgeInsets.all(24.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Cores.preto, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const AppText(
+                  AppText(
                       texto: 'Detalhes do Comunicado',
                       estilo: AppText.titulo,
                       tamanho: 22),
                 ],
               ),
-              const SizedBox(height: 32),
-              const AppText(
+              SizedBox(height: 32),
+              AppText(
                   texto: 'Destinatário',
                   estilo: AppText.titulo,
                   tamanho: 18,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Cores.cinza.withOpacity(0.3)),
                 ),
@@ -62,14 +63,14 @@ class DetalhesComunicado extends StatelessWidget {
                       tamanho: 16,
                       cor: Cores.azul,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     AppText(
                       texto: 'Vínculo: ${destinatario.vinculo}',
                       estilo: AppText.corpo,
                       tamanho: 14,
                       cor: Cores.cinza,
                     ),
-                    const SizedBox(height: 2),
+                    SizedBox(height: 2),
                     AppText(
                       texto: 'WhatsApp: ${destinatario.telefone}',
                       estilo: AppText.corpo,
@@ -79,18 +80,18 @@ class DetalhesComunicado extends StatelessWidget {
                   ],
                 ),
               ),
-              const SizedBox(height: 24),
-              const AppText(
+              SizedBox(height: 24),
+              AppText(
                   texto: 'Mensagem Enviada',
                   estilo: AppText.titulo,
                   tamanho: 18,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Container(
                 width: double.infinity,
-                padding: const EdgeInsets.all(16),
+                padding: EdgeInsets.all(16),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Cores.cinza.withOpacity(0.3)),
                 ),
@@ -100,10 +101,10 @@ class DetalhesComunicado extends StatelessWidget {
                       : mensagem,
                   estilo: AppText.corpo,
                   tamanho: 14,
-                  cor: Cores.preto,
+                  cor: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              const Spacer(),
+              Spacer(),
               SizedBox(
                 width: double.infinity,
                 child: Botao(

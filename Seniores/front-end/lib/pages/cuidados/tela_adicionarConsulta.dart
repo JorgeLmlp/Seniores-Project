@@ -1,3 +1,4 @@
+import '../../services/draft_state.dart';
 import 'package:flutter/material.dart';
 import '../../models/consulta.dart';
 import '../../widgets/custom_menu.dart';
@@ -15,11 +16,55 @@ class AdicionarConsulta extends StatefulWidget {
   State<AdicionarConsulta> createState() => _AdicionarConsultaState();
 }
 
-class _AdicionarConsultaState extends State<AdicionarConsulta> {
+class _AdicionarConsultaState extends State<AdicionarConsulta>
+    with DraftState<AdicionarConsulta> {
+  @override
+  Map<String, TextEditingController> get draftControllers => {
+        '_profissionalController': _profissionalController,
+        '_especialidadeController': _especialidadeController,
+        '_telefoneController': _telefoneController,
+        '_whatsappController': _whatsappController,
+        '_motivoController': _motivoController,
+        '_alertaController': _alertaController,
+        '_cepController': _cepController,
+        '_logradouroController': _logradouroController,
+        '_bairroController': _bairroController,
+        '_cidadeController': _cidadeController,
+        '_estadoController': _estadoController
+      };
+
+  @override
+  Map<String, dynamic> get draftValues => {
+        '_statusSelecionado': _statusSelecionado,
+        '_alertas': _alertas,
+        '_examesAdicionados': _examesAdicionados,
+        'data': _dataSelecionada?.toIso8601String(),
+        'hora': _horarioInicio.hour,
+        'minuto': _horarioInicio.minute
+      };
+
+  @override
+  void restoreDraftValues(Map<String, dynamic> v) {
+    if (v['_statusSelecionado'] != null)
+      _statusSelecionado = v['_statusSelecionado'] as int;
+    if (v['_alertas'] is List) {
+      _alertas.clear();
+      _alertas.addAll((v['_alertas'] as List).cast<String>());
+    }
+    if (v['_examesAdicionados'] is List) {
+      _examesAdicionados.clear();
+      _examesAdicionados
+          .addAll((v['_examesAdicionados'] as List).cast<String>());
+    }
+    _dataSelecionada = DateTime.tryParse(v['data'] ?? '');
+    if (v['hora'] is int)
+      _horarioInicio = TimeOfDay(hour: v['hora'], minute: v['minuto']);
+  }
+
   int _statusSelecionado = 0;
 
   DateTime? _dataSelecionada;
-  TimeOfDay _horarioInicio = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay _horarioInicio = TimeOfDay(hour: 8, minute: 0);
 
   final TextEditingController _profissionalController = TextEditingController();
   final TextEditingController _especialidadeController =
@@ -93,6 +138,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
 
   @override
   void dispose() {
+    saveDraftBeforeDispose();
     _profissionalController.dispose();
     _especialidadeController.dispose();
     _telefoneController.dispose();
@@ -112,7 +158,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Selecione o Estado',
+          title: Text('Selecione o Estado',
               style: TextStyle(color: Cores.azul, fontSize: 18)),
           content: SizedBox(
             width: double.maxFinite,
@@ -122,8 +168,8 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
               itemBuilder: (context, index) {
                 final uf = _estados[index];
                 return ListTile(
-                  title: Text(uf,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title:
+                      Text(uf, style: TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () {
                     setState(() {
                       _estadoController.text = uf;
@@ -170,19 +216,20 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
       context: context,
       builder: (BuildContext context) {
         return Container(
-          padding: const EdgeInsets.all(20),
+          padding: EdgeInsets.all(20),
+          height: 400,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const Text(
+              Text(
                 'Selecione um exame',
                 style: TextStyle(
                     fontSize: 18,
                     fontWeight: FontWeight.bold,
                     color: Cores.azul),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Expanded(
                 child: ListView.builder(
                   shrinkWrap: true,
@@ -211,18 +258,20 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
   }
 
   Future<void> _salvarConsulta() async {
-    if (_profissionalController.text.isEmpty) {
+    if (_profissionalController.text.trim().isEmpty ||
+        _especialidadeController.text.trim().isEmpty ||
+        _logradouroController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Por favor, informe o nome do profissional.')),
+        SnackBar(
+            content: Text(
+                'Informe o profissional, a especialidade e o logradouro da consulta.')),
       );
       return;
     }
 
     if (_dataSelecionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-            content: Text('Por favor, selecione a data da consulta.')),
+        SnackBar(content: Text('Por favor, selecione a data da consulta.')),
       );
       return;
     }
@@ -256,6 +305,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
     try {
       final salvo =
           await _apiService.criarRegistro('consultas', novaConsulta.toJson());
+      await clearDraft();
       if (!mounted) return;
       Navigator.pop(
         context,
@@ -296,10 +346,10 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
     }
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -307,72 +357,72 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    constraints: BoxConstraints(),
+                    icon: Icon(
                       Icons.keyboard_double_arrow_left,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  Expanded(
+                      child: AppText(
                     texto: 'Adicionar Consulta',
                     estilo: AppText.titulo,
                     tamanho: 22,
                     peso: FontWeight.bold,
-                  ),
+                  )),
                 ],
               ),
-              const SizedBox(height: 24),
-              const AppText(
+              SizedBox(height: 24),
+              AppText(
                   texto: 'Nome do profissional',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: 'Digite aqui...',
                 controller: _profissionalController,
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Especialidade',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: 'Digite aqui...',
                 controller: _especialidadeController,
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Status',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               GrupoBotoes(
-                itens: const ['Agendada', 'Finalizada', 'Cancelada'],
+                itens: ['Agendada', 'Finalizada', 'Cancelada'],
                 selecionado: _statusSelecionado,
                 onSelecionado: (index) =>
                     setState(() => _statusSelecionado = index),
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Data da Consulta',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               GestureDetector(
                 onTap: () => _selecionarData(context),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
@@ -388,19 +438,18 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                           fontSize: 14,
                         ),
                       ),
-                      const Icon(Icons.calendar_today,
-                          color: Cores.azul, size: 20),
+                      Icon(Icons.calendar_today, color: Cores.azul, size: 20),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Horário',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -412,29 +461,29 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               CampoTexto(
                 hintText: 'CEP (00000-000)',
                 controller: _cepController,
                 keyboardType: TextInputType.number,
-                prefixIcon: const Icon(Icons.location_on_outlined),
+                prefixIcon: Icon(Icons.location_on_outlined),
                 inputFormatters: [
                   Cep(),
                 ],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               CampoTexto(
                 hintText: 'Logradouro (Rua, Av...)',
                 controller: _logradouroController,
-                prefixIcon: const Icon(Icons.home_outlined),
+                prefixIcon: Icon(Icons.home_outlined),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               CampoTexto(
                 hintText: 'Bairro',
                 controller: _bairroController,
-                prefixIcon: const Icon(Icons.map_outlined),
+                prefixIcon: Icon(Icons.map_outlined),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -444,7 +493,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                       controller: _cidadeController,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     flex: 1,
                     child: GestureDetector(
@@ -459,40 +508,39 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Número de telefone',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: '(xx) xxxxx-xxxx',
                 controller: _telefoneController,
                 keyboardType: TextInputType.phone,
-                prefixIcon:
-                    const Icon(Icons.phone, color: Cores.azul, size: 22),
+                prefixIcon: Icon(Icons.phone, color: Cores.azul, size: 22),
                 inputFormatters: [TelefoneInputFormatter()],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               CampoTexto(
                 hintText: '(xx) xxxxx-xxxx',
                 controller: _whatsappController,
                 keyboardType: TextInputType.phone,
-                prefixIcon: const Icon(Icons.chat, color: Cores.azul, size: 22),
+                prefixIcon: Icon(Icons.chat, color: Cores.azul, size: 22),
                 inputFormatters: [TelefoneInputFormatter()],
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Motivo da consulta',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
@@ -502,7 +550,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                       controller: _motivoController,
                       maxLines: 4,
                       maxLength: 200,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         hintText: 'Descreva o motivo da nova consulta...',
                         hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                         border: InputBorder.none,
@@ -511,26 +559,25 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                       ),
                     ),
                     Padding(
-                      padding: const EdgeInsets.only(right: 12.0, bottom: 8.0),
+                      padding: EdgeInsets.only(right: 12.0, bottom: 8.0),
                       child: Align(
                         alignment: Alignment.centerRight,
                         child: Text(
                           '$_tamanhoMotivo/200',
-                          style:
-                              const TextStyle(color: Colors.grey, fontSize: 12),
+                          style: TextStyle(color: Colors.grey, fontSize: 12),
                         ),
                       ),
                     ),
                   ],
                 ),
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Alertas',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -539,14 +586,14 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                       controller: _alertaController,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.add, color: Colors.black),
+                      icon: Icon(Icons.add, color: Colors.black),
                       onPressed: () {
                         if (_alertaController.text.isNotEmpty) {
                           setState(() {
@@ -559,40 +606,38 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
                 children: _alertas
                     .map((alerta) => Chip(
-                          label: Text(alerta,
-                              style: const TextStyle(fontSize: 12)),
+                          label: Text(alerta, style: TextStyle(fontSize: 12)),
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(color: Colors.grey),
+                            side: BorderSide(color: Colors.grey),
                           ),
                         ))
                     .toList(),
               ),
-              const SizedBox(height: 16),
-              const AppText(
-                  texto: 'Exames necessários',
+              SizedBox(height: 16),
+              AppText(
+                  texto: 'Exames necessários (opcional)',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               GestureDetector(
                 onTap: () => _mostrarOpcoesExames(context),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(horizontal: 12, vertical: 14),
+                  padding: EdgeInsets.symmetric(horizontal: 12, vertical: 14),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
-                  child: const Row(
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
@@ -604,7 +649,7 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                   ),
                 ),
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
@@ -612,10 +657,9 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                   return Chip(
                     label: Text(
                       exame,
-                      style: const TextStyle(fontSize: 12, color: Cores.verde),
+                      style: TextStyle(fontSize: 12, color: Cores.verde),
                     ),
-                    deleteIcon:
-                        const Icon(Icons.close, size: 16, color: Cores.verde),
+                    deleteIcon: Icon(Icons.close, size: 16, color: Cores.verde),
                     onDeleted: () {
                       setState(() {
                         _examesAdicionados.remove(exame);
@@ -624,12 +668,12 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                     backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
-                      side: const BorderSide(color: Cores.verde),
+                      side: BorderSide(color: Cores.verde),
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
               Center(
                 child: Botao(
                   texto: "Concluir",
@@ -642,28 +686,30 @@ class _AdicionarConsultaState extends State<AdicionarConsulta> {
                   onPressed: _salvando ? () {} : _salvarConsulta,
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 
   Widget _buildTimeBox({required String texto}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: EdgeInsets.symmetric(vertical: 14),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: Text(
         texto,
-        style: const TextStyle(
-            color: Colors.black87, fontSize: 14, fontWeight: FontWeight.bold),
+        style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 14,
+            fontWeight: FontWeight.bold),
       ),
     );
   }

@@ -54,27 +54,33 @@ class _TelaConsultasState extends State<Consultas> {
     final diferencaMinutos = consulta.dataHora.difference(agora).inMinutes;
 
     if (diferencaMinutos < 0) {
-      return Cores.vermelho; 
+      return Cores.vermelho;
     } else if (diferencaMinutos <= 60) {
-      return Cores.amarelo; 
+      return Cores.amarelo;
     } else {
-      return Cores.azul; 
+      return Cores.azul;
     }
   }
 
+  final Set<String> _atualizando = {};
   Future<void> _alternarConclusao(Consulta consulta) async {
-    setState(() {
-      consulta.concluida = !consulta.concluida;
-      consulta.historico = consulta.concluida;
-    });
-
+    if (!_atualizando.add(consulta.id)) return;
+    final novo = !consulta.concluida;
     try {
-      await _apiService.atualizarRegistro('consultas', consulta.id, {
-        'concluida': consulta.concluida,
-        'historico': consulta.historico,
-      });
-    } catch (_) {
-      //Ignora silenciosamente falhas de rede para não interromper a experiência do utilizador
+      await _apiService.atualizarRegistro(
+          'consultas', consulta.id, {'concluida': novo, 'historico': novo});
+      if (mounted)
+        setState(() {
+          consulta.concluida = novo;
+          consulta.historico = novo;
+        });
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                e is ApiException ? e.message : 'Falha ao salvar o status.')));
+    } finally {
+      _atualizando.remove(consulta.id);
     }
   }
 
@@ -85,10 +91,10 @@ class _TelaConsultasState extends State<Consultas> {
         .toList();
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -99,16 +105,16 @@ class _TelaConsultasState extends State<Consultas> {
                     children: [
                       IconButton(
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(
+                        constraints: BoxConstraints(),
+                        icon: Icon(
                           Icons.arrow_back_ios_new,
                           size: 28,
-                          color: Cores.preto,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const SizedBox(width: 8),
-                      const AppText(
+                      SizedBox(width: 8),
+                      AppText(
                         texto: 'Consultas',
                         estilo: AppText.titulo,
                         tamanho: 24,
@@ -116,28 +122,29 @@ class _TelaConsultasState extends State<Consultas> {
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.edit_square, color: Cores.azul),
-                    onPressed: () {},
+                    icon: Icon(Icons.refresh, color: Cores.azul),
+                    onPressed: _carregar,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               GrupoBotoes(
-                itens: const ['Próximas', 'Histórico'],
+                itens: ['Próximas', 'Histórico'],
                 selecionado: _abaSelecionada,
-                onSelecionado: (index) => setState(() => _abaSelecionada = index),
+                onSelecionado: (index) =>
+                    setState(() => _abaSelecionada = index),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: consultasFiltradas.length,
                 itemBuilder: (context, index) {
                   final consulta = consultasFiltradas[index];
                   final corDestaque = _obterCorConsulta(consulta);
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
+                    padding: EdgeInsets.only(bottom: 12.0),
                     child: _CardConsultaCustom(
                       consulta: consulta,
                       corTema: corDestaque,
@@ -146,7 +153,7 @@ class _TelaConsultasState extends State<Consultas> {
                   );
                 },
               ),
-              const SizedBox(height: 80),
+              SizedBox(height: 80),
             ],
           ),
         ),
@@ -156,7 +163,7 @@ class _TelaConsultasState extends State<Consultas> {
           final novaConsulta = await Navigator.push(
             context,
             MaterialPageRoute(
-              builder: (_) => const AdicionarConsulta(),
+              builder: (_) => AdicionarConsulta(),
             ),
           );
 
@@ -167,9 +174,9 @@ class _TelaConsultasState extends State<Consultas> {
           }
         },
         backgroundColor: Cores.azul,
-        child: const Icon(Icons.add, color: Cores.branco),
+        child: Icon(Icons.add, color: Cores.branco),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }
@@ -187,8 +194,10 @@ class _CardConsultaCustom extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String dataFormatada = "${consulta.dataHora.day.toString().padLeft(2, '0')}/${consulta.dataHora.month.toString().padLeft(2, '0')}";
-    final String horarioFormatado = "${consulta.dataHora.hour.toString().padLeft(2, '0')}:00";
+    final String dataFormatada =
+        "${consulta.dataHora.day.toString().padLeft(2, '0')}/${consulta.dataHora.month.toString().padLeft(2, '0')}";
+    final String horarioFormatado =
+        "${consulta.dataHora.hour.toString().padLeft(2, '0')}:00";
 
     return CardPadrao(
       child: Column(
@@ -205,22 +214,22 @@ class _CardConsultaCustom extends StatelessWidget {
                   cor: corTema,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
                     onTap: onConcluir,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: consulta.concluida ? Colors.grey : corTema,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         consulta.concluida ? 'Concluída' : 'Concluir',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -228,26 +237,26 @@ class _CardConsultaCustom extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   AppText(
                     texto: dataFormatada,
                     tamanho: 12,
                     peso: FontWeight.bold,
-                    cor: Cores.preto,
+                    cor: Theme.of(context).colorScheme.onSurface,
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           AppText(
             texto: consulta.especialidade,
             tamanho: 12,
             cor: Colors.grey,
           ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Cores.branco),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
+          Divider(height: 1, color: Cores.branco),
+          SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -259,7 +268,7 @@ class _CardConsultaCustom extends StatelessWidget {
                   cor: corTema,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -277,13 +286,12 @@ class _CardConsultaCustom extends StatelessWidget {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              DetalhesConsulta(consulta: consulta),
+                          builder: (_) => DetalhesConsulta(consulta: consulta),
                         ),
                       );
                     },
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Icon(Icons.location_on_outlined, color: corTema, size: 20),
                 ],
               ),

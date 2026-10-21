@@ -6,7 +6,7 @@ import '../../widgets/custom_botao.dart';
 import '../../models/medicamento.dart';
 import '../../utils/cores.dart';
 import 'tela_cadastroRemedio.dart';
-import 'tela_detalhesMedicamento.dart'; 
+import 'tela_detalhesMedicamento.dart';
 import '../../services/api_service.dart';
 
 class Medicamentos extends StatefulWidget {
@@ -20,10 +20,9 @@ class _MedicamentosState extends State<Medicamentos> {
   int abaSelecionada = 0;
   bool _carregando = true;
   String? _erro;
- 
+
   final List<Medicamento> _listaMedicamentos = [];
   final ApiService _apiService = ApiService();
- 
 
   final List<String> _abasFrequencia = ["diário", "Semanal", "Mensal"];
 
@@ -58,27 +57,27 @@ class _MedicamentosState extends State<Medicamentos> {
     }).toList();
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 25),
+          padding: EdgeInsets.symmetric(horizontal: 25),
           child: Column(
             children: [
-              const SizedBox(height: 20),
-                 Row(
+              SizedBox(height: 20),
+              Row(
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    constraints: BoxConstraints(),
+                    icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  AppText(
                     texto: 'Medicamentos',
                     estilo: AppText.titulo,
                     tamanho: 22,
@@ -86,9 +85,9 @@ class _MedicamentosState extends State<Medicamentos> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               GrupoBotoes(
-                itens: const ["Diários", "Semanais", "Mensais"],
+                itens: ["Diários", "Semanais", "Mensais"],
                 selecionado: abaSelecionada,
                 onSelecionado: (index) {
                   setState(() {
@@ -96,17 +95,17 @@ class _MedicamentosState extends State<Medicamentos> {
                   });
                 },
               ),
-              const SizedBox(height: 20),
-              const Divider(color: Cores.cinza),
-              const SizedBox(height: 10),
+              SizedBox(height: 20),
+              Divider(color: Cores.cinza),
+              SizedBox(height: 10),
               Expanded(
                 child: _carregando
-                    ? const Center(child: CircularProgressIndicator())
+                    ? Center(child: CircularProgressIndicator())
                     : _erro != null
                         ? Center(
                             child: Text(_erro!, textAlign: TextAlign.center))
                         : medicamentosFiltrados.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: AppText(
                                   texto: "Nenhum medicamento cadastrado.",
                                   tamanho: 14,
@@ -118,20 +117,22 @@ class _MedicamentosState extends State<Medicamentos> {
                                 itemBuilder: (context, index) {
                                   final item = medicamentosFiltrados[index];
                                   return Padding(
-                                    padding: const EdgeInsets.only(bottom: 10),
+                                    padding: EdgeInsets.only(bottom: 10),
                                     child: ListaSemCard(
                                       titulo: item.nome,
                                       subtitulo: item.descricaoSubtitulo,
                                       textoBotao: "Detalhes",
-                                      onPressed: () {
-                                      Navigator.push(
+                                      onPressed: () async {
+                                        await Navigator.push(
                                           context,
                                           MaterialPageRoute(
                                             builder: (_) => DetalhesMedicamento(
-                                              medicamento: item, 
+                                              medicamento: item,
                                             ),
                                           ),
                                         );
+                                        if (mounted)
+                                          await _carregarMedicamentos();
                                       },
                                     ),
                                   );
@@ -148,7 +149,7 @@ class _MedicamentosState extends State<Medicamentos> {
           final novoMedicamento = await Navigator.push<Medicamento>(
             context,
             MaterialPageRoute(
-              builder: (_) => const CadastroRemedio(),
+              builder: (_) => CadastroRemedio(),
             ),
           );
 
@@ -158,9 +159,9 @@ class _MedicamentosState extends State<Medicamentos> {
             });
           }
         },
-        child: const Icon(Icons.add, color: Cores.branco),
+        child: Icon(Icons.add, color: Cores.branco),
       ),
-      bottomNavigationBar: const Menu(
+      bottomNavigationBar: Menu(
         paginaAtual: 1,
       ),
     );

@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import 'session_service.dart';
+import 'local_store.dart';
 
 class ApiException implements Exception {
   ApiException(this.message);
@@ -39,7 +40,11 @@ class ApiService {
     try {
       final uri = Uri.parse('$_baseUrl$path');
       late Future<http.Response> responseFuture;
-      final headers = const {'Content-Type': 'application/json'};
+      final headers = {
+        'Content-Type': 'application/json',
+        if (SessionService.instance.token != null)
+          'Authorization': 'Bearer ${SessionService.instance.token}'
+      };
       final body = data == null ? null : jsonEncode(data);
       switch (method) {
         case 'GET':
@@ -62,8 +67,13 @@ class ApiService {
       }
       final response =
           await responseFuture.timeout(const Duration(seconds: 15));
-      final dynamic decoded =
-          response.body.isEmpty ? null : jsonDecode(response.body);
+      dynamic decoded;
+      try {
+        decoded = response.body.isEmpty ? null : jsonDecode(response.body);
+      } catch (_) {
+        throw ApiException(
+            'Erro HTTP ${response.statusCode}. Confira a rota da API.');
+      }
       if (response.statusCode >= 200 && response.statusCode < 300) {
         return decoded;
       }
@@ -105,19 +115,39 @@ class ApiService {
     return result;
   }
 
-  Future<Map<String, dynamic>?> obterPerfilUsuario() async {
-    try {
-      final id = SessionService.instance.pacienteId;
-      final result = await _request('GET', '/pacientes/$id');
-      return result is Map<String, dynamic> ? result : null;
-    } catch (_) {
-      try {
-        final result = await _request('GET', '/users/perfil');
-        return result is Map<String, dynamic> ? result : null;
-      } catch (_) {
-        return null;
-      }
+  Future<Map<String, dynamic>?> obterPerfilUsuario() async =>
+      await _request('GET', '/minha-conta') as Map<String, dynamic>;
+
+  Future<dynamic> requisicao(String metodo, String caminho,
+          {Map<String, dynamic>? dados}) =>
+      _request(metodo, caminho, data: dados);
+
+  Future<Uint8List> baixarRelatorio(int ano, int mes) async {
+    final id = SessionService.instance.pacienteId;
+    final response = await _client.get(
+        Uri.parse('$_baseUrl/pacientes/$id/relatorio.pdf?ano=$ano&mes=$mes'),
+        headers: {
+          'Authorization': 'Bearer ${SessionService.instance.token}'
+        }).timeout(const Duration(seconds: 30));
+    if (response.statusCode != 200 ||
+        !response.headers['content-type']
+            .toString()
+            .contains('application/pdf')) {
+      throw ApiException(
+          'Não foi possível gerar o PDF (${response.statusCode}).');
     }
+    return response.bodyBytes;
+  }
+
+  Future<List<Map<String, dynamic>>> _listar(String path) async {
+    final scope = SessionService.instance.escopo;
+    final result = await _request('GET', path) as List<dynamic>;
+    // A API continua sendo a fonte de verdade; o cache não mascara falhas.
+    if (SessionService.instance.escopo == scope) {
+      unawaited(
+          LocalStore.instance.put(scope, path, result).catchError((_) {}));
+    }
+    return result.cast<Map<String, dynamic>>();
   }
 
   Future<Map<String, dynamic>> criarMedicamento(
@@ -127,12 +157,8 @@ class ApiService {
         as Map<String, dynamic>;
   }
 
-  Future<List<Map<String, dynamic>>> listarMedicamentos() async {
-    final id = SessionService.instance.pacienteId;
-    final result =
-        await _request('GET', '/pacientes/$id/medicamentos') as List<dynamic>;
-    return result.cast<Map<String, dynamic>>();
-  }
+  Future<List<Map<String, dynamic>>> listarMedicamentos() =>
+      _listar('/pacientes/${SessionService.instance.pacienteId}/medicamentos');
 
   Future<Map<String, dynamic>> criarDiario(Map<String, dynamic> dados) async {
     final id = SessionService.instance.pacienteId;
@@ -140,53 +166,21 @@ class ApiService {
         as Map<String, dynamic>;
   }
 
-  Future<List<Map<String, dynamic>>> listarDiarios() async {
-    final id = SessionService.instance.pacienteId;
-    final result =
-        await _request('GET', '/pacientes/$id/diarios-saude') as List<dynamic>;
-    return result.cast<Map<String, dynamic>>();
-  }
+  Future<List<Map<String, dynamic>>> listarDiarios() =>
+      _listar('/pacientes/${SessionService.instance.pacienteId}/diarios-saude');
 
   Future<Map<String, dynamic>> criarRegistro(
-    String recurso,
-    Map<String, dynamic> dados,
-  ) async {
-    final id = SessionService.instance.pacienteId;
-    final uriPath = '/pacientes/$id/$recurso';
-    try {
-      return await _request('POST', uriPath, data: dados) as Map<String, dynamic>;
-    } catch (_) {
-      return await _request('POST', '/$recurso', data: dados) as Map<String, dynamic>;
-    }
-  }
+          String recurso, Map<String, dynamic> dados) async =>
+      await _request(
+          'POST', '/pacientes/${SessionService.instance.pacienteId}/$recurso',
+          data: dados) as Map<String, dynamic>;
 
-  Future<List<Map<String, dynamic>>> listarRegistros(String recurso) async {
-    final id = SessionService.instance.pacienteId;
-    final uriPath = '/pacientes/$id/$recurso';
-    try {
-      final result = await _request('GET', uriPath) as List<dynamic>;
-      return result.cast<Map<String, dynamic>>();
-    } catch (_) {
-      try {
-        final result = await _request('GET', '/$recurso') as List<dynamic>;
-        return result.cast<Map<String, dynamic>>();
-      } catch (_) {
-        return [];
-      }
-    }
-  }
+  Future<List<Map<String, dynamic>>> listarRegistros(String recurso) =>
+      _listar('/pacientes/${SessionService.instance.pacienteId}/$recurso');
 
   Future<void> atualizarRegistro(
-    String recurso,
-    Object registroId,
-    Map<String, dynamic> dados,
-  ) async {
-    final id = SessionService.instance.pacienteId;
-    try {
-      await _request('PATCH', '/pacientes/$id/$recurso/$registroId', data: dados);
-    } catch (_) {
-      await _request('PATCH', '/$recurso/$registroId', data: dados);
-    }
+      String recurso, Object registroId, Map<String, dynamic> dados) async {
+    await _request('PATCH', '/$recurso/$registroId', data: dados);
   }
 
   Future<void> cadastrarUsuario({

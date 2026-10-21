@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import inspect, text
 from sqlalchemy.engine import make_url
 import os
+import secrets
 from dotenv import load_dotenv
 
 # A instancia e criada sem app para poder ser importada por models e services.
@@ -14,10 +15,9 @@ app = Flask(__name__)
 # Aplicativos Flutter nativos (Android/iOS/Windows) nao dependem de CORS.
 CORS(app,resources={r"/*": {"origins": "*"}})
 # Carrega DATABASE_URL e DEBUG antes de configurar o Flask.
-load_dotenv()
-database_url = os.getenv("DATABASE_URL")
-if not database_url:
-    raise RuntimeError("DATABASE_URL deve apontar para um banco MySQL.")
+load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or secrets.token_hex(32)
+database_url = os.getenv("DATABASE_URL", "sqlite:///seniores-local.db")
 
 
 def criar_banco_mysql_se_necessario(url_banco):
@@ -41,6 +41,7 @@ def criar_banco_mysql_se_necessario(url_banco):
         conexao = pymysql.connect(
             host=url.host or "localhost", port=url.port or 3306,
             user=url.username, password=url.password, charset=charset,
+            connect_timeout=5,
             **opcoes,
         )
         try:
@@ -58,8 +59,8 @@ def criar_banco_mysql_se_necessario(url_banco):
 
 if database_url.startswith("mysql"):
     criar_banco_mysql_se_necessario(database_url)
-elif not (database_url.startswith("sqlite") and os.getenv("API_TESTING") == "1"):
-    raise RuntimeError("DATABASE_URL deve apontar para MySQL (SQLite e aceito apenas em testes).")
+elif not database_url.startswith("sqlite"):
+    raise RuntimeError("DATABASE_URL deve apontar para MySQL ou SQLite.")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
@@ -71,6 +72,19 @@ from routes import blueprints
 
 for bp in blueprints:
     app.register_blueprint(bp)
+
+import access
+
+
+def migrar_sinais_vitais(conexao):
+    """Preserva medidas antigas sem atribuí-las a um paciente arbitrário."""
+    inspector = inspect(conexao)
+    colunas = {coluna['name'] for coluna in inspector.get_columns('sinais_vitais')}
+    if 'paciente_id' not in colunas:
+        conexao.execute(text('ALTER TABLE sinais_vitais ADD COLUMN paciente_id INTEGER NULL'))
+    indices = {indice['name'] for indice in inspect(conexao).get_indexes('sinais_vitais')}
+    if 'ix_sinais_vitais_paciente_id' not in indices:
+        conexao.execute(text('CREATE INDEX ix_sinais_vitais_paciente_id ON sinais_vitais (paciente_id)'))
 
 
 def migrar_schema_existente():
@@ -91,6 +105,7 @@ def migrar_schema_existente():
         "preferencias": "JSON",
     }
     with db.engine.begin() as conexao:
+        migrar_sinais_vitais(conexao)
         for nome, tipo in colunas_novas.items():
             if nome not in colunas_pacientes:
                 conexao.execute(

@@ -4,6 +4,8 @@ import '../../widgets/custom_card.dart';
 import '../../widgets/custom_textos.dart';
 import '../../utils/cores.dart';
 import '../../models/medicamento.dart';
+import '../../services/api_service.dart';
+import 'tela_cadastroRemedio.dart';
 
 class DetalhesMedicamento extends StatefulWidget {
   final Medicamento medicamento;
@@ -15,16 +17,21 @@ class DetalhesMedicamento extends StatefulWidget {
 }
 
 class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
+  late Medicamento _med;
+  bool _ocupado = true;
+  String get _dia => DateTime.now().toIso8601String().substring(0, 10);
   // Lista de horários do dia gerada a partir do medicamento com o seu estado de conclusão
   late List<Map<String, dynamic>> _horariosHoje;
 
   @override
   void initState() {
     super.initState();
+    _med = widget.medicamento;
     // Inicializa os horários reais vindos do cadastro do remédio
     _horariosHoje = widget.medicamento.horarios.map((h) {
       return {'horario': h, 'status': 'pendente'}; // 'pendente', 'concluido'
     }).toList();
+    _carregarStatus();
   }
 
   Color _obterCorStatus(String status) {
@@ -38,27 +45,70 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
     }
   }
 
-  void _alternarStatus(int index) {
+  Future<void> _carregarStatus() async {
+    try {
+      final dados = await ApiService()
+              .requisicao('GET', '/medicamentos/${_med.id}/doses/$_dia')
+          as Map<String, dynamic>;
+      if (!mounted) return;
+      setState(() {
+        _horariosHoje = _med.horarios
+            .map((h) => <String, dynamic>{
+                  'horario': h,
+                  'status': dados[h] == true ? 'concluido' : 'pendente'
+                })
+            .toList();
+        _ocupado = false;
+      });
+    } catch (e) {
+      _erro(e);
+    }
+  }
+
+  void _erro(Object e) {
+    if (!mounted) return;
+    setState(() => _ocupado = false);
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+        content: Text(e is ApiException
+            ? e.message
+            : 'Não foi possível salvar o medicamento.')));
+  }
+
+  Future<void> _alternarStatus(int index) async {
+    setState(() => _ocupado = true);
+    try {
+      await ApiService()
+          .requisicao('PUT', '/medicamentos/${_med.id}/doses/$_dia', dados: {
+        'horario': _horariosHoje[index]['horario'],
+        'concluida': _horariosHoje[index]['status'] != 'concluido'
+      });
+      await _carregarStatus();
+    } catch (e) {
+      _erro(e);
+    }
+  }
+
+  Future<void> _editar() async {
+    final med = await Navigator.push<Medicamento>(context,
+        MaterialPageRoute(builder: (_) => CadastroRemedio(medicamento: _med)));
+    if (med == null || !mounted) return;
     setState(() {
-      String atual = _horariosHoje[index]['status'];
-      if (atual == 'concluido') {
-        _horariosHoje[index]['status'] = 'pendente';
-      } else {
-        _horariosHoje[index]['status'] = 'concluido';
-      }
+      _med = med;
+      _ocupado = true;
     });
+    await _carregarStatus();
   }
 
   @override
   Widget build(BuildContext context) {
-    final med = widget.medicamento;
+    final med = _med;
     final horariosFormatados = med.horarios.join(' - ');
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -67,23 +117,23 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    constraints: BoxConstraints(),
+                    icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  AppText(
                     texto: 'Medicamentos',
                     estilo: AppText.titulo,
                     tamanho: 24,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
 
               // Card Principal com Informações do Banco
               CardPadrao(
@@ -97,10 +147,11 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                         height: 160,
                         width: double.infinity,
                         color: Colors.grey[200],
-                        child: const Icon(Icons.medication, size: 64, color: Cores.azul),
+                        child:
+                            Icon(Icons.medication, size: 64, color: Cores.azul),
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
                     // Nome e botão de editar
                     Row(
@@ -115,44 +166,44 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                           ),
                         ),
                         IconButton(
-                          icon: const Icon(Icons.edit_square, color: Cores.azul),
-                          onPressed: () {
-                            // Ação para editar
-                          },
+                          icon: Icon(Icons.edit_square, color: Cores.azul),
+                          onPressed: _ocupado ? null : _editar,
                         ),
                       ],
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
 
                     // Detalhes textuais vindos da API
                     AppText(
-                      texto: 'Horários:\n   ${horariosFormatados.isNotEmpty ? horariosFormatados : "Nenhum horário definido"}',
+                      texto:
+                          'Horários:\n   ${horariosFormatados.isNotEmpty ? horariosFormatados : "Nenhum horário definido"}',
                       tamanho: 14,
-                      cor: Colors.grey[700]!,
+                      cor: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     AppText(
                       texto: 'Frequência: ${med.frequencia}',
                       tamanho: 14,
-                      cor: Colors.grey[700]!,
+                      cor: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     AppText(
                       texto: 'Dosagem: ${med.dosagem}',
                       tamanho: 14,
-                      cor: Colors.grey[700]!,
+                      cor: Theme.of(context).colorScheme.onSurfaceVariant,
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
 
                     // Exibição Dinâmica de Alertas cadastrados
                     if (med.alertas.isNotEmpty) ...[
-                      const SizedBox(height: 4),
+                      SizedBox(height: 4),
                       ...med.alertas.map((alerta) => Padding(
-                            padding: const EdgeInsets.only(bottom: 6),
+                            padding: EdgeInsets.only(bottom: 6),
                             child: Row(
                               children: [
-                                const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 20),
-                                const SizedBox(width: 8),
+                                Icon(Icons.warning_amber_rounded,
+                                    color: Colors.amber, size: 20),
+                                SizedBox(width: 8),
                                 Expanded(
                                   child: AppText(
                                     texto: alerta,
@@ -164,38 +215,41 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                             ),
                           )),
                     ],
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
 
                     // Seção "Hoje:"
-                    const AppText(
+                    AppText(
                       texto: 'Hoje:',
                       tamanho: 16,
                       peso: FontWeight.bold,
                       cor: Cores.azul,
                     ),
-                    const SizedBox(height: 10),
+                    SizedBox(height: 10),
 
                     // Lista de horários do dia baseada no banco de dados
                     _horariosHoje.isEmpty
-                        ? const Padding(
+                        ? Padding(
                             padding: EdgeInsets.symmetric(vertical: 10),
                             child: Text('Nenhum horário programado para hoje.'),
                           )
                         : ListView.separated(
                             shrinkWrap: true,
-                            physics: const NeverScrollableScrollPhysics(),
+                            physics: NeverScrollableScrollPhysics(),
                             itemCount: _horariosHoje.length,
-                            separatorBuilder: (_, __) => const Divider(height: 16, color: Colors.black12),
+                            separatorBuilder: (_, __) =>
+                                Divider(height: 16, color: Colors.black12),
                             itemBuilder: (context, index) {
                               final item = _horariosHoje[index];
                               final status = item['status'];
                               final cor = _obterCorStatus(status);
 
                               String textoBotao = 'Concluir';
-                              if (status == 'concluido') textoBotao = 'Concluído';
+                              if (status == 'concluido')
+                                textoBotao = 'Concluído';
 
                               return Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Row(
                                     children: [
@@ -207,7 +261,7 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                                           shape: BoxShape.circle,
                                         ),
                                       ),
-                                      const SizedBox(width: 12),
+                                      SizedBox(width: 12),
                                       AppText(
                                         texto: item['horario'],
                                         tamanho: 14,
@@ -219,19 +273,23 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                                   SizedBox(
                                     height: 32,
                                     child: ElevatedButton(
-                                      onPressed: () => _alternarStatus(index),
+                                      onPressed: _ocupado
+                                          ? null
+                                          : () => _alternarStatus(index),
                                       style: ElevatedButton.styleFrom(
                                         backgroundColor: cor,
                                         foregroundColor: Colors.white,
                                         shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(16),
+                                          borderRadius:
+                                              BorderRadius.circular(16),
                                         ),
-                                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                                        padding: EdgeInsets.symmetric(
+                                            horizontal: 16),
                                         elevation: 0,
                                       ),
                                       child: Text(
                                         textoBotao,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontSize: 12,
                                           fontWeight: FontWeight.bold,
                                         ),
@@ -245,12 +303,12 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                   ],
                 ),
               ),
-              const SizedBox(height: 80),
+              SizedBox(height: 80),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 1),
+      bottomNavigationBar: Menu(paginaAtual: 1),
     );
   }
 }

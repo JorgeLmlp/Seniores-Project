@@ -39,6 +39,9 @@ class Consulta {
   Map<String, dynamic> toJson() => {
         'nomeDoutor': nomeDoutor,
         'especialidade': especialidade,
+        'local': [logradouro, bairro, cidade, estado]
+            .where((s) => s.trim().isNotEmpty)
+            .join(', '),
         'dataHora': dataHora.toIso8601String(),
         'historico': historico,
         'concluida': concluida,

@@ -38,39 +38,43 @@ class _ListaGastosScreenState extends State<ListaGastos> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Expanded(
+                      child: Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new, size: 24, color: Cores.preto),
+                        icon: Icon(Icons.arrow_back_ios_new,
+                            size: 24,
+                            color: Theme.of(context).colorScheme.onSurface),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const AppText(
-                        texto: 'Lista de gastos', 
-                        estilo: AppText.titulo, 
-                        tamanho: 24, 
+                      Expanded(
+                          child: AppText(
+                        texto: 'Lista de gastos',
+                        estilo: AppText.titulo,
+                        tamanho: 24,
                         peso: FontWeight.bold,
-                      ),
+                      )),
                     ],
-                  ),
+                  )),
                   IconButton(
-                    icon: const Icon(Icons.edit_square, color: Cores.azul),
-                    onPressed: () {},
+                    icon: Icon(Icons.refresh, color: Cores.azul),
+                    onPressed: _carregar,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               _gastos.isEmpty
-                  ? const Padding(
+                  ? Padding(
                       padding: EdgeInsets.symmetric(vertical: 80.0),
                       child: Center(
                         child: Text(
@@ -86,33 +90,35 @@ class _ListaGastosScreenState extends State<ListaGastos> {
                     )
                   : ListView.builder(
                       shrinkWrap: true,
-                      physics: const NeverScrollableScrollPhysics(),
+                      physics: NeverScrollableScrollPhysics(),
                       itemCount: _gastos.length,
                       itemBuilder: (context, index) {
                         final gasto = _gastos[index];
                         return Padding(
-                          padding: const EdgeInsets.only(bottom: 12.0),
+                          padding: EdgeInsets.only(bottom: 12.0),
                           child: CardPadrao(
                             child: Padding(
-                              padding: const EdgeInsets.all(16.0),
+                              padding: EdgeInsets.all(16.0),
                               child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
                                 children: [
                                   Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
                                     children: [
                                       Text(
                                         gasto.categoria,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 16,
                                           color: Cores.azul,
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       Text(
                                         gasto.tipo,
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           color: Cores.cinza,
                                           fontSize: 12,
                                         ),
@@ -124,26 +130,34 @@ class _ListaGastosScreenState extends State<ListaGastos> {
                                     children: [
                                       Text(
                                         "R\$ ${gasto.valor.toStringAsFixed(2)}",
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                           fontWeight: FontWeight.bold,
                                           fontSize: 14,
                                         ),
                                       ),
-                                      const SizedBox(height: 6),
+                                      SizedBox(height: 6),
                                       OutlinedButton(
                                         style: OutlinedButton.styleFrom(
-                                          padding: const EdgeInsets.symmetric(
+                                          padding: EdgeInsets.symmetric(
                                             horizontal: 16,
                                             vertical: 2,
                                           ),
-                                          minimumSize: const Size(60, 30),
-                                          side: const BorderSide(color: Cores.azul),
+                                          minimumSize: Size(60, 30),
+                                          side: BorderSide(color: Cores.azul),
                                           shape: RoundedRectangleBorder(
-                                            borderRadius: BorderRadius.circular(10),
+                                            borderRadius:
+                                                BorderRadius.circular(10),
                                           ),
                                         ),
-                                        onPressed: () {},
-                                        child: const Text(
+                                        onPressed: () async {
+                                          await Navigator.push(
+                                              context,
+                                              MaterialPageRoute(
+                                                  builder: (_) =>
+                                                      NovoGasto(gasto: gasto)));
+                                          if (mounted) await _carregar();
+                                        },
+                                        child: Text(
                                           "Editar",
                                           style: TextStyle(
                                             fontSize: 12,
@@ -160,7 +174,7 @@ class _ListaGastosScreenState extends State<ListaGastos> {
                         );
                       },
                     ),
-              const SizedBox(height: 80),
+              SizedBox(height: 80),
             ],
           ),
         ),
@@ -169,14 +183,14 @@ class _ListaGastosScreenState extends State<ListaGastos> {
         onPressed: () async {
           await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const NovoGasto()),
+            MaterialPageRoute(builder: (_) => NovoGasto()),
           );
           _carregar();
         },
         backgroundColor: Cores.azul,
-        child: const Icon(Icons.add, color: Cores.branco),
+        child: Icon(Icons.add, color: Cores.branco),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 0),
+      bottomNavigationBar: Menu(paginaAtual: 0),
     );
   }
 }

@@ -56,7 +56,8 @@ def login():
         return jsonify({'erro': 'Email e senha sao obrigatorios; tipo deve ser valido'}), 400
     if status == 401:
         return jsonify({'erro': 'Email ou senha invalidos'}), 401
-    return jsonify(_usuario_json(usuario)), 200
+    from auth import emitir_token
+    return jsonify({**_usuario_json(usuario), 'token': emitir_token(usuario)}), 200
 
 
 def atualizar_usuario(tipo, usuario_id):

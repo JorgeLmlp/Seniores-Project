@@ -1,6 +1,8 @@
+import '../../services/draft_state.dart';
 import 'package:flutter/material.dart';
 import '../../models/destinatario.dart';
 import '../../services/api_service.dart';
+import '../../utils/mascaras.dart';
 
 class CadastroDestinatario extends StatefulWidget {
   const CadastroDestinatario({super.key});
@@ -9,7 +11,21 @@ class CadastroDestinatario extends StatefulWidget {
   State<CadastroDestinatario> createState() => _CadastroDestinatarioState();
 }
 
-class _CadastroDestinatarioState extends State<CadastroDestinatario> {
+class _CadastroDestinatarioState extends State<CadastroDestinatario>
+    with DraftState<CadastroDestinatario> {
+  @override
+  Map<String, TextEditingController> get draftControllers => {
+        'nomeController': nomeController,
+        'vinculoController': vinculoController,
+        'telefoneController': telefoneController
+      };
+
+  @override
+  Map<String, dynamic> get draftValues => {};
+
+  @override
+  void restoreDraftValues(Map<String, dynamic> v) {}
+
   final TextEditingController nomeController = TextEditingController();
   final TextEditingController vinculoController = TextEditingController();
   final TextEditingController telefoneController = TextEditingController();
@@ -18,6 +34,7 @@ class _CadastroDestinatarioState extends State<CadastroDestinatario> {
 
   @override
   void dispose() {
+    saveDraftBeforeDispose();
     nomeController.dispose();
     vinculoController.dispose();
     telefoneController.dispose();
@@ -26,9 +43,12 @@ class _CadastroDestinatarioState extends State<CadastroDestinatario> {
 
   Future<void> _salvar() async {
     if (nomeController.text.trim().isEmpty ||
-        telefoneController.text.trim().isEmpty) {
+        vinculoController.text.trim().isEmpty ||
+        !RegExp(r'^\d{10,11}$')
+            .hasMatch(telefoneController.text.replaceAll(RegExp(r'\D'), ''))) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe o nome e o telefone.')),
+        SnackBar(
+            content: Text('Informe o nome, o vínculo e um telefone com DDD.')),
       );
       return;
     }
@@ -40,6 +60,7 @@ class _CadastroDestinatarioState extends State<CadastroDestinatario> {
     setState(() => _salvando = true);
     try {
       await _apiService.criarRegistro('destinatarios', destinatario.toJson());
+      await clearDraft();
       if (mounted) Navigator.pop(context, destinatario);
     } on ApiException catch (erro) {
       if (mounted)
@@ -53,27 +74,35 @@ class _CadastroDestinatarioState extends State<CadastroDestinatario> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Cadastrar Destinatário')),
-      body: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            TextField(
-                controller: nomeController,
-                decoration: const InputDecoration(labelText: 'Nome')),
-            TextField(
-                controller: vinculoController,
-                decoration: const InputDecoration(labelText: 'Vínculo')),
-            TextField(
-                controller: telefoneController,
-                decoration: const InputDecoration(labelText: 'Telefone')),
-            const SizedBox(height: 24),
-            ElevatedButton(
-              onPressed: _salvando ? null : _salvar,
-              child: Text(_salvando ? 'Salvando...' : 'Salvar'),
-            ),
-          ],
-        ),
+      appBar: AppBar(title: Text('Cadastrar Destinatário')),
+      body: SingleChildScrollView(
+        padding: EdgeInsets.all(24.0),
+        child: Card(
+            child: Padding(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    TextField(
+                        controller: nomeController,
+                        decoration: InputDecoration(labelText: 'Nome')),
+                    const SizedBox(height: 16),
+                    TextField(
+                        controller: vinculoController,
+                        decoration: InputDecoration(labelText: 'Vínculo')),
+                    const SizedBox(height: 16),
+                    TextField(
+                        controller: telefoneController,
+                        keyboardType: TextInputType.phone,
+                        inputFormatters: [TelefoneInputFormatter()],
+                        decoration: InputDecoration(labelText: 'Telefone')),
+                    SizedBox(height: 24),
+                    ElevatedButton(
+                      onPressed: _salvando ? null : _salvar,
+                      child: Text(_salvando ? 'Salvando...' : 'Salvar'),
+                    ),
+                  ],
+                ))),
       ),
     );
   }

@@ -1,6 +1,7 @@
+import 'tela_adicionarConsulta.dart';
 import 'package:flutter/material.dart';
 import 'package:widgets/pages/cuidados/tela_detalhesConsulta.dart';
-import 'package:widgets/pages/cuidados/tela_detalhesExames.dart'; 
+import 'package:widgets/pages/cuidados/tela_detalhesExames.dart';
 import '../../widgets/custom_menu.dart';
 import '../../widgets/custom_botao.dart';
 import '../../widgets/custom_listas.dart';
@@ -37,7 +38,8 @@ class _CuidadosState extends State<Cuidados> {
 
       if (mounted) {
         setState(() {
-          final todasConsultas = resConsultas.map(Consulta.fromRegistro).toList();
+          final todasConsultas =
+              resConsultas.map(Consulta.fromRegistro).toList();
           final todosExames = resExames.map(Exame.fromRegistro).toList();
 
           _consultasRecentes = todasConsultas.take(2).toList();
@@ -49,7 +51,7 @@ class _CuidadosState extends State<Cuidados> {
 
   Color _obterCorPorTempo(DateTime dataHora, bool concluido) {
     if (concluido) return Colors.grey;
-    
+
     final agora = DateTime.now();
     final diferencaMinutos = dataHora.difference(agora).inMinutes;
 
@@ -65,48 +67,53 @@ class _CuidadosState extends State<Cuidados> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-                  Row(
+              Row(
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    constraints: BoxConstraints(),
+                    icon: Icon(
                       Icons.arrow_back_ios_new,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  Expanded(
+                      child: AppText(
                     texto: 'Exames e Consultas',
                     estilo: AppText.titulo,
                     tamanho: 22,
                     peso: FontWeight.bold,
-                  ),
+                  )),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListaComCard(
                 tituloCard: "Consultas",
                 itens: [
                   if (_consultasRecentes.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(16.0),
-                      child: Text("Nenhuma consulta cadastrada.", style: TextStyle(color: Cores.cinza)),
+                      child: Text("Nenhuma consulta cadastrada.",
+                          style: TextStyle(color: Cores.cinza)),
                     )
                   else
                     ..._consultasRecentes.map((consulta) {
-                      final corDestaque = _obterCorPorTempo(consulta.dataHora, consulta.concluida);
-                      final dataFmt = "${consulta.dataHora.day.toString().padLeft(2, '0')}/${consulta.dataHora.month.toString().padLeft(2, '0')}";
-                      final horaFmt = "${consulta.dataHora.hour.toString().padLeft(2, '0')}:00";
+                      final corDestaque = _obterCorPorTempo(
+                          consulta.dataHora, consulta.concluida);
+                      final dataFmt =
+                          "${consulta.dataHora.day.toString().padLeft(2, '0')}/${consulta.dataHora.month.toString().padLeft(2, '0')}";
+                      final horaFmt =
+                          "${consulta.dataHora.hour.toString().padLeft(2, '0')}:00";
                       return ListaSemCard(
                         titulo: "${consulta.nomeDoutor} ($dataFmt)",
                         subtitulo: "${consulta.especialidade} às $horaFmt",
@@ -118,15 +125,16 @@ class _CuidadosState extends State<Cuidados> {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => DetalhesConsulta(consulta: consulta),
+                              builder: (context) =>
+                                  DetalhesConsulta(consulta: consulta),
                             ),
                           );
                         },
                       );
                     }),
                   Padding(
-                    padding: const EdgeInsets.symmetric(
-                        horizontal: 16.0, vertical: 12.0),
+                    padding:
+                        EdgeInsets.symmetric(horizontal: 16.0, vertical: 12.0),
                     child: Row(
                       children: [
                         Expanded(
@@ -134,27 +142,32 @@ class _CuidadosState extends State<Cuidados> {
                             texto: 'Mais detalhes',
                             altura: 38,
                             fontSize: 12,
-                            backgroundColor: Cores.branco,
+                            backgroundColor:
+                                Theme.of(context).scaffoldBackgroundColor,
                             textColor: Cores.azul,
                             onPressed: () {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => const Consultas(),
+                                  builder: (context) => Consultas(),
                                 ),
                               );
                             },
                           ),
                         ),
-                        const SizedBox(width: 12),
+                        SizedBox(width: 12),
                         Expanded(
                           child: Botao(
                             texto: 'Consulta Fácil',
                             altura: 38,
                             fontSize: 12,
-                            backgroundColor: Cores.branco,
+                            backgroundColor:
+                                Theme.of(context).scaffoldBackgroundColor,
                             textColor: Cores.azul,
-                            onPressed: () {},
+                            onPressed: () => Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const AdicionarConsulta())),
                           ),
                         ),
                       ],
@@ -162,20 +175,24 @@ class _CuidadosState extends State<Cuidados> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListaComCard(
                 tituloCard: "Exames",
                 itens: [
                   if (_examesRecentes.isEmpty)
-                    const Padding(
+                    Padding(
                       padding: EdgeInsets.all(16.0),
-                      child: Text("Nenhum exame cadastrado.", style: TextStyle(color: Cores.cinza)),
+                      child: Text("Nenhum exame cadastrado.",
+                          style: TextStyle(color: Cores.cinza)),
                     )
                   else
                     ..._examesRecentes.map((exame) {
-                      final corDestaque = _obterCorPorTempo(exame.dataHora, exame.concluido);
-                      final dataFmt = "${exame.dataHora.day.toString().padLeft(2, '0')}/${exame.dataHora.month.toString().padLeft(2, '0')}";
-                      final horaFmt = "${exame.dataHora.hour.toString().padLeft(2, '0')}:00";
+                      final corDestaque =
+                          _obterCorPorTempo(exame.dataHora, exame.concluido);
+                      final dataFmt =
+                          "${exame.dataHora.day.toString().padLeft(2, '0')}/${exame.dataHora.month.toString().padLeft(2, '0')}";
+                      final horaFmt =
+                          "${exame.dataHora.hour.toString().padLeft(2, '0')}:00";
                       return ListaSemCard(
                         titulo: "${exame.nomeExame} ($dataFmt)",
                         subtitulo: "${exame.local} às $horaFmt",
@@ -194,20 +211,21 @@ class _CuidadosState extends State<Cuidados> {
                       );
                     }),
                   Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 12.0),
+                    padding: EdgeInsets.symmetric(vertical: 12.0),
                     child: Center(
                       child: Botao(
                         texto: 'Mais detalhes',
                         largura: 160,
                         altura: 38,
                         fontSize: 12,
-                        backgroundColor: Cores.branco,
+                        backgroundColor:
+                            Theme.of(context).scaffoldBackgroundColor,
                         textColor: Cores.azul,
                         onPressed: () {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => const Exames(),
+                              builder: (context) => Exames(),
                             ),
                           );
                         },
@@ -216,12 +234,12 @@ class _CuidadosState extends State<Cuidados> {
                   ),
                 ],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }

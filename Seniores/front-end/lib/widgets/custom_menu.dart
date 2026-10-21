@@ -45,11 +45,14 @@ class Menu extends StatelessWidget {
 
       //   break;
 
+      case 4:
+        proximaTela = const Notificacoes();
+        break;
       default:
         return;
     }
 
-    Navigator.pushReplacement(
+    Navigator.push(
       context,
       MaterialPageRoute(builder: (_) => proximaTela),
     );
@@ -61,7 +64,7 @@ class Menu extends StatelessWidget {
       currentIndex: paginaAtual,
       onTap: (index) => _navegar(context, index),
       type: BottomNavigationBarType.fixed,
-      backgroundColor: Colors.white,
+      backgroundColor: Theme.of(context).colorScheme.surface,
       selectedItemColor: Cores.azul,
       unselectedItemColor: Cores.cinza,
       selectedFontSize: 11,

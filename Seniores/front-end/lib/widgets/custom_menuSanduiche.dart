@@ -1,3 +1,7 @@
+import '../pages/tela_vinculos.dart';
+import '../pages/tela_conta.dart';
+import '../pages/tela_pdf.dart';
+import '../services/session_service.dart';
 import 'package:flutter/material.dart';
 import 'package:widgets/pages/cuidados/tela_cuidados.dart';
 import '../models/registroDiario.dart';
@@ -16,13 +20,59 @@ class MenuSanduiche extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final session = SessionService.instance;
+    if (session.tipoUsuario != 'paciente' &&
+        session.pacienteSelecionado == null) {
+      return Drawer(
+          child: SafeArea(
+              child: ListView(children: [
+        const ListTile(
+            title: Text('Selecione um paciente para acessar os cuidados.')),
+        ListTile(
+            title: const Text('Pacientes e vínculos'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                  context, MaterialPageRoute(builder: (_) => const Vinculos()));
+            }),
+        ListTile(
+            title: const Text('Minha conta'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const MinhaConta()));
+            }),
+        ListTile(
+            title: const Text('Configurações'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const Configuracoes()));
+            }),
+        ListTile(
+            title: const Text('Sair da conta'),
+            onTap: () => sairDaConta(context)),
+      ])));
+    }
     return Drawer(
       child: SafeArea(
         child: ListView(
           padding: const EdgeInsets.symmetric(vertical: 10),
           children: [
+            if (SessionService.instance.tipoUsuario != 'paciente')
+              _buildMenuItem(
+                  icon: Icons.people_alt,
+                  title: 'Pacientes e vínculos',
+                  onTap: () {
+                    Navigator.pop(context);
+                    Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => const Vinculos()));
+                  }),
+            _buildMenuItem(
+                icon: Icons.logout,
+                title: 'Sair da conta',
+                onTap: () => sairDaConta(context)),
             _buildSectionHeader("Cuidados"),
-
             _buildMenuItem(
               icon: Icons.medication,
               title: "Medicamentos",
@@ -44,41 +94,42 @@ class MenuSanduiche extends StatelessWidget {
                 );
               },
             ),
-          _buildMenuItem(
-            icon: Icons.calendar_today,
-            title: "Diário de saúde",
-            onTap: () async {
-              Navigator.pop(context); 
-              
-              try {
-                final apiService = ApiService();
-                final registros = await apiService.listarDiarios();
-                
-                if (context.mounted) {
-                  Registro? ultimoRegistro;
-                  if (registros.isNotEmpty) {
-                    ultimoRegistro = Registro.fromApiJson(registros.first);
+            _buildMenuItem(
+              icon: Icons.calendar_today,
+              title: "Diário de saúde",
+              onTap: () async {
+                Navigator.pop(context);
+
+                try {
+                  final apiService = ApiService();
+                  final registros = await apiService.listarDiarios();
+
+                  if (context.mounted) {
+                    Registro? ultimoRegistro;
+                    if (registros.isNotEmpty) {
+                      ultimoRegistro = Registro.fromApiJson(registros.first);
+                    }
+
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) =>
+                            Relatorio(registro: ultimoRegistro),
+                      ),
+                    );
                   }
-                  
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => Relatorio(registro: ultimoRegistro),
-                    ),
-                  );
+                } catch (_) {
+                  if (context.mounted) {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const Relatorio(),
+                      ),
+                    );
+                  }
                 }
-              } catch (_) {
-                if (context.mounted) {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const Relatorio(),
-                    ),
-                  );
-                }
-              }
-            },
-          ),
+              },
+            ),
             _buildMenuItem(
                 icon: Icons.people,
                 title: "Cuidadores",
@@ -120,7 +171,11 @@ class MenuSanduiche extends StatelessWidget {
             _buildMenuItem(
               icon: Icons.description,
               title: "Relatórios",
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const RelatoriosPdf()));
+              },
             ),
             const SizedBox(height: 20),
             _buildSectionHeader("Apoio"),
@@ -153,12 +208,20 @@ class MenuSanduiche extends StatelessWidget {
             _buildMenuItem(
               icon: Icons.settings,
               title: "Configurações",
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const Configuracoes()));
+              },
             ),
             _buildMenuItem(
               icon: Icons.account_circle,
               title: "Minha conta",
-              onTap: () {},
+              onTap: () {
+                Navigator.pop(context);
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (_) => const MinhaConta()));
+              },
             ),
           ],
         ),

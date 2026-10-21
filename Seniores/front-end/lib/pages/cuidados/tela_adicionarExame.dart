@@ -1,3 +1,4 @@
+import '../../services/draft_state.dart';
 import 'package:flutter/material.dart';
 import '../../models/exame.dart';
 import '../../widgets/custom_menu.dart';
@@ -15,10 +16,47 @@ class AdicionarExame extends StatefulWidget {
   State<AdicionarExame> createState() => _AdicionarExameState();
 }
 
-class _AdicionarExameState extends State<AdicionarExame> {
+class _AdicionarExameState extends State<AdicionarExame>
+    with DraftState<AdicionarExame> {
+  @override
+  Map<String, TextEditingController> get draftControllers => {
+        '_nomeExameController': _nomeExameController,
+        '_localController': _localController,
+        '_telefoneController': _telefoneController,
+        '_whatsappController': _whatsappController,
+        '_alertaController': _alertaController,
+        '_cepController': _cepController,
+        '_logradouroController': _logradouroController,
+        '_bairroController': _bairroController,
+        '_cidadeController': _cidadeController,
+        '_estadoController': _estadoController
+      };
+
+  @override
+  Map<String, dynamic> get draftValues => {
+        '_statusSelecionado': _statusSelecionado,
+        '_alertas': _alertas,
+        'data': _dataSelecionada?.toIso8601String(),
+        'hora': _horarioInicio.hour,
+        'minuto': _horarioInicio.minute
+      };
+
+  @override
+  void restoreDraftValues(Map<String, dynamic> v) {
+    if (v['_statusSelecionado'] != null)
+      _statusSelecionado = v['_statusSelecionado'] as int;
+    if (v['_alertas'] is List) {
+      _alertas.clear();
+      _alertas.addAll((v['_alertas'] as List).cast<String>());
+    }
+    _dataSelecionada = DateTime.tryParse(v['data'] ?? '');
+    if (v['hora'] is int)
+      _horarioInicio = TimeOfDay(hour: v['hora'], minute: v['minuto']);
+  }
+
   int _statusSelecionado = 0;
   DateTime? _dataSelecionada;
-  TimeOfDay _horarioInicio = const TimeOfDay(hour: 8, minute: 0);
+  TimeOfDay _horarioInicio = TimeOfDay(hour: 8, minute: 0);
 
   final TextEditingController _nomeExameController = TextEditingController();
   final TextEditingController _localController = TextEditingController();
@@ -67,6 +105,7 @@ class _AdicionarExameState extends State<AdicionarExame> {
 
   @override
   void dispose() {
+    saveDraftBeforeDispose();
     _nomeExameController.dispose();
     _localController.dispose();
     _telefoneController.dispose();
@@ -111,7 +150,7 @@ class _AdicionarExameState extends State<AdicionarExame> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text('Selecione o Estado',
+          title: Text('Selecione o Estado',
               style: TextStyle(color: Cores.azul, fontSize: 18)),
           content: SizedBox(
             width: double.maxFinite,
@@ -121,8 +160,8 @@ class _AdicionarExameState extends State<AdicionarExame> {
               itemBuilder: (context, index) {
                 final uf = _estadosBrasileiros[index];
                 return ListTile(
-                  title: Text(uf,
-                      style: const TextStyle(fontWeight: FontWeight.bold)),
+                  title:
+                      Text(uf, style: TextStyle(fontWeight: FontWeight.bold)),
                   onTap: () {
                     setState(() {
                       _estadoController.text = uf;
@@ -141,14 +180,14 @@ class _AdicionarExameState extends State<AdicionarExame> {
   Future<void> _salvarExame() async {
     if (_nomeExameController.text.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, informe o nome do exame.')),
+        SnackBar(content: Text('Por favor, informe o nome do exame.')),
       );
       return;
     }
 
     if (_dataSelecionada == null) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Por favor, selecione a data do exame.')),
+        SnackBar(content: Text('Por favor, selecione a data do exame.')),
       );
       return;
     }
@@ -180,6 +219,7 @@ class _AdicionarExameState extends State<AdicionarExame> {
     try {
       final salvo =
           await _apiService.criarRegistro('exames', novoExame.toJson());
+      await clearDraft();
       if (!mounted) return;
       Navigator.pop(
         context,
@@ -217,10 +257,10 @@ class _AdicionarExameState extends State<AdicionarExame> {
     }
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -228,16 +268,16 @@ class _AdicionarExameState extends State<AdicionarExame> {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
+                    constraints: BoxConstraints(),
+                    icon: Icon(
                       Icons.keyboard_double_arrow_left,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  AppText(
                     texto: 'Adicionar exame',
                     estilo: AppText.titulo,
                     tamanho: 22,
@@ -245,55 +285,54 @@ class _AdicionarExameState extends State<AdicionarExame> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              const AppText(
+              SizedBox(height: 24),
+              AppText(
                   texto: 'Nome do exame',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: 'Digite aqui...',
                 controller: _nomeExameController,
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Nome do local',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: 'Digite aqui...',
                 controller: _localController,
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Status',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               GrupoBotoes(
-                itens: const ['Agendada', 'Finalizada', 'Cancelada'],
+                itens: ['Agendada', 'Finalizada', 'Cancelada'],
                 selecionado: _statusSelecionado,
                 onSelecionado: (index) =>
                     setState(() => _statusSelecionado = index),
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Data do exame',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               GestureDetector(
                 onTap: () => _selecionarData(context),
                 child: Container(
-                  padding:
-                      const EdgeInsets.symmetric(vertical: 14, horizontal: 12),
+                  padding: EdgeInsets.symmetric(vertical: 14, horizontal: 12),
                   decoration: BoxDecoration(
-                    color: Colors.white,
+                    color: Theme.of(context).colorScheme.surface,
                     borderRadius: BorderRadius.circular(12),
                     border: Border.all(color: Colors.grey.shade300),
                   ),
@@ -309,19 +348,18 @@ class _AdicionarExameState extends State<AdicionarExame> {
                           fontSize: 14,
                         ),
                       ),
-                      const Icon(Icons.calendar_today,
-                          color: Cores.azul, size: 20),
+                      Icon(Icons.calendar_today, color: Cores.azul, size: 20),
                     ],
                   ),
                 ),
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Horário',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -333,27 +371,27 @@ class _AdicionarExameState extends State<AdicionarExame> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               CampoTexto(
                 hintText: 'CEP (00000-000)',
                 controller: _cepController,
                 keyboardType: TextInputType.number,
-                prefixIcon: const Icon(Icons.location_on_outlined),
+                prefixIcon: Icon(Icons.location_on_outlined),
                 inputFormatters: [Cep()],
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               CampoTexto(
                 hintText: 'Logradouro (Rua, Av...)',
                 controller: _logradouroController,
-                prefixIcon: const Icon(Icons.home_outlined),
+                prefixIcon: Icon(Icons.home_outlined),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               CampoTexto(
                 hintText: 'Bairro',
                 controller: _bairroController,
-                prefixIcon: const Icon(Icons.map_outlined),
+                prefixIcon: Icon(Icons.map_outlined),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 children: [
                   Expanded(
@@ -363,7 +401,7 @@ class _AdicionarExameState extends State<AdicionarExame> {
                       controller: _cidadeController,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     flex: 1,
                     child: GestureDetector(
@@ -378,36 +416,35 @@ class _AdicionarExameState extends State<AdicionarExame> {
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Número de telefone',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               CampoTexto(
                 hintText: '(xx) xxxxx-xxxx',
                 controller: _telefoneController,
                 keyboardType: TextInputType.phone,
-                prefixIcon:
-                    const Icon(Icons.phone, color: Cores.azul, size: 22),
+                prefixIcon: Icon(Icons.phone, color: Cores.azul, size: 22),
                 inputFormatters: [TelefoneInputFormatter()],
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               CampoTexto(
                 hintText: '(xx) xxxxx-xxxx',
                 controller: _whatsappController,
                 keyboardType: TextInputType.phone,
-                prefixIcon: const Icon(Icons.chat, color: Cores.azul, size: 22),
+                prefixIcon: Icon(Icons.chat, color: Cores.azul, size: 22),
                 inputFormatters: [TelefoneInputFormatter()],
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Alertas',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Row(
                 children: [
                   Expanded(
@@ -416,14 +453,14 @@ class _AdicionarExameState extends State<AdicionarExame> {
                       controller: _alertaController,
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
                       color: Colors.grey.shade300,
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.add, color: Colors.black),
+                      icon: Icon(Icons.add, color: Colors.black),
                       onPressed: () {
                         if (_alertaController.text.isNotEmpty) {
                           setState(() {
@@ -436,49 +473,48 @@ class _AdicionarExameState extends State<AdicionarExame> {
                   ),
                 ],
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
                 children: _alertas
                     .map((alerta) => Chip(
-                          label: Text(alerta,
-                              style: const TextStyle(fontSize: 12)),
+                          label: Text(alerta, style: TextStyle(fontSize: 12)),
                           backgroundColor: Colors.white,
                           shape: RoundedRectangleBorder(
                             borderRadius: BorderRadius.circular(20),
-                            side: const BorderSide(color: Colors.grey),
+                            side: BorderSide(color: Colors.grey),
                           ),
                         ))
                     .toList(),
               ),
-              const SizedBox(height: 16),
-              const AppText(
+              SizedBox(height: 16),
+              AppText(
                   texto: 'Pedido do exame',
                   tamanho: 14,
                   peso: FontWeight.bold,
                   cor: Cores.azul),
-              const SizedBox(height: 4),
-              const Text('Escolha ou escaneie o pedido',
+              SizedBox(height: 4),
+              Text('Escolha ou escaneie o pedido',
                   style: TextStyle(color: Colors.grey, fontSize: 12)),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.upload_file, size: 18),
-                    label: const Text('Upload'),
+                    icon: Icon(Icons.upload_file, size: 18),
+                    label: Text('Upload'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Cores.azul,
                       foregroundColor: Colors.white,
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   ElevatedButton.icon(
                     onPressed: () {},
-                    icon: const Icon(Icons.qr_code_scanner, size: 18),
-                    label: const Text('Escanear'),
+                    icon: Icon(Icons.qr_code_scanner, size: 18),
+                    label: Text('Escanear'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Cores.azul,
                       foregroundColor: Colors.white,
@@ -486,7 +522,7 @@ class _AdicionarExameState extends State<AdicionarExame> {
                   ),
                 ],
               ),
-              const SizedBox(height: 30),
+              SizedBox(height: 30),
               Center(
                 child: Botao(
                   texto: "Concluir",
@@ -499,28 +535,30 @@ class _AdicionarExameState extends State<AdicionarExame> {
                   onPressed: _salvando ? () {} : _salvarExame,
                 ),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 
   Widget _buildTimeBox({required String texto}) {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 14),
+      padding: EdgeInsets.symmetric(vertical: 14),
       alignment: Alignment.center,
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.grey.shade300),
       ),
       child: Text(
         texto,
-        style: const TextStyle(
-            color: Colors.black, fontSize: 14, fontWeight: FontWeight.bold),
+        style: TextStyle(
+            color: Theme.of(context).colorScheme.onSurface,
+            fontSize: 14,
+            fontWeight: FontWeight.bold),
       ),
     );
   }

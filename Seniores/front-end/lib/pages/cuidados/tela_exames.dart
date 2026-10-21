@@ -56,25 +56,31 @@ class _TelaExamesState extends State<Exames> {
     if (diferencaMinutos < 0) {
       return Cores.vermelho;
     } else if (diferencaMinutos <= 60) {
-      return Cores.amarelo; 
+      return Cores.amarelo;
     } else {
-      return Cores.azul; 
+      return Cores.azul;
     }
   }
 
+  final Set<String> _atualizando = {};
   Future<void> _alternarConclusao(Exame exame) async {
-    setState(() {
-      exame.concluido = !exame.concluido;
-      exame.historico = exame.concluido;
-    });
-
+    if (!_atualizando.add(exame.id)) return;
+    final novo = !exame.concluido;
     try {
-      await _apiService.atualizarRegistro('exames', exame.id, {
-        'concluido': exame.concluido,
-        'historico': exame.historico,
-      });
-    } catch (_) {
-      //Ignora silenciosamente falhas de rede para não interromper a experiência do utilizador
+      await _apiService.atualizarRegistro(
+          'exames', exame.id, {'concluido': novo, 'historico': novo});
+      if (mounted)
+        setState(() {
+          exame.concluido = novo;
+          exame.historico = novo;
+        });
+    } catch (e) {
+      if (mounted)
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(
+                e is ApiException ? e.message : 'Falha ao salvar o status.')));
+    } finally {
+      _atualizando.remove(exame.id);
     }
   }
 
@@ -85,10 +91,10 @@ class _TelaExamesState extends State<Exames> {
         .toList();
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -99,16 +105,16 @@ class _TelaExamesState extends State<Exames> {
                     children: [
                       IconButton(
                         padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: const Icon(
+                        constraints: BoxConstraints(),
+                        icon: Icon(
                           Icons.arrow_back_ios_new,
                           size: 28,
-                          color: Cores.preto,
+                          color: Theme.of(context).colorScheme.onSurface,
                         ),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const SizedBox(width: 8),
-                      const AppText(
+                      SizedBox(width: 8),
+                      AppText(
                         texto: 'Exames',
                         estilo: AppText.titulo,
                         tamanho: 24,
@@ -116,29 +122,29 @@ class _TelaExamesState extends State<Exames> {
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.edit_square, color: Cores.azul),
-                    onPressed: () {},
+                    icon: Icon(Icons.refresh, color: Cores.azul),
+                    onPressed: _carregar,
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               GrupoBotoes(
-                itens: const ['Próximas', 'Histórico'],
+                itens: ['Próximas', 'Histórico'],
                 selecionado: _abaSelecionada,
                 onSelecionado: (index) =>
                     setState(() => _abaSelecionada = index),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               ListView.builder(
                 shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
+                physics: NeverScrollableScrollPhysics(),
                 itemCount: examesFiltrados.length,
                 itemBuilder: (context, index) {
                   final exame = examesFiltrados[index];
                   final corDestaque = _obterCorExame(exame);
 
                   return Padding(
-                    padding: const EdgeInsets.only(bottom: 12.0),
+                    padding: EdgeInsets.only(bottom: 12.0),
                     child: _CardExameCustom(
                       exame: exame,
                       corTema: corDestaque,
@@ -147,7 +153,7 @@ class _TelaExamesState extends State<Exames> {
                   );
                 },
               ),
-              const SizedBox(height: 80),
+              SizedBox(height: 80),
             ],
           ),
         ),
@@ -156,16 +162,16 @@ class _TelaExamesState extends State<Exames> {
         onPressed: () async {
           final novoExame = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const AdicionarExame()),
+            MaterialPageRoute(builder: (_) => AdicionarExame()),
           );
           if (novoExame != null && novoExame is Exame) {
             setState(() => _todosExames.add(novoExame));
           }
         },
         backgroundColor: Cores.azul,
-        child: const Icon(Icons.add, color: Cores.branco),
+        child: Icon(Icons.add, color: Cores.branco),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }
@@ -183,8 +189,10 @@ class _CardExameCustom extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final String dataFormatada = "${exame.dataHora.day.toString().padLeft(2, '0')}/${exame.dataHora.month.toString().padLeft(2, '0')}";
-    final String horarioFormatado = "${exame.dataHora.hour.toString().padLeft(2, '0')}:00";
+    final String dataFormatada =
+        "${exame.dataHora.day.toString().padLeft(2, '0')}/${exame.dataHora.month.toString().padLeft(2, '0')}";
+    final String horarioFormatado =
+        "${exame.dataHora.hour.toString().padLeft(2, '0')}:00";
 
     return CardPadrao(
       child: Column(
@@ -201,22 +209,22 @@ class _CardExameCustom extends StatelessWidget {
                   cor: corTema,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
                   GestureDetector(
                     onTap: onConcluir,
                     child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 10, vertical: 4),
+                      padding:
+                          EdgeInsets.symmetric(horizontal: 10, vertical: 4),
                       decoration: BoxDecoration(
                         color: exame.concluido ? Colors.grey : corTema,
                         borderRadius: BorderRadius.circular(12),
                       ),
                       child: Text(
                         exame.concluido ? 'Concluída' : 'Concluir',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: Colors.white,
                           fontSize: 10,
                           fontWeight: FontWeight.bold,
@@ -224,26 +232,26 @@ class _CardExameCustom extends StatelessWidget {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   AppText(
                     texto: dataFormatada,
                     tamanho: 12,
                     peso: FontWeight.bold,
-                    cor: Cores.preto,
+                    cor: Theme.of(context).colorScheme.onSurface,
                   ),
                 ],
               ),
             ],
           ),
-          const SizedBox(height: 4),
+          SizedBox(height: 4),
           AppText(
             texto: exame.local,
             tamanho: 12,
             cor: Colors.grey,
           ),
-          const SizedBox(height: 12),
-          const Divider(height: 1, color: Cores.branco),
-          const SizedBox(height: 12),
+          SizedBox(height: 12),
+          Divider(height: 1, color: Cores.branco),
+          SizedBox(height: 12),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
@@ -255,7 +263,7 @@ class _CardExameCustom extends StatelessWidget {
                   cor: corTema,
                 ),
               ),
-              const SizedBox(width: 8),
+              SizedBox(width: 8),
               Row(
                 mainAxisSize: MainAxisSize.min,
                 children: [
@@ -278,7 +286,7 @@ class _CardExameCustom extends StatelessWidget {
                       );
                     },
                   ),
-                  const SizedBox(width: 6),
+                  SizedBox(width: 6),
                   Icon(Icons.location_on_outlined, color: corTema, size: 20),
                 ],
               ),

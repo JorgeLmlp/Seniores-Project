@@ -125,14 +125,19 @@ class _DicionarioScreenState extends State<Dicionario> {
 
   Future<void> _carregarDadosDicionario() async {
     try {
-      final destaquesRes = await _apiService.listarRegistros('dicionario/destaques');
-      final categoriasRes = await _apiService.listarRegistros('dicionario/categorias');
-      final recentesRes = await _apiService.listarRegistros('dicionario/recentes');
+      final destaquesRes =
+          await _apiService.listarRegistros('dicionario/destaques');
+      final categoriasRes =
+          await _apiService.listarRegistros('dicionario/categorias');
+      final recentesRes =
+          await _apiService.listarRegistros('dicionario/recentes');
 
       if (mounted) {
         setState(() {
-          _termosDestaque = destaquesRes.isNotEmpty ? destaquesRes : _termosDestaquePadrao;
-          _categorias = categoriasRes.isNotEmpty ? categoriasRes : _categoriasPadrao;
+          _termosDestaque =
+              destaquesRes.isNotEmpty ? destaquesRes : _termosDestaquePadrao;
+          _categorias =
+              categoriasRes.isNotEmpty ? categoriasRes : _categoriasPadrao;
           _recentes = recentesRes.isNotEmpty ? recentesRes : _historico;
           _carregando = false;
         });
@@ -158,12 +163,12 @@ class _DicionarioScreenState extends State<Dicionario> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: _carregando
-            ? const Center(child: CircularProgressIndicator())
+            ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
-                padding: const EdgeInsets.all(20.0),
+                padding: EdgeInsets.all(20.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -173,10 +178,13 @@ class _DicionarioScreenState extends State<Dicionario> {
                         Row(
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.arrow_back_ios_new, size: 24, color: Cores.preto),
+                              icon: Icon(Icons.arrow_back_ios_new,
+                                  size: 24,
+                                  color:
+                                      Theme.of(context).colorScheme.onSurface),
                               onPressed: () => Navigator.pop(context),
                             ),
-                            const AppText(
+                            AppText(
                               texto: 'Dicionario',
                               estilo: AppText.titulo,
                               tamanho: 24,
@@ -184,22 +192,22 @@ class _DicionarioScreenState extends State<Dicionario> {
                             ),
                           ],
                         ),
-                        const Icon(Icons.menu_book, color: Cores.azul, size: 28),
+                        Icon(Icons.menu_book, color: Cores.azul, size: 28),
                       ],
                     ),
-                    const SizedBox(height: 8),
-                    const Text(
+                    SizedBox(height: 8),
+                    Text(
                       'Encontre o significado de termos medicos de forma simples e confiavel',
                       style: TextStyle(color: Cores.cinza, fontSize: 13),
                     ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     CampoTexto(
                       hintText: 'Buscar no dicionario...',
                       controller: _buscaController,
-                      prefixIcon: const Icon(Icons.search, color: Cores.cinza),
+                      prefixIcon: Icon(Icons.search, color: Cores.cinza),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    Text(
                       'Termos em destaque',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -207,7 +215,7 @@ class _DicionarioScreenState extends State<Dicionario> {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     SizedBox(
                       height: 145,
                       child: ListView.builder(
@@ -215,35 +223,41 @@ class _DicionarioScreenState extends State<Dicionario> {
                         itemCount: _termosDestaque.length,
                         itemBuilder: (context, index) {
                           final item = _termosDestaque[index];
-                          final IconData icone = item['icone'] is IconData ? item['icone'] : Icons.favorite;
-                          final Color cor = item['cor'] is Color ? item['cor'] : Cores.azul;
+                          final IconData icone = item['icone'] is IconData
+                              ? item['icone']
+                              : Icons.favorite;
+                          final Color cor =
+                              item['cor'] is Color ? item['cor'] : Cores.azul;
 
                           return Container(
                             width: 155,
-                            margin: const EdgeInsets.only(right: 12),
+                            margin: EdgeInsets.only(right: 12),
                             child: CardPadrao(
                               child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 10.0, vertical: 8.0),
+                                padding: EdgeInsets.symmetric(
+                                    horizontal: 10.0, vertical: 8.0),
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
                                     Icon(icone, color: cor, size: 22),
-                                    const SizedBox(height: 4),
+                                    SizedBox(height: 4),
                                     Text(
                                       item['titulo'] ?? '',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontWeight: FontWeight.bold,
                                         fontSize: 13,
-                                        color: Cores.preto,
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface,
                                       ),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                     ),
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: 2),
                                     Text(
                                       item['descricao'] ?? '',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         color: Cores.cinza,
                                         fontSize: 10,
                                       ),
@@ -258,8 +272,8 @@ class _DicionarioScreenState extends State<Dicionario> {
                         },
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    Text(
                       'Navegar por categoria',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -267,40 +281,46 @@ class _DicionarioScreenState extends State<Dicionario> {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     CardPadrao(
                       child: ListView.separated(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: NeverScrollableScrollPhysics(),
                         itemCount: _categorias.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+                        separatorBuilder: (context, index) =>
+                            Divider(height: 1, color: Colors.black12),
                         itemBuilder: (context, index) {
                           final cat = _categorias[index];
-                          final IconData icone = cat['icone'] is IconData ? cat['icone'] : Icons.favorite;
-                          final Color cor = cat['cor'] is Color ? cat['cor'] : Cores.azul;
+                          final IconData icone = cat['icone'] is IconData
+                              ? cat['icone']
+                              : Icons.favorite;
+                          final Color cor =
+                              cat['cor'] is Color ? cat['cor'] : Cores.azul;
 
                           return ListTile(
                             leading: Icon(icone, color: cor),
                             title: Text(
                               cat['titulo'] ?? '',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: Cores.preto,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             subtitle: Text(
                               cat['subtitulo'] ?? '',
-                              style: const TextStyle(color: Cores.cinza, fontSize: 11),
+                              style:
+                                  TextStyle(color: Cores.cinza, fontSize: 11),
                             ),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Cores.azul),
+                            trailing: Icon(Icons.arrow_forward_ios,
+                                size: 14, color: Cores.azul),
                             onTap: () {},
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 24),
-                    const Text(
+                    SizedBox(height: 24),
+                    Text(
                       'Recentes',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
@@ -308,41 +328,44 @@ class _DicionarioScreenState extends State<Dicionario> {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     CardPadrao(
                       child: ListView.separated(
                         shrinkWrap: true,
-                        physics: const NeverScrollableScrollPhysics(),
+                        physics: NeverScrollableScrollPhysics(),
                         itemCount: _recentes.length,
-                        separatorBuilder: (context, index) => const Divider(height: 1, color: Colors.black12),
+                        separatorBuilder: (context, index) =>
+                            Divider(height: 1, color: Colors.black12),
                         itemBuilder: (context, index) {
                           final rec = _recentes[index];
                           return ListTile(
-                            leading: const Icon(Icons.access_time, color: Cores.azul),
+                            leading: Icon(Icons.access_time, color: Cores.azul),
                             title: Text(
                               rec['titulo'] ?? '',
-                              style: const TextStyle(
+                              style: TextStyle(
                                 fontWeight: FontWeight.bold,
                                 fontSize: 14,
-                                color: Cores.preto,
+                                color: Theme.of(context).colorScheme.onSurface,
                               ),
                             ),
                             subtitle: Text(
                               rec['descricao'] ?? '',
-                              style: const TextStyle(color: Cores.cinza, fontSize: 11),
+                              style:
+                                  TextStyle(color: Cores.cinza, fontSize: 11),
                             ),
-                            trailing: const Icon(Icons.arrow_forward_ios, size: 14, color: Cores.azul),
+                            trailing: Icon(Icons.arrow_forward_ios,
+                                size: 14, color: Cores.azul),
                             onTap: () {},
                           );
                         },
                       ),
                     ),
-                    const SizedBox(height: 80),
+                    SizedBox(height: 80),
                   ],
                 ),
               ),
-            ),
-            bottomNavigationBar: const Menu(paginaAtual: 0),
-          );
-        }
-      }
+      ),
+      bottomNavigationBar: Menu(paginaAtual: 0),
+    );
+  }
+}

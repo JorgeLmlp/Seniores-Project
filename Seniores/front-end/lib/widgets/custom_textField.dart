@@ -31,11 +31,28 @@ class _CampoTextoState extends State<CampoTexto> {
   void initState() {
     super.initState();
 
-    widget.controller?.addListener(() {
-      setState(() {
-        temTexto = widget.controller!.text.isNotEmpty;
-      });
-    });
+    temTexto = widget.controller?.text.isNotEmpty ?? false;
+    widget.controller?.addListener(_atualizarTexto);
+  }
+
+  void _atualizarTexto() {
+    if (mounted)
+      setState(() => temTexto = widget.controller?.text.isNotEmpty ?? false);
+  }
+
+  @override
+  void didUpdateWidget(covariant CampoTexto oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.controller != widget.controller) {
+      oldWidget.controller?.removeListener(_atualizarTexto);
+      widget.controller?.addListener(_atualizarTexto);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller?.removeListener(_atualizarTexto);
+    super.dispose();
   }
 
   @override

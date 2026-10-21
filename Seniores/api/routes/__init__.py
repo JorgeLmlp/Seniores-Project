@@ -10,7 +10,11 @@ from .paciente.registros_app import registros_appbp
 from .paciente.cuidados import cuidadosbp
 from .paciente.exames_documentos import exames_documentosbp
 from .paciente.relatorios import relatoriosbp
+from .relacionamento.solicitacoes import solicitacoesbp
+from .medicamento.doses import dosesbp
 blueprints = [
+        solicitacoesbp,
+        dosesbp,
         # A ordem nao altera as URLs; ela apenas organiza os grupos de rotas.
         registrarbp, 
         usuariosbp,

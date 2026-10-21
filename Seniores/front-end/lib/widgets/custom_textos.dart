@@ -43,7 +43,16 @@ class AppText extends StatelessWidget {
       style: estiloBase.copyWith(
         fontSize: tamanho ?? estiloBase.fontSize,
         fontWeight: peso ?? estiloBase.fontWeight,
-        color: cor ?? estiloBase.color ?? Colors.black,
+        color: Theme.of(context).brightness == Brightness.dark &&
+                (cor == null ||
+                    cor == const Color(0xFF2D3436) ||
+                    cor == Colors.black87 ||
+                    cor == Colors.black ||
+                    cor == const Color(0xFF636E72))
+            ? Theme.of(context).colorScheme.onSurface
+            : cor ??
+                estiloBase.color ??
+                Theme.of(context).colorScheme.onSurface,
         fontFamily: 'Inter',
       ),
     );

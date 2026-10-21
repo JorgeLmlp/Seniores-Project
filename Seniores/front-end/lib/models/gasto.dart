@@ -14,6 +14,7 @@ class Gasto {
   });
 
   factory Gasto.fromMap(Map<String, dynamic> map) {
+    map = {...map, ...?map['dados'] as Map<String, dynamic>?};
     return Gasto(
       id: map['id']?.toString() ?? '',
       categoria: map['categoria'] ?? '',

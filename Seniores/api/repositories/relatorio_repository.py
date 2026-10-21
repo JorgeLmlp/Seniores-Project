@@ -33,6 +33,7 @@ def _registro_app_no_mes(registro, inicio, fim):
 
 
 def consultar_historico_mensal(paciente_id, ano, mes):
+    from routes.medicamento.doses import Dose
     paciente = db.session.get(Paciente, paciente_id)
     if not paciente:
         return None
@@ -46,6 +47,9 @@ def consultar_historico_mensal(paciente_id, ano, mes):
     ).all()
     return {
         "paciente": paciente,
+        "doses": db.session.execute(db.select(Dose, Remedio.nome).join(Remedio, Dose.medicamento_id == Remedio.id).where(
+            Remedio.paciente_id == paciente_id, Dose.data >= inicio.date().isoformat(), Dose.data < fim.date().isoformat()
+        ).order_by(Dose.data, Dose.horario)).all(),
         "periodo": {"ano": ano, "mes": mes, "inicio": inicio, "fim": fim},
         # Medicamentos, dieta, contatos e estoque sao o retrato vigente no periodo do relatorio.
         "medicamentos": _listar(Remedio, paciente_id, ordem=Remedio.nome),

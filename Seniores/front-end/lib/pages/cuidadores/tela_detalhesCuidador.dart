@@ -15,29 +15,29 @@ class DetalheCuidador extends StatelessWidget {
     final diasFrequencia = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Cores.preto, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const AppText(
+                  AppText(
                       texto: 'Cuidador', estilo: AppText.titulo, tamanho: 24),
                 ],
               ),
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
                 children: [
                   CardPadrao(
                     child: Column(
@@ -48,10 +48,10 @@ class DetalheCuidador extends StatelessWidget {
                             CircleAvatar(
                               radius: 28,
                               backgroundColor: Cores.cinza.withOpacity(0.2),
-                              child: const Icon(Icons.person,
+                              child: Icon(Icons.person,
                                   color: Cores.cinza, size: 34),
                             ),
-                            const SizedBox(width: 14),
+                            SizedBox(width: 14),
                             Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -69,13 +69,13 @@ class DetalheCuidador extends StatelessWidget {
                               ),
                             ),
                             IconButton(
-                              icon: const Icon(Icons.edit_outlined,
-                                  color: Cores.azul),
+                              icon:
+                                  Icon(Icons.edit_outlined, color: Cores.azul),
                               onPressed: () {},
                             ),
                           ],
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         AppText(
                           texto:
                               '${cuidador.frequenciaResumida} - ${cuidador.horaInicio} ás ${cuidador.horaFim}',
@@ -83,7 +83,7 @@ class DetalheCuidador extends StatelessWidget {
                           tamanho: 13,
                           peso: FontWeight.w600,
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         AppText(
                           texto: cuidador.observacoes.isEmpty
                               ? 'Nenhuma observação informada'
@@ -92,17 +92,16 @@ class DetalheCuidador extends StatelessWidget {
                           tamanho: 12,
                           cor: Cores.cinza,
                         ),
-                        const SizedBox(height: 16),
+                        SizedBox(height: 16),
                         Row(
                           children: [
-                            const Icon(Icons.phone,
-                                color: Cores.azul, size: 16),
-                            const SizedBox(width: 6),
+                            Icon(Icons.phone, color: Cores.azul, size: 16),
+                            SizedBox(width: 6),
                             Text(
                               cuidador.telefone1.isEmpty
                                   ? 'Não informado'
                                   : cuidador.telefone1,
-                              style: const TextStyle(
+                              style: TextStyle(
                                   color: Cores.azul,
                                   fontSize: 12,
                                   fontWeight: FontWeight.bold),
@@ -110,15 +109,15 @@ class DetalheCuidador extends StatelessWidget {
                           ],
                         ),
                         if (cuidador.telefone2.isNotEmpty) ...[
-                          const SizedBox(height: 8),
+                          SizedBox(height: 8),
                           Row(
                             children: [
-                              const Icon(Icons.chat_bubble_outline,
+                              Icon(Icons.chat_bubble_outline,
                                   color: Cores.azul, size: 16),
-                              const SizedBox(width: 6),
+                              SizedBox(width: 6),
                               Text(
                                 cuidador.telefone2,
-                                style: const TextStyle(
+                                style: TextStyle(
                                     color: Cores.azul,
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold),
@@ -129,13 +128,13 @@ class DetalheCuidador extends StatelessWidget {
                       ],
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const AppText(
+                  SizedBox(height: 16),
+                  AppText(
                       texto: 'Frequência',
                       estilo: AppText.subtitulo,
                       tamanho: 16,
                       cor: Cores.azul),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(diasFrequencia.length, (index) {
@@ -170,7 +169,7 @@ class DetalheCuidador extends StatelessWidget {
           ],
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }

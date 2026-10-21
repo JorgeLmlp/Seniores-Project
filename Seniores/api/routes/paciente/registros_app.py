@@ -11,7 +11,7 @@ from controllers.paciente.registro_app_controller import (
 
 registros_appbp = Blueprint("registros_app", __name__)
 
-for recurso in ("consultas", "exames", "cuidadores", "destinatarios", "comunicados"):
+for recurso in ("consultas", "exames", "cuidadores", "destinatarios", "comunicados", "gastos"):
     colecao = f"/pacientes/<int:paciente_id>/{recurso}"
     registros_appbp.add_url_rule(
         colecao,

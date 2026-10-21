@@ -1,67 +1,98 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
-import '../../utils/cores.dart';
+import 'package:fl_chart/fl_chart.dart';
+import '../services/api_service.dart';
 
-class GraficoEstatisticas extends StatelessWidget {
+class GraficoEstatisticas extends StatefulWidget {
   const GraficoEstatisticas({super.key});
+  @override
+  State<GraficoEstatisticas> createState() => _GraficoEstatisticasState();
+}
+
+class _GraficoEstatisticasState extends State<GraficoEstatisticas> {
+  late Future<List<Map<String, dynamic>>> registros;
+  @override
+  void initState() {
+    super.initState();
+    registros = ApiService().listarDiarios();
+  }
 
   @override
-  Widget build(BuildContext context) {
-    return LineChart(
-      LineChartData(
-        gridData: FlGridData(show: false),
-        titlesData: FlTitlesData(show: false),
-        borderData: FlBorderData(show: false),
-        lineBarsData: [
-          _criarLinha([
-            const FlSpot(0, 1),
-            const FlSpot(1, 1.5),
-            const FlSpot(2, 1.2),
-            const FlSpot(3, 3.5),
-            const FlSpot(4, 2),
-            const FlSpot(5, 1),
-            const FlSpot(6, 2.5),
-          ], Cores.azul),
-          _criarLinha([
-            const FlSpot(0, 2.5),
-            const FlSpot(1, 3),
-            const FlSpot(2, 2),
-            const FlSpot(3, 1),
-            const FlSpot(4, 0.5),
-            const FlSpot(5, 2.5),
-            const FlSpot(6, 3.8),
-          ], Cores.verde),
-          _criarLinha([
-            const FlSpot(0, 1.5),
-            const FlSpot(1, 1.8),
-            const FlSpot(2, 2.8),
-            const FlSpot(3, 3),
-            const FlSpot(4, 2.5),
-            const FlSpot(5, 1.2),
-            const FlSpot(6, 0.8),
-          ], Cores.amarelo),
-          _criarLinha([
-            const FlSpot(0, 0.5),
-            const FlSpot(1, 2.2),
-            const FlSpot(2, 3.6),
-            const FlSpot(3, 3.2),
-            const FlSpot(4, 2.8),
-            const FlSpot(5, 3.4),
-            const FlSpot(6, 3.9),
-          ], Cores.vermelho),
-        ],
-      ),
-    );
-  }
-
-  LineChartBarData _criarLinha(List<FlSpot> pontos, Color cor) {
-    return LineChartBarData(
-      spots: pontos,
-      isCurved: true,
-      color: cor,
-      barWidth: 2.5,
-      isStrokeCapRound: true,
-      dotData: FlDotData(show: false),
-    );
-  }
+  Widget build(BuildContext context) => FutureBuilder<
+          List<Map<String, dynamic>>>(
+      future: registros,
+      builder: (context, snap) {
+        if (snap.connectionState != ConnectionState.done)
+          return const Center(child: CircularProgressIndicator());
+        if (snap.hasError)
+          return Center(
+              child: TextButton(
+                  onPressed: () =>
+                      setState(() => registros = ApiService().listarDiarios()),
+                  child: const Text('Falha ao carregar. Tentar novamente')));
+        final dados = [...snap.data!]..sort((a, b) => (a['data_criacao'] ?? '')
+            .toString()
+            .compareTo((b['data_criacao'] ?? '').toString()));
+        if (dados.isEmpty)
+          return const Center(
+              child: Text('Registre um diário para visualizar o gráfico.'));
+        const campos = {
+          'humor_nivel': 'Humor',
+          'dor_nivel': 'Dor',
+          'apetite_nivel': 'Apetite',
+          'mobilidade_nivel': 'Mobilidade'
+        };
+        const cores = [Colors.blue, Colors.orange, Colors.green, Colors.purple];
+        final linhas = <LineChartBarData>[];
+        var indice = 0;
+        for (final campo in campos.keys) {
+          final pontos = <FlSpot>[];
+          for (var i = 0; i < dados.length; i++) {
+            final valor = dados[i][campo];
+            if (valor is num)
+              pontos.add(FlSpot(i.toDouble(), valor.toDouble()));
+          }
+          linhas.add(LineChartBarData(
+              spots: pontos,
+              color: cores[indice++],
+              barWidth: 2,
+              isCurved: false,
+              dotData: const FlDotData(show: true)));
+        }
+        if (linhas.every((l) => l.spots.isEmpty))
+          return const Center(
+              child: Text(
+                  'Os registros antigos não possuem níveis numéricos. Adicione um novo diário.'));
+        return Column(children: [
+          Expanded(
+              child: LineChart(LineChartData(
+            minY: 0,
+            maxY: 10,
+            minX: 0,
+            maxX: dados.length == 1 ? 1 : (dados.length - 1).toDouble(),
+            titlesData: const FlTitlesData(show: false),
+            borderData: FlBorderData(show: false),
+            lineBarsData: linhas,
+            lineTouchData: LineTouchData(
+                touchTooltipData: LineTouchTooltipData(
+                    getTooltipItems: (spots) => spots.map((s) {
+                          final raw =
+                              dados[s.x.toInt()]['data_criacao']?.toString() ??
+                                  '';
+                          final date = DateTime.tryParse(raw);
+                          final label = date == null
+                              ? raw
+                              : '${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}';
+                          return LineTooltipItem(
+                              '$label\n${campos.values.elementAt(s.barIndex)}: ${s.y}',
+                              const TextStyle(color: Colors.white));
+                        }).toList())),
+          ))),
+          const SizedBox(height: 12),
+          Wrap(spacing: 12, children: [
+            for (var i = 0; i < campos.length; i++)
+              Text(campos.values.elementAt(i),
+                  style: TextStyle(color: cores[i]))
+          ])
+        ]);
+      });
 }

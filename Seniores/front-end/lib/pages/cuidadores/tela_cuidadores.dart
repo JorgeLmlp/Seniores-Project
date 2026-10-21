@@ -58,24 +58,24 @@ class _TelaCuidadosState extends State<Cuidadores> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Cores.preto, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 20),
                     onPressed: () => Navigator.canPop(context)
                         ? Navigator.pop(context)
                         : null,
                   ),
-                  const AppText(
+                  AppText(
                       texto: 'Cuidadores', estilo: AppText.titulo, tamanho: 24),
                 ],
               ),
@@ -83,13 +83,13 @@ class _TelaCuidadosState extends State<Cuidadores> {
             Center(
               child: SingleChildScrollView(
                 scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.symmetric(horizontal: 16),
+                padding: EdgeInsets.symmetric(horizontal: 16),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: List.generate(dias.length, (index) {
                     final selecionado = index == diaSelecionado;
                     return Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 4.0),
+                      padding: EdgeInsets.symmetric(horizontal: 4.0),
                       child: GestureDetector(
                         onTap: () => setState(() => diaSelecionado = index),
                         child: Container(
@@ -134,8 +134,7 @@ class _TelaCuidadosState extends State<Cuidadores> {
             ),
             Expanded(
               child: ListView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                 children: [
                   GestureDetector(
                     onTap: () => Navigator.push(
@@ -152,10 +151,10 @@ class _TelaCuidadosState extends State<Cuidadores> {
                               CircleAvatar(
                                 radius: 22,
                                 backgroundColor: Cores.cinza.withOpacity(0.2),
-                                child: const Icon(Icons.person,
+                                child: Icon(Icons.person,
                                     color: Cores.cinza, size: 26),
                               ),
-                              const SizedBox(width: 12),
+                              SizedBox(width: 12),
                               Expanded(
                                 child: Column(
                                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -174,13 +173,13 @@ class _TelaCuidadosState extends State<Cuidadores> {
                                 ),
                               ),
                               Container(
-                                padding: const EdgeInsets.symmetric(
+                                padding: EdgeInsets.symmetric(
                                     horizontal: 12, vertical: 4),
                                 decoration: BoxDecoration(
                                   color: Cores.azul,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
-                                child: const Text('Agora',
+                                child: Text('Agora',
                                     style: TextStyle(
                                         color: Colors.white,
                                         fontSize: 11,
@@ -188,7 +187,7 @@ class _TelaCuidadosState extends State<Cuidadores> {
                               ),
                             ],
                           ),
-                          const Padding(
+                          Padding(
                             padding: EdgeInsets.symmetric(vertical: 12.0),
                             child: Divider(height: 1),
                           ),
@@ -200,7 +199,7 @@ class _TelaCuidadosState extends State<Cuidadores> {
                             tamanho: 11,
                             cor: Cores.cinza,
                           ),
-                          const SizedBox(height: 10),
+                          SizedBox(height: 10),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
@@ -234,15 +233,15 @@ class _TelaCuidadosState extends State<Cuidadores> {
                       ),
                     ),
                   ),
-                  const SizedBox(height: 16),
-                  const AppText(
+                  SizedBox(height: 16),
+                  AppText(
                       texto: 'Próximos cuidadores',
                       estilo: AppText.subtitulo,
                       tamanho: 16,
                       cor: Cores.azul),
-                  const SizedBox(height: 8),
+                  SizedBox(height: 8),
                   ...proximosCuidadores.map((c) => Container(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: EdgeInsets.only(bottom: 12),
                         child: GestureDetector(
                           onTap: () => Navigator.push(
                               context,
@@ -250,16 +249,16 @@ class _TelaCuidadosState extends State<Cuidadores> {
                                   builder: (_) =>
                                       DetalheCuidador(cuidador: c))),
                           child: CardPadrao(
-                            padding: const EdgeInsets.all(12),
+                            padding: EdgeInsets.all(12),
                             child: Row(
                               children: [
                                 CircleAvatar(
                                   radius: 20,
                                   backgroundColor: Cores.cinza.withOpacity(0.2),
-                                  child: const Icon(Icons.person,
+                                  child: Icon(Icons.person,
                                       color: Cores.cinza, size: 24),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -275,7 +274,7 @@ class _TelaCuidadosState extends State<Cuidadores> {
                                           estilo: AppText.corpo,
                                           tamanho: 12,
                                           cor: Cores.cinza),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       AppText(
                                         texto: c.observacoes.isNotEmpty
                                             ? c.observacoes
@@ -296,7 +295,7 @@ class _TelaCuidadosState extends State<Cuidadores> {
                                         estilo: AppText.corpo,
                                         tamanho: 12,
                                         peso: FontWeight.bold),
-                                    const SizedBox(height: 4),
+                                    SizedBox(height: 4),
                                     SizedBox(
                                       height: 28,
                                       width: 90,
@@ -322,8 +321,8 @@ class _TelaCuidadosState extends State<Cuidadores> {
                           ),
                         ),
                       )),
-                  const SizedBox(height: 8),
-                  const Row(
+                  SizedBox(height: 8),
+                  Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(Icons.warning_amber_rounded,
@@ -336,24 +335,22 @@ class _TelaCuidadosState extends State<Cuidadores> {
                               fontWeight: FontWeight.bold)),
                     ],
                   ),
-                  const SizedBox(height: 12),
+                  SizedBox(height: 12),
                   Botao(
                     texto: 'Ver todos cuidadores',
                     fontSize: 14,
                     borderRadius: 10,
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => const ListaCuidadores())),
+                    onPressed: () => Navigator.push(context,
+                        MaterialPageRoute(builder: (_) => ListaCuidadores())),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                 ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }

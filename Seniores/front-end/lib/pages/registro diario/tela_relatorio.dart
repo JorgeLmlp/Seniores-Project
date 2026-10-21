@@ -23,32 +23,39 @@ class Relatorio extends StatefulWidget {
 class _RelatorioState extends State<Relatorio> {
   late Registro dadosRegistro;
   bool _carregando = true;
-  final ApiService _apiService = ApiService(); // Certifique-se de importar o api_service.dart
+  bool _temRegistro = false;
+  String? _erro;
+  final ApiService _apiService =
+      ApiService(); // Certifique-se de importar o api_service.dart
 
   @override
   void initState() {
     super.initState();
     if (widget.registro != null) {
       dadosRegistro = widget.registro!;
+      _temRegistro = true;
       _carregando = false;
     } else {
       _carregarUltimoRegistro();
     }
   }
 
-Future<void> _carregarUltimoRegistro() async {
+  Future<void> _carregarUltimoRegistro() async {
     try {
       final registros = await _apiService.listarDiarios();
       if (registros.isNotEmpty && mounted) {
         final ultimo = registros.first;
-        
+
         setState(() {
           dadosRegistro = Registro.fromApiJson(ultimo);
+          _temRegistro = true;
         });
       } else {
         dadosRegistro = Registro(humor: 0, dor: 0, apetite: 0, mobilidade: 0);
       }
-    } catch (_) {
+    } catch (e) {
+      _erro =
+          e is ApiException ? e.message : 'Não foi possível carregar o diário.';
       dadosRegistro = Registro(humor: 0, dor: 0, apetite: 0, mobilidade: 0);
     } finally {
       if (mounted) setState(() => _carregando = false);
@@ -57,66 +64,96 @@ Future<void> _carregarUltimoRegistro() async {
 
   @override
   Widget build(BuildContext context) {
+    if (!_carregando && (!_temRegistro || _erro != null)) {
+      return Scaffold(
+          appBar: AppBar(title: const Text('Diário de saúde')),
+          body: Center(
+              child: Padding(
+                  padding: const EdgeInsets.all(24),
+                  child: Column(mainAxisSize: MainAxisSize.min, children: [
+                    Text(_erro ??
+                        'Nenhum diário registrado para este paciente.'),
+                    const SizedBox(height: 16),
+                    FilledButton(
+                        onPressed: () async {
+                          if (_erro == null)
+                            await Navigator.push(
+                                context,
+                                MaterialPageRoute(
+                                    builder: (_) => const RegistroDiario()));
+                          if (!mounted) return;
+                          setState(() {
+                            _carregando = true;
+                            _erro = null;
+                          });
+                          await _carregarUltimoRegistro();
+                        },
+                        child: Text(_erro == null
+                            ? 'Adicionar registro'
+                            : 'Tentar novamente')),
+                  ]))),
+          bottomNavigationBar: const Menu(paginaAtual: 3));
+    }
     if (_carregando) {
       return Scaffold(
-        backgroundColor: Cores.fundoTela,
-        body: const Center(child: CircularProgressIndicator()),
+        backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+        body: Center(child: CircularProgressIndicator()),
       );
     }
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(
-                    horizontal: 24.0, vertical: 16.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
                       children: [
                         IconButton(
-                          icon: const Icon(Icons.arrow_back_ios_new,
-                              color: Cores.preto),
-                          onPressed: () => Navigator.pop(context, dadosRegistro),
+                          icon: Icon(Icons.arrow_back_ios_new,
+                              color: Theme.of(context).colorScheme.onSurface),
+                          onPressed: () =>
+                              Navigator.pop(context, dadosRegistro),
                         ),
-                        const Text(
+                        Text(
                           'Relatório',
                           style: TextStyle(
                             fontSize: 24,
                             fontWeight: FontWeight.bold,
-                            color: Cores.preto,
+                            color: Theme.of(context).colorScheme.onSurface,
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 12),
+                    SizedBox(height: 12),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Text(
                           ' ${dadosRegistro.dataFormatada ?? "Hoje"}',
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
                             color: Cores.azul,
                           ),
                         ),
                         Container(
-                          padding: const EdgeInsets.all(6),
-                          decoration: const BoxDecoration(
+                          padding: EdgeInsets.all(6),
+                          decoration: BoxDecoration(
                             color: Cores.azul,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(Icons.calendar_today,
+                          child: Icon(Icons.calendar_today,
                               color: Cores.branco, size: 18),
                         ),
                       ],
                     ),
-                    const Divider(thickness: 1, height: 24, color: Cores.cinza),
+                    Divider(thickness: 1, height: 24, color: Cores.cinza),
                     BarraIndicador(
                         label: 'Humor', valor: dadosRegistro.humor.toDouble()),
                     BarraIndicador(
@@ -129,8 +166,8 @@ Future<void> _carregarUltimoRegistro() async {
                     BarraIndicador(
                         label: 'Mobilidade',
                         valor: dadosRegistro.mobilidade.toDouble()),
-                    const SizedBox(height: 16),
-                    const Text(
+                    SizedBox(height: 16),
+                    Text(
                       'Observações',
                       style: TextStyle(
                         fontSize: 16,
@@ -138,16 +175,16 @@ Future<void> _carregarUltimoRegistro() async {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 4),
+                    SizedBox(height: 4),
                     Text(
                       (dadosRegistro.observacoes != null &&
                               dadosRegistro.observacoes!.isNotEmpty)
                           ? dadosRegistro.observacoes!
                           : 'Sem observações registradas.',
-                      style: const TextStyle(color: Cores.cinza, fontSize: 14),
+                      style: TextStyle(color: Cores.cinza, fontSize: 14),
                     ),
-                    const SizedBox(height: 16),
-                    const Text(
+                    SizedBox(height: 16),
+                    Text(
                       'Incidentes',
                       style: TextStyle(
                         fontSize: 16,
@@ -155,12 +192,12 @@ Future<void> _carregarUltimoRegistro() async {
                         color: Cores.azul,
                       ),
                     ),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     if (dadosRegistro.listaIncidentes != null &&
                         dadosRegistro.listaIncidentes!.isNotEmpty)
                       ...dadosRegistro.listaIncidentes!
                           .map((incidente) => Padding(
-                                padding: const EdgeInsets.only(bottom: 6.0),
+                                padding: EdgeInsets.only(bottom: 6.0),
                                 child: Row(
                                   children: [
                                     Icon(
@@ -170,7 +207,7 @@ Future<void> _carregarUltimoRegistro() async {
                                           : Cores.amarelo,
                                       size: 18,
                                     ),
-                                    const SizedBox(width: 6),
+                                    SizedBox(width: 6),
                                     Expanded(
                                       child: Text(
                                         '${incidente.titulo} às ${incidente.hora} ${incidente.descricao}',
@@ -187,11 +224,11 @@ Future<void> _carregarUltimoRegistro() async {
                                 ),
                               ))
                     else
-                      const Text(
+                      Text(
                         'Nenhum incidente registrado hoje.',
                         style: TextStyle(color: Cores.cinza, fontSize: 13),
                       ),
-                    const SizedBox(height: 20),
+                    SizedBox(height: 20),
                     Center(
                       child: Botao(
                         texto: 'Editar',
@@ -205,7 +242,8 @@ Future<void> _carregarUltimoRegistro() async {
                           final resultado = await Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (context) => RegistroDiario(registroParaEditar: dadosRegistro),
+                              builder: (context) => RegistroDiario(
+                                  registroParaEditar: dadosRegistro),
                             ),
                           );
 
@@ -217,14 +255,14 @@ Future<void> _carregarUltimoRegistro() async {
                         },
                       ),
                     ),
-                    const SizedBox(height: 16),
+                    SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text(
+                            Text(
                               'Tendência',
                               style: TextStyle(
                                 fontSize: 16,
@@ -232,15 +270,18 @@ Future<void> _carregarUltimoRegistro() async {
                                 color: Cores.azul,
                               ),
                             ),
-                            const SizedBox(height: 4),
+                            SizedBox(height: 4),
                             Row(
                               children: [
-                                const Icon(Icons.trending_down,
+                                Icon(Icons.trending_down,
                                     color: Cores.vermelho, size: 18),
-                                const SizedBox(width: 4),
+                                SizedBox(width: 4),
                                 Text(
                                   dadosRegistro.tendencia ?? 'Estável',
-                                  style: const TextStyle(color: Cores.preto),
+                                  style: TextStyle(
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface),
                                 ),
                               ],
                             ),
@@ -249,7 +290,7 @@ Future<void> _carregarUltimoRegistro() async {
                         ElevatedButton(
                           style: ElevatedButton.styleFrom(
                             backgroundColor: Cores.azul,
-                            padding: const EdgeInsets.symmetric(
+                            padding: EdgeInsets.symmetric(
                                 horizontal: 20, vertical: 12),
                             shape: RoundedRectangleBorder(
                               borderRadius: BorderRadius.circular(10),
@@ -259,11 +300,11 @@ Future<void> _carregarUltimoRegistro() async {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => const RelatorioGrafico(),
+                                builder: (context) => RelatorioGrafico(),
                               ),
                             );
                           },
-                          child: const Text('Ver relatório',
+                          child: Text('Ver relatório',
                               style: TextStyle(color: Cores.branco)),
                         ),
                       ],
@@ -275,7 +316,7 @@ Future<void> _carregarUltimoRegistro() async {
           ],
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 3),
+      bottomNavigationBar: Menu(paginaAtual: 3),
     );
   }
 }

@@ -1,3 +1,5 @@
+import '../tela_vinculos.dart';
+import '../../services/session_service.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_textos.dart';
 import '../../widgets/custom_textField.dart';
@@ -64,11 +66,14 @@ class _LoginState extends State<Login> {
         await apiService.login(email: email, senha: senha);
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Login realizado com sucesso!')),
+          SnackBar(content: Text('Login realizado com sucesso!')),
         );
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (_) => const Home()),
+          MaterialPageRoute(
+              builder: (_) => SessionService.instance.tipoUsuario == 'paciente'
+                  ? Home()
+                  : Vinculos()),
         );
       } on ApiException catch (erro) {
         if (mounted) setState(() => mensagemErro = erro.message);
@@ -81,57 +86,57 @@ class _LoginState extends State<Login> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
+          padding: EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
-              const AppText(
+              SizedBox(height: 60),
+              AppText(
                 texto: 'Seniores',
                 tamanho: 70,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.titulo,
               ),
-              const SizedBox(height: 10),
-              const AppText(
+              SizedBox(height: 10),
+              AppText(
                 texto: 'Bem-vindo de volta!',
                 tamanho: 28,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 10),
-              const AppText(
+              SizedBox(height: 10),
+              AppText(
                 texto: 'Faça login para acessar sua conta.',
                 tamanho: 16,
                 cor: Cores.cinza,
                 estilo: AppText.corpo,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               CampoTexto(
                 controller: emailController,
                 hintText: 'E-mail',
                 keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.email,
                   color: Cores.azul,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               CampoTexto(
                 controller: senhaController,
                 hintText: 'Senha',
                 senha: true,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.lock,
                   color: Cores.azul,
                 ),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Row(
                 children: [
                   Checkbox(
@@ -143,20 +148,21 @@ class _LoginState extends State<Login> {
                       });
                     },
                   ),
-                  const Text(
+                  Text(
                     'Lembrar-me',
-                    style: TextStyle(color: Cores.preto),
+                    style: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurface),
                   ),
-                  const Spacer(),
+                  Spacer(),
                   TextButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
-                        const SnackBar(
+                        SnackBar(
                           content: Text('Em breve.'),
                         ),
                       );
                     },
-                    child: const Text(
+                    child: Text(
                       'Esqueceu sua senha?',
                       style: TextStyle(
                         color: Cores.azul,
@@ -165,13 +171,13 @@ class _LoginState extends State<Login> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               if (mensagemErro.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 15),
+                  padding: EdgeInsets.only(bottom: 15),
                   child: Text(
                     mensagemErro,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Cores.vermelho,
                       fontWeight: FontWeight.bold,
                     ),
@@ -181,7 +187,7 @@ class _LoginState extends State<Login> {
                 texto: enviando ? 'Entrando...' : 'Entrar',
                 onPressed: enviando ? () {} : fazerLogin,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -190,7 +196,7 @@ class _LoginState extends State<Login> {
                       color: Cores.cinza.withOpacity(0.3),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
                       'ou', // Em minúsculo igual na imagem
@@ -208,7 +214,7 @@ class _LoginState extends State<Login> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Botao(
                 texto: 'Criar uma conta',
                 backgroundColor: Colors.white,
@@ -219,7 +225,7 @@ class _LoginState extends State<Login> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Cadastro(),
+                      builder: (context) => Cadastro(),
                     ),
                   );
                 },

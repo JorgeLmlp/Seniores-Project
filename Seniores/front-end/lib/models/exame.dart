@@ -10,9 +10,9 @@ class Exame {
   final String bairro;
   final String cidade;
   final String estado;
-  bool historico; 
+  bool historico;
   bool concluido;
-  
+
   Exame({
     required this.id,
     required this.nomeExame,

@@ -5,9 +5,11 @@ from services.paciente.comunicado_service import ComunicadoService
 from services.paciente.consulta_service import ConsultaService
 from services.paciente.destinatario_service import DestinatarioService
 from services.paciente.exame_service import ExameService
+from services.paciente.gasto_service import GastoService
 
 
 SERVICOS = {
+    "gastos": GastoService(),
     "consultas": ConsultaService(),
     "exames": ExameService(),
     "cuidadores": AgendaCuidadorService(),

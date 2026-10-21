@@ -54,7 +54,7 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
     if (nomeController.text.trim().isEmpty ||
         funcaoController.text.trim().isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Informe o nome e a função do cuidador.')),
+        SnackBar(content: Text('Informe o nome e a função do cuidador.')),
       );
       return;
     }
@@ -86,22 +86,22 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
     final diasSemana = ['D', 'S', 'T', 'Q', 'Q', 'S', 'S'];
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Row(
                 children: [
                   IconButton(
-                    icon: const Icon(Icons.arrow_back_ios_new,
-                        color: Cores.preto, size: 20),
+                    icon: Icon(Icons.arrow_back_ios_new,
+                        color: Theme.of(context).colorScheme.onSurface,
+                        size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const AppText(
+                  AppText(
                       texto: 'Novo Cuidador',
                       estilo: AppText.titulo,
                       tamanho: 24),
@@ -110,12 +110,12 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
             ),
             Expanded(
               child: ListView(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Column(
+                      Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
@@ -132,54 +132,52 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                         ],
                       ),
                       Container(
-                        decoration: const BoxDecoration(
+                        decoration: BoxDecoration(
                           color: Cores.azul,
                           shape: BoxShape.circle,
                         ),
                         child: IconButton(
-                          icon: const Icon(Icons.add,
-                              color: Colors.white, size: 20),
+                          icon: Icon(Icons.add, color: Colors.white, size: 20),
                           onPressed: () {},
                         ),
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  const AppText(
+                  SizedBox(height: 14),
+                  AppText(
                       texto: 'Nome',
                       estilo: AppText.corpo,
                       peso: FontWeight.bold,
                       tamanho: 13,
                       cor: Cores.azul),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   _buildTextField(
                       hint: 'Digite aqui...', controller: nomeController),
-                  const SizedBox(height: 14),
-                  const AppText(
+                  SizedBox(height: 14),
+                  AppText(
                       texto: 'Função',
                       estilo: AppText.corpo,
                       peso: FontWeight.bold,
                       tamanho: 13,
                       cor: Cores.azul),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   _buildTextField(
                       hint: 'Digite aqui...', controller: funcaoController),
-                  const SizedBox(height: 14),
-                  const AppText(
+                  SizedBox(height: 14),
+                  AppText(
                       texto: 'Número de telefone',
                       estilo: AppText.corpo,
                       peso: FontWeight.bold,
                       tamanho: 13,
                       cor: Cores.azul),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Row(
                     children: [
                       Expanded(
                         child: Row(
                           children: [
-                            const Icon(Icons.phone,
-                                color: Cores.azul, size: 18),
-                            const SizedBox(width: 4),
+                            Icon(Icons.phone, color: Cores.azul, size: 18),
+                            SizedBox(width: 4),
                             Expanded(
                               child: _buildTextField(
                                 hint: '(xx) xxxxx-xxxx',
@@ -192,13 +190,13 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                           ],
                         ),
                       ),
-                      const SizedBox(width: 8),
+                      SizedBox(width: 8),
                       Expanded(
                         child: Row(
                           children: [
-                            const Icon(Icons.chat_bubble_outline,
+                            Icon(Icons.chat_bubble_outline,
                                 color: Cores.azul, size: 18),
-                            const SizedBox(width: 4),
+                            SizedBox(width: 4),
                             Expanded(
                               child: _buildTextField(
                                 hint: '(xx) xxxxx-xxxx',
@@ -213,14 +211,14 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  const AppText(
+                  SizedBox(height: 14),
+                  AppText(
                       texto: 'Frequência',
                       estilo: AppText.corpo,
                       peso: FontWeight.bold,
                       tamanho: 13,
                       cor: Cores.azul),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: List.generate(7, (index) {
@@ -253,14 +251,14 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                       );
                     }),
                   ),
-                  const SizedBox(height: 14),
-                  const AppText(
+                  SizedBox(height: 14),
+                  AppText(
                       texto: 'Horário',
                       estilo: AppText.corpo,
                       peso: FontWeight.bold,
                       tamanho: 13,
                       cor: Cores.azul),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   Row(
                     children: [
                       SizedBox(
@@ -269,7 +267,7 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                               hint: '08:00',
                               controller: horaInicioController,
                               textAlign: TextAlign.center)),
-                      const Padding(
+                      Padding(
                         padding: EdgeInsets.symmetric(horizontal: 10.0),
                         child: AppText(
                             texto: 'ás',
@@ -285,23 +283,22 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                               textAlign: TextAlign.center)),
                     ],
                   ),
-                  const SizedBox(height: 14),
-                  const AppText(
+                  SizedBox(height: 14),
+                  AppText(
                       texto: 'Observações',
                       estilo: AppText.corpo,
                       peso: FontWeight.bold,
                       tamanho: 13,
                       cor: Cores.azul),
-                  const SizedBox(height: 6),
+                  SizedBox(height: 6),
                   TextField(
                     controller: obsController,
                     maxLines: 3,
                     decoration: InputDecoration(
                       hintText: 'Digite aqui...',
-                      hintStyle:
-                          const TextStyle(color: Cores.cinza, fontSize: 13),
-                      contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14, vertical: 12),
+                      hintStyle: TextStyle(color: Cores.cinza, fontSize: 13),
+                      contentPadding:
+                          EdgeInsets.symmetric(horizontal: 14, vertical: 12),
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide:
@@ -309,25 +306,25 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
-                        borderSide: const BorderSide(color: Cores.azul),
+                        borderSide: BorderSide(color: Cores.azul),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                   Botao(
                     texto: 'Concluir',
                     fontSize: 14,
                     borderRadius: 12,
                     onPressed: _salvando ? () {} : _salvar,
                   ),
-                  const SizedBox(height: 20),
+                  SizedBox(height: 20),
                 ],
               ),
             ),
           ],
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 
@@ -344,19 +341,19 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
       textAlign: textAlign,
       keyboardType: keyboardType,
       inputFormatters: inputFormatters,
-      style: TextStyle(fontSize: fontSize, color: Cores.preto),
+      style: TextStyle(
+          fontSize: fontSize, color: Theme.of(context).colorScheme.onSurface),
       decoration: InputDecoration(
         hintText: hint,
         hintStyle: TextStyle(color: Cores.cinza, fontSize: fontSize),
-        contentPadding:
-            const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+        contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
           borderSide: BorderSide(color: Cores.cinza.withOpacity(0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: const BorderSide(color: Cores.azul),
+          borderSide: BorderSide(color: Cores.azul),
         ),
       ),
     );

@@ -41,10 +41,10 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
     ].join(', ');
 
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.all(20.0),
+          padding: EdgeInsets.all(20.0),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -52,16 +52,16 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
                 children: [
                   IconButton(
                     padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    icon: const Icon(
-                        Icons.arrow_back_ios_new,
+                    constraints: BoxConstraints(),
+                    icon: Icon(
+                      Icons.arrow_back_ios_new,
                       size: 28,
-                      color: Cores.preto,
+                      color: Theme.of(context).colorScheme.onSurface,
                     ),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  const SizedBox(width: 8),
-                  const AppText(
+                  SizedBox(width: 8),
+                  AppText(
                     texto: 'Consulta',
                     estilo: AppText.titulo,
                     tamanho: 22,
@@ -69,90 +69,103 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
+              SizedBox(height: 24),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   CircleAvatar(
                     radius: 32,
                     backgroundColor: Colors.grey.shade400,
-                    child:
-                        const Icon(Icons.person, size: 40, color: Colors.white),
+                    child: Icon(Icons.person, size: 40, color: Colors.white),
                   ),
-                  const SizedBox(width: 16),
+                  SizedBox(width: 16),
                   Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
                           widget.consulta.nomeDoutor,
-                          style: const TextStyle(
+                          style: TextStyle(
                             fontSize: 18,
                             fontWeight: FontWeight.bold,
                             color: Cores.azul,
                           ),
                         ),
-                        const SizedBox(height: 4),
+                        SizedBox(height: 4),
                         Text(
                           widget.consulta.especialidade.isNotEmpty
                               ? widget.consulta.especialidade
                               : 'Especialidade não informada',
                           style: TextStyle(
-                              fontSize: 14, color: Colors.grey.shade700),
+                              fontSize: 14,
+                              color: Theme.of(context)
+                                  .colorScheme
+                                  .onSurfaceVariant),
                         ),
                       ],
                     ),
                   ),
                   IconButton(
-                    icon: const Icon(Icons.edit_outlined,
-                        color: Cores.azul, size: 24),
+                    icon:
+                        Icon(Icons.edit_outlined, color: Cores.azul, size: 24),
                     onPressed: () {},
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Text(
                 'Dia $diaFormatado, às $horaFormatada',
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 'Status: $statusTexto',
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 'Motivo: ${widget.consulta.motivo.isNotEmpty ? widget.consulta.motivo : "Não informado"}',
-                style: const TextStyle(fontSize: 14, color: Colors.black87),
+                style: TextStyle(
+                    fontSize: 14,
+                    color: Theme.of(context).colorScheme.onSurface),
               ),
-              const SizedBox(height: 12),
+              SizedBox(height: 12),
               if (widget.consulta.alertas.isNotEmpty) ...[
                 ...widget.consulta.alertas.map((alerta) => Padding(
-                      padding: const EdgeInsets.only(bottom: 8.0),
+                      padding: EdgeInsets.only(bottom: 8.0),
                       child: Container(
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         decoration: BoxDecoration(
-                          color: Colors.amber.shade50,
+                          color: Theme.of(context)
+                              .colorScheme
+                              .surfaceContainerHighest,
                           borderRadius: BorderRadius.circular(10),
                           border: Border.all(color: Colors.amber.shade200),
                         ),
                         child: Row(
                           children: [
-                            const Icon(Icons.warning_amber_rounded,
+                            Icon(Icons.warning_amber_rounded,
                                 color: Colors.amber, size: 22),
-                            const SizedBox(width: 10),
+                            SizedBox(width: 10),
                             Expanded(
                               child: Text(
                                 alerta,
-                                style: const TextStyle(
-                                    fontSize: 13, color: Colors.black87),
+                                style: TextStyle(
+                                    fontSize: 13,
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface),
                               ),
                             ),
                           ],
                         ),
                       ),
                     )),
-                const SizedBox(height: 8),
+                SizedBox(height: 8),
               ],
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -162,38 +175,40 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
                       enderecoCompleto.isNotEmpty
                           ? enderecoCompleto
                           : 'Endereço não informado',
-                      style: const TextStyle(
-                          fontSize: 13, color: Colors.black87, height: 1.4),
+                      style: TextStyle(
+                          fontSize: 13,
+                          color: Theme.of(context).colorScheme.onSurface,
+                          height: 1.4),
                     ),
                   ),
-                  const SizedBox(width: 8),
+                  SizedBox(width: 8),
                   Container(
                     decoration: BoxDecoration(
                       color: Cores.azul,
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: IconButton(
-                      icon: const Icon(Icons.location_on,
+                      icon: Icon(Icons.location_on,
                           color: Colors.white, size: 20),
                       onPressed: () {},
                     ),
                   ),
                 ],
               ),
-              const SizedBox(height: 16),
+              SizedBox(height: 16),
               Row(
                 children: [
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.phone, color: Cores.azul, size: 18),
-                        const SizedBox(width: 6),
+                        Icon(Icons.phone, color: Cores.azul, size: 18),
+                        SizedBox(width: 6),
                         Flexible(
                           child: Text(
                             widget.consulta.telefone.isNotEmpty
                                 ? widget.consulta.telefone
                                 : 'Não informado',
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(fontSize: 12),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -203,14 +218,14 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
                   Expanded(
                     child: Row(
                       children: [
-                        const Icon(Icons.chat, color: Cores.azul, size: 18),
-                        const SizedBox(width: 6),
+                        Icon(Icons.chat, color: Cores.azul, size: 18),
+                        SizedBox(width: 6),
                         Flexible(
                           child: Text(
                             widget.consulta.whatsapp.isNotEmpty
                                 ? widget.consulta.whatsapp
                                 : 'Não informado',
-                            style: const TextStyle(fontSize: 12),
+                            style: TextStyle(fontSize: 12),
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
@@ -219,25 +234,25 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
                   ),
                 ],
               ),
-              const SizedBox(height: 24),
-              const AppText(
+              SizedBox(height: 24),
+              AppText(
                 texto: 'Anotações da consulta',
                 tamanho: 16,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
               ),
-              const SizedBox(height: 8),
+              SizedBox(height: 8),
               Container(
-                padding: const EdgeInsets.all(4),
+                padding: EdgeInsets.all(4),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
                   border: Border.all(color: Colors.grey.shade300),
                 ),
                 child: TextField(
                   controller: _anotacaoController,
                   maxLines: 4,
-                  decoration: const InputDecoration(
+                  decoration: InputDecoration(
                     hintText: 'Digite aqui...',
                     hintStyle: TextStyle(color: Colors.grey, fontSize: 13),
                     border: InputBorder.none,
@@ -245,43 +260,41 @@ class _DetalhesConsultaState extends State<DetalhesConsulta> {
                   ),
                 ),
               ),
-              const SizedBox(height: 24),
-              const AppText(
+              SizedBox(height: 24),
+              AppText(
                 texto: 'Exames necessários',
                 tamanho: 16,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
               ),
-              const SizedBox(height: 4),
+              SizedBox(height: 4),
               Text(
                 'Clique para visualizar o exame',
                 style: TextStyle(fontSize: 12, color: Colors.grey.shade600),
               ),
-              const SizedBox(height: 10),
+              SizedBox(height: 10),
               Wrap(
                 spacing: 8.0,
                 runSpacing: 4.0,
                 children: widget.consulta.exames.map((exame) {
                   return Chip(
                     label: Text(exame),
-                    labelStyle:
-                        const TextStyle(fontSize: 12, color: Cores.verde),
-                    avatar:
-                        const Icon(Icons.check, size: 16, color: Cores.verde),
+                    labelStyle: TextStyle(fontSize: 12, color: Cores.verde),
+                    avatar: Icon(Icons.check, size: 16, color: Cores.verde),
                     backgroundColor: Colors.white,
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(20),
-                      side: const BorderSide(color: Cores.verde),
+                      side: BorderSide(color: Cores.verde),
                     ),
                   );
                 }).toList(),
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }

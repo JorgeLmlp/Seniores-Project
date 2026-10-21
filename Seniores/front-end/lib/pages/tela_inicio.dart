@@ -1,3 +1,5 @@
+import '../models/medicamento.dart';
+import 'medicamentos/tela_detalhesMedicamento.dart';
 import 'package:flutter/material.dart';
 import '../../widgets/custom_textos.dart';
 import '../../widgets/custom_botao.dart';
@@ -23,33 +25,38 @@ class _HomeState extends State<Home> {
   Registro? registroAtual;
   String nomeUsuario = "nome";
   final ApiService _apiService = ApiService();
-  
+
   List<Map<String, dynamic>> proximosMedicamentos = [];
   bool carregandoMedicamentos = true;
 
   @override
   void initState() {
     super.initState();
+    if (SessionService.instance.tipoUsuario != 'paciente' &&
+        SessionService.instance.pacienteSelecionado == null) return;
     _carregarUltimoRegistro();
     _carregarNomeUsuario();
     _carregarMedicamentos();
   }
 
-Future<void> _carregarNomeUsuario() async {
+  Future<void> _carregarNomeUsuario() async {
     try {
-      String? nomeBruto = SessionService.instance.nomeUsuario;
+      String? nomeBruto = SessionService.instance.nomePaciente ??
+          SessionService.instance.nomeUsuario;
 
       if (nomeBruto == null || nomeBruto.trim().isEmpty) {
         final perfil = await _apiService.obterPerfilUsuario();
         if (perfil != null) {
-          nomeBruto = perfil['nome_completo'] ?? perfil['nome'] ?? perfil['name'];
+          nomeBruto =
+              perfil['nome_completo'] ?? perfil['nome'] ?? perfil['name'];
         }
       }
 
       if (nomeBruto != null && nomeBruto.trim().isNotEmpty) {
         String primeiroNome = nomeBruto.trim().split(' ')[0];
         if (primeiroNome.isNotEmpty) {
-          primeiroNome = primeiroNome[0].toUpperCase() + primeiroNome.substring(1).toLowerCase();
+          primeiroNome = primeiroNome[0].toUpperCase() +
+              primeiroNome.substring(1).toLowerCase();
         }
 
         if (mounted) {
@@ -117,7 +124,7 @@ Future<void> _carregarNomeUsuario() async {
     try {
       final partes = horarioStr.split(':');
       if (partes.length != 2) return 999;
-      
+
       final int horaMed = int.parse(partes[0]);
       final int minMed = int.parse(partes[1]);
 
@@ -125,7 +132,7 @@ Future<void> _carregarNomeUsuario() async {
       final minutosAtuais = agora.hour * 60 + agora.minute;
       final minutosMed = horaMed * 60 + minMed;
 
-      return minutosMed - minutosAtuais; 
+      return minutosMed - minutosAtuais;
     } catch (_) {
       return 999;
     }
@@ -134,47 +141,48 @@ Future<void> _carregarNomeUsuario() async {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
-      endDrawer: const MenuSanduiche(),
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
+      endDrawer: MenuSanduiche(),
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+          padding: EdgeInsets.symmetric(horizontal: 24, vertical: 16),
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
+                  Expanded(
+                      child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
                         texto: "Olá, $nomeUsuario!",
                         tamanho: 28,
                         peso: FontWeight.bold,
-                        cor: Cores.preto,
+                        cor: Theme.of(context).colorScheme.onSurface,
                         estilo: AppText.titulo,
                       ),
-                      const SizedBox(height: 4),
-                      const AppText(
+                      SizedBox(height: 4),
+                      AppText(
                         texto: "Como voce esta se sentindo hoje?",
                         tamanho: 14,
                         cor: Cores.cinza,
                         estilo: AppText.corpo,
                       ),
                     ],
-                  ),
+                  )),
                   Builder(
                     builder: (context) => IconButton(
-                      icon: const Icon(Icons.menu, size: 28, color: Cores.preto),
+                      icon: Icon(Icons.menu,
+                          size: 28,
+                          color: Theme.of(context).colorScheme.onSurface),
                       onPressed: () => Scaffold.of(context).openEndDrawer(),
                     ),
                   ),
                 ],
               ),
-              
-              const SizedBox(height: 24),
-
+              SizedBox(height: 24),
               Row(
                 children: [
                   Expanded(
@@ -183,19 +191,20 @@ Future<void> _carregarNomeUsuario() async {
                       borderRadius: BorderRadius.circular(16),
                       child: CardPadrao(
                         altura: 95,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Cores.azul.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.favorite_border, color: Cores.azul, size: 22),
+                              child: Icon(Icons.favorite_border,
+                                  color: Cores.azul, size: 22),
                             ),
-                            const SizedBox(width: 8),
-                            const Expanded(
+                            SizedBox(width: 8),
+                            Expanded(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -205,7 +214,9 @@ Future<void> _carregarNomeUsuario() async {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
-                                      color: Cores.preto,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
@@ -228,7 +239,7 @@ Future<void> _carregarNomeUsuario() async {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 12),
+                  SizedBox(width: 12),
                   Expanded(
                     child: InkWell(
                       onTap: () {
@@ -242,19 +253,20 @@ Future<void> _carregarNomeUsuario() async {
                       borderRadius: BorderRadius.circular(16),
                       child: CardPadrao(
                         altura: 95,
-                        padding: const EdgeInsets.all(12),
+                        padding: EdgeInsets.all(12),
                         child: Row(
                           children: [
                             Container(
-                              padding: const EdgeInsets.all(8),
+                              padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
                                 color: Colors.green.withOpacity(0.1),
                                 shape: BoxShape.circle,
                               ),
-                              child: const Icon(Icons.calendar_today_outlined, color: Colors.green, size: 22),
+                              child: Icon(Icons.calendar_today_outlined,
+                                  color: Colors.green, size: 22),
                             ),
-                            const SizedBox(width: 8),
-                            const Expanded(
+                            SizedBox(width: 8),
+                            Expanded(
                               child: Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -264,14 +276,16 @@ Future<void> _carregarNomeUsuario() async {
                                     style: TextStyle(
                                       fontWeight: FontWeight.bold,
                                       fontSize: 12,
-                                      color: Cores.preto,
+                                      color: Theme.of(context)
+                                          .colorScheme
+                                          .onSurface,
                                     ),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                   SizedBox(height: 2),
                                   Text(
-                                    "1 consulta hoje as 14:00",
+                                    "Consulte sua agenda",
                                     style: TextStyle(
                                       color: Cores.cinza,
                                       fontSize: 9,
@@ -289,8 +303,7 @@ Future<void> _carregarNomeUsuario() async {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
-
+              SizedBox(height: 20),
               InkWell(
                 onTap: _abrirDetalhesDiario,
                 borderRadius: BorderRadius.circular(20),
@@ -300,27 +313,28 @@ Future<void> _carregarNomeUsuario() async {
                     children: [
                       CardTitulo(
                         titulo: "Diário de saúde",
-                        data: registroAtual?.dataFormatada ?? "13/04",
+                        data: registroAtual?.dataFormatada,
                       ),
                       Padding(
-                        padding: const EdgeInsets.all(16.0),
+                        padding: EdgeInsets.all(16.0),
                         child: registroAtual == null
                             ? Column(
                                 children: [
-                                  const Row(
+                                  Row(
                                     mainAxisAlignment: MainAxisAlignment.center,
                                     children: [
                                       Icon(Icons.warning_amber_rounded,
                                           color: Cores.cinza, size: 18),
                                       SizedBox(width: 5),
-                                      Text(
-                                        "1 incidente registrado hoje",
+                                      Expanded(
+                                          child: Text(
+                                        "Nenhum diário registrado",
                                         style: TextStyle(
                                             fontWeight: FontWeight.bold),
-                                      ),
+                                      )),
                                     ],
                                   ),
-                                  const SizedBox(height: 12),
+                                  SizedBox(height: 12),
                                   Botao(
                                     texto: 'Ver detalhes do dia',
                                     icone: Icons.visibility_outlined,
@@ -339,63 +353,70 @@ Future<void> _carregarNomeUsuario() async {
                                   IntrinsicHeight(
                                     child: Row(
                                       children: [
-                                        const VerticalDivider(
+                                        VerticalDivider(
                                             thickness: 2, color: Cores.cinza),
-                                        const SizedBox(width: 8),
+                                        SizedBox(width: 8),
                                         Column(
                                           crossAxisAlignment:
                                               CrossAxisAlignment.start,
                                           children: [
                                             IndicadorPontos(
                                               label: "Humor",
-                                              valor: registroAtual!.humor.toDouble(),
+                                              valor: registroAtual!.humor
+                                                  .toDouble(),
                                             ),
                                             IndicadorPontos(
                                               label: "Dor",
-                                              valor: registroAtual!.dor.toDouble(),
+                                              valor:
+                                                  registroAtual!.dor.toDouble(),
                                               inverso: true,
                                             ),
                                             IndicadorPontos(
                                               label: "Apetite",
-                                              valor: registroAtual!.apetite.toDouble(),
+                                              valor: registroAtual!.apetite
+                                                  .toDouble(),
                                             ),
                                             IndicadorPontos(
                                               label: "Mobilidade",
-                                              valor: registroAtual!.mobilidade.toDouble(),
+                                              valor: registroAtual!.mobilidade
+                                                  .toDouble(),
                                             ),
                                           ],
                                         ),
                                       ],
                                     ),
                                   ),
-                                  const SizedBox(height: 16),
+                                  SizedBox(height: 16),
                                   Row(
                                     children: [
-                                      const Icon(Icons.warning_amber_rounded,
+                                      Icon(Icons.warning_amber_rounded,
                                           color: Cores.amarelo, size: 20),
-                                      const SizedBox(width: 6),
-                                      Text(
+                                      SizedBox(width: 6),
+                                      Expanded(
+                                          child: Text(
                                         "${registroAtual!.totalIncidentes} incidente registrado hoje",
-                                        style: const TextStyle(
+                                        style: TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 13),
-                                      ),
+                                      )),
                                     ],
                                   ),
-                                  const SizedBox(height: 8),
+                                  SizedBox(height: 8),
                                   Row(
                                     children: [
-                                      const Text("Tendência: ",
+                                      Text("Tendência: ",
                                           style: TextStyle(
-                                              color: Cores.cinza, fontSize: 13)),
+                                              color: Cores.cinza,
+                                              fontSize: 13)),
                                       Text(
-                                        registroAtual!.tendencia ?? 'Leve piora',
-                                        style: const TextStyle(
+                                        registroAtual!.tendencia ??
+                                            'Leve piora',
+                                        style: TextStyle(
                                             fontWeight: FontWeight.w500,
                                             fontSize: 13),
                                       ),
-                                      const SizedBox(width: 4),
-                                      const Icon(Icons.trending_down,
+                                      SizedBox(width: 4),
+                                      Icon(Icons.trending_down,
                                           size: 18, color: Cores.vermelho),
                                     ],
                                   ),
@@ -406,29 +427,30 @@ Future<void> _carregarNomeUsuario() async {
                   ),
                 ),
               ),
-              const SizedBox(height: 20),
-
+              SizedBox(height: 20),
               CardPadrao(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Padding(
-                      padding: const EdgeInsets.all(16.0),
+                      padding: EdgeInsets.all(16.0),
                       child: Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
+                          Expanded(
+                              child: Text(
                             "Próximos medicamentos",
                             style: TextStyle(
                               fontSize: 18,
                               fontWeight: FontWeight.bold,
                               color: Cores.azul,
                             ),
-                          ),
+                          )),
                           Row(
                             children: [
-                              const Icon(Icons.fiber_manual_record, size: 8, color: Cores.azul),
-                              const SizedBox(width: 4),
+                              Icon(Icons.fiber_manual_record,
+                                  size: 8, color: Cores.azul),
+                              SizedBox(width: 4),
                               Container(
                                 width: 16,
                                 height: 4,
@@ -442,14 +464,14 @@ Future<void> _carregarNomeUsuario() async {
                         ],
                       ),
                     ),
-                    const Divider(height: 1, color: Colors.black12),
+                    Divider(height: 1, color: Colors.black12),
                     carregandoMedicamentos
-                        ? const Padding(
+                        ? Padding(
                             padding: EdgeInsets.all(24.0),
                             child: Center(child: CircularProgressIndicator()),
                           )
                         : proximosMedicamentos.isEmpty
-                            ? const Padding(
+                            ? Padding(
                                 padding: EdgeInsets.all(24.0),
                                 child: Center(
                                   child: Text(
@@ -460,22 +482,26 @@ Future<void> _carregarNomeUsuario() async {
                               )
                             : ListView.separated(
                                 shrinkWrap: true,
-                                physics: const NeverScrollableScrollPhysics(),
+                                physics: NeverScrollableScrollPhysics(),
                                 itemCount: proximosMedicamentos.length > 5
                                     ? 5
                                     : proximosMedicamentos.length,
                                 separatorBuilder: (context, index) =>
-                                    const Divider(height: 1, color: Colors.black12),
+                                    Divider(height: 1, color: Colors.black12),
                                 itemBuilder: (context, index) {
                                   final med = proximosMedicamentos[index];
-                                  final horarioMedicamento = _obterHorarioDoMedicamento(med);
-                                  final diferencaMinutos = _calcularDiferencaMinutos(horarioMedicamento);
+                                  final horarioMedicamento =
+                                      _obterHorarioDoMedicamento(med);
+                                  final diferencaMinutos =
+                                      _calcularDiferencaMinutos(
+                                          horarioMedicamento);
 
                                   bool isAtrasado = diferencaMinutos < 0;
-                                  bool isAtencao = diferencaMinutos >= 0 && diferencaMinutos <= 10;
+                                  bool isAtencao = diferencaMinutos >= 0 &&
+                                      diferencaMinutos <= 10;
 
                                   return Padding(
-                                    padding: const EdgeInsets.symmetric(
+                                    padding: EdgeInsets.symmetric(
                                         horizontal: 16.0, vertical: 12.0),
                                     child: Row(
                                       mainAxisAlignment:
@@ -494,13 +520,14 @@ Future<void> _carregarNomeUsuario() async {
                                                       ? Cores.amarelo
                                                       : Cores.azul),
                                             ),
-                                            const SizedBox(width: 12),
+                                            SizedBox(width: 12),
                                             Column(
                                               crossAxisAlignment:
                                                   CrossAxisAlignment.start,
                                               children: [
                                                 Text(
-                                                  med['nome'] ?? 'Dipirona 500mg',
+                                                  med['nome'] ??
+                                                      'Dipirona 500mg',
                                                   style: TextStyle(
                                                     fontWeight: FontWeight.bold,
                                                     fontSize: 14,
@@ -509,10 +536,10 @@ Future<void> _carregarNomeUsuario() async {
                                                         : Cores.preto,
                                                   ),
                                                 ),
-                                                const SizedBox(height: 2),
+                                                SizedBox(height: 2),
                                                 Text(
                                                   "${med['dosagem'] ?? '1 comprimido'} - $horarioMedicamento",
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                     fontSize: 12,
                                                     color: Cores.cinza,
                                                   ),
@@ -524,7 +551,19 @@ Future<void> _carregarNomeUsuario() async {
                                         SizedBox(
                                           height: 32,
                                           child: ElevatedButton(
-                                            onPressed: () {},
+                                            onPressed: () async {
+                                              await Navigator.push(
+                                                  context,
+                                                  MaterialPageRoute(
+                                                      builder: (_) =>
+                                                          DetalhesMedicamento(
+                                                              medicamento:
+                                                                  Medicamento
+                                                                      .fromJson(
+                                                                          med))));
+                                              if (mounted)
+                                                await _carregarMedicamentos();
+                                            },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: isAtrasado
                                                   ? Cores.vermelho
@@ -533,7 +572,7 @@ Future<void> _carregarNomeUsuario() async {
                                                       : Cores.azul),
                                               foregroundColor: Cores.branco,
                                               elevation: 0,
-                                              padding: const EdgeInsets.symmetric(
+                                              padding: EdgeInsets.symmetric(
                                                   horizontal: 16),
                                               shape: RoundedRectangleBorder(
                                                 borderRadius:
@@ -541,8 +580,8 @@ Future<void> _carregarNomeUsuario() async {
                                               ),
                                             ),
                                             child: Text(
-                                              isAtrasado ? "Atrasado" : "Concluir",
-                                              style: const TextStyle(
+                                              "Ver doses",
+                                              style: TextStyle(
                                                 fontSize: 12,
                                                 fontWeight: FontWeight.bold,
                                               ),
@@ -557,12 +596,12 @@ Future<void> _carregarNomeUsuario() async {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
             ],
           ),
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 0),
+      bottomNavigationBar: Menu(paginaAtual: 0),
     );
   }
 }

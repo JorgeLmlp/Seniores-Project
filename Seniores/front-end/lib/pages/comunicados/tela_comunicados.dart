@@ -37,6 +37,8 @@ class _DestinatariosState extends State<Destinatarios> {
       ]);
       if (!mounted) return;
       setState(() {
+        lista.clear();
+        comunicadosEnviados.clear();
         lista.addAll(resultados[0].map((registro) =>
             Destinatario.fromJson(registro['dados'] as Map<String, dynamic>)));
         for (final registro in resultados[1]) {
@@ -61,40 +63,40 @@ class _DestinatariosState extends State<Destinatarios> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new,
-                            color: Cores.preto, size: 20),
+                        icon: Icon(Icons.arrow_back_ios_new,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            size: 20),
                         onPressed: () => Navigator.canPop(context)
                             ? Navigator.pop(context)
                             : null,
                       ),
-                      const AppText(
+                      AppText(
                           texto: 'Comunicados',
                           estilo: AppText.titulo,
                           tamanho: 24),
                     ],
                   ),
                   IconButton(
-                    icon: const Icon(Icons.edit_outlined,
-                        color: Cores.azul, size: 22),
+                    icon:
+                        Icon(Icons.edit_outlined, color: Cores.azul, size: 22),
                     onPressed: () async {
                       final novoItem = await Navigator.push<Destinatario>(
                         context,
                         MaterialPageRoute(
-                            builder: (_) => const CadastroDestinatario()),
+                            builder: (_) => CadastroDestinatario()),
                       );
 
                       if (novoItem != null) {
@@ -109,22 +111,21 @@ class _DestinatariosState extends State<Destinatarios> {
             ),
             Expanded(
               child: ListView(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 8.0),
                 children: [
                   if (comunicadosEnviados.isNotEmpty) ...[
-                    const AppText(
+                    AppText(
                         texto: 'Enviados Recentemente',
                         estilo: AppText.titulo,
                         tamanho: 18,
                         cor: Cores.azul),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                     ...comunicadosEnviados.map((comunicado) {
                       Destinatario dest = comunicado['destinatario'];
                       String msg = comunicado['mensagem'];
 
                       return Container(
-                        margin: const EdgeInsets.only(bottom: 12),
+                        margin: EdgeInsets.only(bottom: 12),
                         child: GestureDetector(
                           onTap: () {
                             Navigator.push(
@@ -138,7 +139,7 @@ class _DestinatariosState extends State<Destinatarios> {
                             );
                           },
                           child: CardPadrao(
-                            padding: const EdgeInsets.all(16),
+                            padding: EdgeInsets.all(16),
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               crossAxisAlignment: CrossAxisAlignment.start,
@@ -156,7 +157,7 @@ class _DestinatariosState extends State<Destinatarios> {
                                         tamanho: 16,
                                         cor: Cores.azul,
                                       ),
-                                      const SizedBox(height: 4),
+                                      SizedBox(height: 4),
                                       AppText(
                                         texto: msg,
                                         estilo: AppText.corpo,
@@ -166,11 +167,11 @@ class _DestinatariosState extends State<Destinatarios> {
                                     ],
                                   ),
                                 ),
-                                const SizedBox(width: 8),
+                                SizedBox(width: 8),
                                 Column(
                                   crossAxisAlignment: CrossAxisAlignment.end,
                                   children: [
-                                    const SizedBox(height: 2),
+                                    SizedBox(height: 2),
                                     SizedBox(
                                       height: 28,
                                       width: 80,
@@ -204,19 +205,19 @@ class _DestinatariosState extends State<Destinatarios> {
                         ),
                       );
                     }),
-                    const SizedBox(height: 24),
-                    const AppText(
+                    SizedBox(height: 24),
+                    AppText(
                         texto: 'Lista de Contatos',
                         estilo: AppText.titulo,
                         tamanho: 18,
                         cor: Cores.azul),
-                    const SizedBox(height: 8),
+                    SizedBox(height: 8),
                   ],
                   ...lista.map((item) {
                     return Container(
-                      margin: const EdgeInsets.only(bottom: 12),
+                      margin: EdgeInsets.only(bottom: 12),
                       child: CardPadrao(
-                        padding: const EdgeInsets.all(16),
+                        padding: EdgeInsets.all(16),
                         child: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -229,7 +230,7 @@ class _DestinatariosState extends State<Destinatarios> {
                                     peso: FontWeight.bold,
                                     tamanho: 16,
                                     cor: Cores.azul),
-                                const SizedBox(height: 2),
+                                SizedBox(height: 2),
                                 AppText(
                                     texto: item.vinculo,
                                     estilo: AppText.corpo,
@@ -245,7 +246,7 @@ class _DestinatariosState extends State<Destinatarios> {
                                     estilo: AppText.corpo,
                                     tamanho: 12,
                                     cor: Cores.cinza),
-                                const SizedBox(height: 6),
+                                SizedBox(height: 6),
                                 SizedBox(
                                   height: 28,
                                   width: 80,
@@ -257,7 +258,16 @@ class _DestinatariosState extends State<Destinatarios> {
                                     textColor: Cores.azul,
                                     borderColor: Cores.azul,
                                     borderWidth: 1,
-                                    onPressed: () {},
+                                    onPressed: () async {
+                                      await Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                              builder: (_) => ComunicadosEnvio(
+                                                      destinatariosIniciais: [
+                                                        item
+                                                      ])));
+                                      if (mounted) await _carregar();
+                                    },
                                   ),
                                 ),
                               ],
@@ -271,12 +281,12 @@ class _DestinatariosState extends State<Destinatarios> {
               ),
             ),
             Padding(
-              padding: const EdgeInsets.all(24.0),
+              padding: EdgeInsets.all(24.0),
               child: Align(
                 alignment: Alignment.bottomRight,
                 child: FloatingActionButton(
                   backgroundColor: Cores.azul,
-                  child: const Icon(Icons.add, color: Colors.white),
+                  child: Icon(Icons.add, color: Colors.white),
                   onPressed: () async {
                     final resultado = await Navigator.push(
                       context,
@@ -298,7 +308,7 @@ class _DestinatariosState extends State<Destinatarios> {
           ],
         ),
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 0),
+      bottomNavigationBar: Menu(paginaAtual: 0),
     );
   }
 }

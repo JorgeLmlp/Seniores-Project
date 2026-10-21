@@ -91,11 +91,13 @@ class _CadastroState extends State<Cadastro> {
 
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Cadastro realizado com sucesso!')),
+        SnackBar(
+            content: Text(
+                'Conta criada! Entre com seu e-mail e senha para continuar.')),
       );
       Navigator.pushReplacement(
         context,
-        MaterialPageRoute(builder: (_) => const Login()),
+        MaterialPageRoute(builder: (_) => Login()),
       );
     } on ApiException catch (erro) {
       if (mounted) setState(() => mensagemErro = erro.message);
@@ -107,61 +109,61 @@ class _CadastroState extends State<Cadastro> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 30),
+          padding: EdgeInsets.symmetric(horizontal: 30),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              const SizedBox(height: 60),
-              const AppText(
+              SizedBox(height: 60),
+              AppText(
                 texto: 'Seniores',
                 tamanho: 70,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.titulo,
               ),
-              const AppText(
+              AppText(
                 texto: 'Crie sua conta!',
                 tamanho: 28,
                 peso: FontWeight.bold,
                 cor: Cores.azul,
                 estilo: AppText.subtitulo,
               ),
-              const SizedBox(height: 10),
-              const AppText(
+              SizedBox(height: 10),
+              AppText(
                 texto: 'Preencha os dados abaixo para se cadastrar.',
                 tamanho: 16,
                 cor: Cores.cinza,
                 estilo: AppText.corpo,
               ),
-              const SizedBox(height: 40),
+              SizedBox(height: 40),
               CampoTexto(
                 controller: nomeController,
                 hintText: 'Nome completo',
                 keyboardType: TextInputType.text,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.person,
                   color: Cores.azul,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               CampoTexto(
                 controller: emailController,
                 hintText: 'E-mail',
                 keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.email,
                   color: Cores.azul,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               CampoTexto(
                 controller: cpfController,
                 hintText: 'CPF',
                 keyboardType: TextInputType.number,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.badge_outlined,
                   color: Cores.azul,
                 ),
@@ -170,7 +172,7 @@ class _CadastroState extends State<Cadastro> {
                   Cpf(),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -179,7 +181,7 @@ class _CadastroState extends State<Cadastro> {
                       controller: telefoneController,
                       hintText: 'Telefone',
                       keyboardType: TextInputType.phone,
-                      prefixIcon: const Icon(
+                      prefixIcon: Icon(
                         Icons.phone_outlined,
                         color: Cores.azul,
                       ),
@@ -189,14 +191,13 @@ class _CadastroState extends State<Cadastro> {
                       ],
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  SizedBox(width: 10),
                   Expanded(
                     flex: 7,
                     child: CampoDropdown(
                       hintText: "Tipo",
                       valor: tipoUsuario,
-                      prefixIcon:
-                          const Icon(Icons.person_outline, color: Cores.azul),
+                      prefixIcon: Icon(Icons.person_outline, color: Cores.azul),
                       itens: tiposUsuario,
                       onChanged: (valor) {
                         setState(() {
@@ -207,27 +208,27 @@ class _CadastroState extends State<Cadastro> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               CampoTexto(
                 controller: senhaController,
                 hintText: 'Senha',
                 senha: true,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.lock,
                   color: Cores.azul,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               CampoTexto(
                 controller: confirmarSenhaController,
                 hintText: 'Confirmar senha',
                 senha: true,
-                prefixIcon: const Icon(
+                prefixIcon: Icon(
                   Icons.lock,
                   color: Cores.azul,
                 ),
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
@@ -242,7 +243,7 @@ class _CadastroState extends State<Cadastro> {
                   ),
                   Expanded(
                     child: RichText(
-                      text: const TextSpan(
+                      text: TextSpan(
                         style: TextStyle(
                           fontFamily: 'Inter',
                           fontSize: 13,
@@ -271,13 +272,13 @@ class _CadastroState extends State<Cadastro> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               if (mensagemErro.isNotEmpty)
                 Padding(
-                  padding: const EdgeInsets.only(bottom: 15),
+                  padding: EdgeInsets.only(bottom: 15),
                   child: Text(
                     mensagemErro,
-                    style: const TextStyle(
+                    style: TextStyle(
                       color: Cores.vermelho,
                       fontWeight: FontWeight.bold,
                     ),
@@ -287,7 +288,7 @@ class _CadastroState extends State<Cadastro> {
                 texto: 'Cadastrar',
                 onPressed: enviando ? () {} : cadastrar,
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Row(
                 children: [
                   Expanded(
@@ -296,7 +297,7 @@ class _CadastroState extends State<Cadastro> {
                       color: Cores.cinza.withOpacity(0.3),
                     ),
                   ),
-                  const Padding(
+                  Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
                     child: Text(
                       'ou',
@@ -314,7 +315,7 @@ class _CadastroState extends State<Cadastro> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              SizedBox(height: 20),
               Botao(
                 texto: 'Já tem uma conta? Entrar',
                 backgroundColor: Colors.white,
@@ -325,7 +326,7 @@ class _CadastroState extends State<Cadastro> {
                   Navigator.push(
                     context,
                     MaterialPageRoute(
-                      builder: (context) => const Login(),
+                      builder: (context) => Login(),
                     ),
                   );
                 },

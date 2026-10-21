@@ -42,25 +42,25 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Cores.fundoTela,
+      backgroundColor: Theme.of(context).scaffoldBackgroundColor,
       body: SafeArea(
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Padding(
-              padding:
-                  const EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
+              padding: EdgeInsets.symmetric(horizontal: 24.0, vertical: 16.0),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   Row(
                     children: [
                       IconButton(
-                        icon: const Icon(Icons.arrow_back_ios_new,
-                            color: Cores.preto, size: 20),
+                        icon: Icon(Icons.arrow_back_ios_new,
+                            color: Theme.of(context).colorScheme.onSurface,
+                            size: 20),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      const AppText(
+                      AppText(
                           texto: 'Cuidadores',
                           estilo: AppText.titulo,
                           tamanho: 24),
@@ -71,12 +71,12 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
             ),
             Expanded(
               child: ListView.builder(
-                padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                padding: EdgeInsets.symmetric(horizontal: 24.0),
                 itemCount: lista.length,
                 itemBuilder: (context, index) {
                   final c = lista[index];
                   return Container(
-                    margin: const EdgeInsets.only(bottom: 12),
+                    margin: EdgeInsets.only(bottom: 12),
                     child: GestureDetector(
                       onTap: () => Navigator.push(
                           context,
@@ -91,10 +91,10 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
                                 CircleAvatar(
                                   radius: 20,
                                   backgroundColor: Cores.cinza.withOpacity(0.2),
-                                  child: const Icon(Icons.person,
+                                  child: Icon(Icons.person,
                                       color: Cores.cinza, size: 24),
                                 ),
-                                const SizedBox(width: 12),
+                                SizedBox(width: 12),
                                 Expanded(
                                   child: Column(
                                     crossAxisAlignment:
@@ -114,21 +114,21 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
                                   ),
                                 ),
                                 Container(
-                                  padding: const EdgeInsets.symmetric(
+                                  padding: EdgeInsets.symmetric(
                                       horizontal: 10, vertical: 3),
                                   decoration: BoxDecoration(
                                     color: Cores.azul,
                                     borderRadius: BorderRadius.circular(10),
                                   ),
                                   child: Text(c.frequenciaResumida,
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 10,
                                           fontWeight: FontWeight.bold)),
                                 ),
                               ],
                             ),
-                            const Padding(
+                            Padding(
                               padding: EdgeInsets.symmetric(vertical: 10.0),
                               child: Divider(height: 1),
                             ),
@@ -173,11 +173,11 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
       ),
       floatingActionButton: FloatingActionButton(
         backgroundColor: Cores.azul,
-        child: const Icon(Icons.add, color: Colors.white),
+        child: Icon(Icons.add, color: Colors.white),
         onPressed: () async {
           final novoCuidador = await Navigator.push(
             context,
-            MaterialPageRoute(builder: (_) => const CadastroCuidador()),
+            MaterialPageRoute(builder: (_) => CadastroCuidador()),
           );
 
           if (novoCuidador != null && novoCuidador is Cuidador) {
@@ -187,7 +187,7 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
           }
         },
       ),
-      bottomNavigationBar: const Menu(paginaAtual: 2),
+      bottomNavigationBar: Menu(paginaAtual: 2),
     );
   }
 }
