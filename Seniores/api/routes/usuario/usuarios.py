@@ -7,6 +7,10 @@ from controllers.user.user_controller import (
     login,
     listar_usuarios,
 )
+from controllers.user.password_reset_controller import (
+    redefinir_senha,
+    solicitar_recuperacao_senha,
+)
 
 
 usuariosbp = Blueprint('users', __name__)
@@ -18,3 +22,7 @@ usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['PUT', 'PATCH'])(at
 usuariosbp.route('/users/<tipo>/<int:usuario_id>/', methods=['DELETE'])(deletar_usuario)
 # Credenciais seguem no corpo JSON; usar POST evita expo-las na URL.
 usuariosbp.route('/users/login/', methods=['POST'])(login)
+usuariosbp.route('/users/password-reset/request', methods=['POST'])(
+    solicitar_recuperacao_senha
+)
+usuariosbp.route('/users/password-reset/confirm', methods=['POST'])(redefinir_senha)

@@ -73,6 +73,18 @@ class Paciente(Usuario):
         consulta = db.select(cls).where(cls.cuidador_id == cuidador_id).order_by(cls.name)
         return db.session.scalars(consulta).all()
 
+    @classmethod
+    def listar_por_responsavel(cls, responsavel_id):
+        """Retorna os pacientes vinculados ao responsável informado."""
+        consulta = (
+            db.select(cls)
+            .join(cls.responsaveis)
+            .where(db.text("responsaveis.id = :responsavel_id"))
+            .params(responsavel_id=responsavel_id)
+            .order_by(cls.name)
+        )
+        return db.session.scalars(consulta).all()
+
     
 
 
@@ -118,5 +130,32 @@ class SinalVital(db.Model):
         except Exception:
             db.session.rollback()
             return None
+
+    @classmethod
+    def listar(cls):
+        return db.session.scalars(db.select(cls).order_by(cls.data.desc())).all()
+
+    @classmethod
+    def buscar_por_id(cls, sinal_id):
+        return db.session.get(cls, sinal_id)
+
+    def atualizar(self, dados):
+        try:
+            for campo, valor in dados.items():
+                setattr(self, campo, valor)
+            db.session.commit()
+            return self
+        except Exception:
+            db.session.rollback()
+            return None
+
+    def deletar(self):
+        try:
+            db.session.delete(self)
+            db.session.commit()
+            return True
+        except Exception:
+            db.session.rollback()
+            return False
 
 

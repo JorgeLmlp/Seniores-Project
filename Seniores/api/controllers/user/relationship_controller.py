@@ -1,5 +1,8 @@
 from flask import jsonify, request
 from services.relationship_service import RelationshipService
+from models.paciente.paciente import Paciente
+from models.responsavel.responsavel import Responsavel
+from extensions import db
 
 
 relationship_service = RelationshipService()
@@ -50,3 +53,47 @@ def vincular_cuidador_responsavel():
         "cuidador_id": vinculo.cuidador_id,
         "responsavel_id": vinculo.responsavel_id,
     }), status
+
+
+def listar_cuidador_paciente(paciente_id):
+    paciente = Paciente.buscar_por_id(paciente_id)
+    if not paciente:
+        return jsonify({"erro": "Paciente nao encontrado"}), 404
+    return jsonify(paciente.cuidador.to_dict if paciente.cuidador else None), 200
+
+
+def desvincular_cuidador_paciente(paciente_id):
+    paciente = Paciente.buscar_por_id(paciente_id)
+    if not paciente:
+        return jsonify({"erro": "Paciente nao encontrado"}), 404
+    paciente.cuidador_id = None
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({"erro": "Nao foi possivel desvincular o cuidador"}), 500
+    return "", 204
+
+
+def listar_responsaveis_paciente(paciente_id):
+    paciente = Paciente.buscar_por_id(paciente_id)
+    if not paciente:
+        return jsonify({"erro": "Paciente nao encontrado"}), 404
+    return jsonify([responsavel.to_dict for responsavel in paciente.responsaveis]), 200
+
+
+def desvincular_responsavel_paciente(paciente_id, responsavel_id):
+    paciente = Paciente.buscar_por_id(paciente_id)
+    responsavel = Responsavel.buscar_por_id(responsavel_id)
+    if not paciente or not responsavel:
+        return jsonify({"erro": "Paciente ou responsavel nao encontrado"}), 404
+    if responsavel in paciente.responsaveis:
+        paciente.responsaveis.remove(responsavel)
+    if paciente.responsavel_id == responsavel.id:
+        paciente.responsavel_id = None
+    try:
+        db.session.commit()
+    except Exception:
+        db.session.rollback()
+        return jsonify({"erro": "Nao foi possivel desvincular o responsavel"}), 500
+    return "", 204

@@ -52,6 +52,10 @@ Lista apenas usuarios do tipo informado: `paciente`, `cuidador` ou
 Lista todos os pacientes vinculados ao cuidador informado, devolvendo os dados
 completos de cada paciente. Por exemplo: `GET /users/?tipo=paciente&cuidador_id=3`.
 
+### `GET /users/?tipo=paciente&responsavel_id={responsavel_id}`
+
+Lista os pacientes vinculados ao responsável informado.
+
 ### `GET /users/{tipo}/{usuario_id}/`
 
 Busca um usuario pelo seu tipo e ID.
@@ -82,9 +86,47 @@ aceita `paciente`, `responsavel` ou `cuidador`.
 }
 ```
 
-Retorna o usuario sem a senha. Credenciais invalidas retornam `401`.
+Retorna o usuario sem a senha e um token de sessão assinado, válido por oito
+horas. Credenciais invalidas retornam `401`. As demais rotas protegidas devem
+receber `Authorization: Bearer {token}`.
+
+O paciente pode acessar e administrar os próprios dados e vínculos. Um
+responsável ou cuidador só pode acessar dados de pacientes vinculados a ele;
+requisições sem sessão retornam `401` e vínculos inválidos retornam `403`.
+
+### `POST /users/password-reset/request`
+
+Solicita a recuperação pelo e-mail. A resposta é genérica para não revelar se o
+endereço está cadastrado. Com `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`,
+`SMTP_PASSWORD` e `PASSWORD_RESET_FROM` configurados, a API envia um link com
+token válido por 15 minutos.
+
+### `POST /users/password-reset/confirm`
+
+Redefine a senha com o token recebido e uma nova senha de pelo menos seis
+caracteres. Cada token é invalidado após o primeiro uso.
+
+```json
+{
+  "token": "token-recebido-por-e-mail",
+  "nova_senha": "NovaSenha@123"
+}
+```
 
 ## Relacionamentos
+
+### `POST /historico/email`
+
+Envia por SMTP um resumo textual do histórico diário do paciente. Recebe
+`paciente_id` e `email`; o endereço é validado e o servidor SMTP precisa estar
+configurado no ambiente da API.
+
+```json
+{
+  "paciente_id": 1,
+  "email": "destino@example.com"
+}
+```
 
 ### `POST /registrar_relacionamento`
 
@@ -127,7 +169,8 @@ cuidador pode ter varios responsaveis e vice-versa.
 ### `POST /pacientes/{paciente_id}/medicamentos`
 
 Cadastra um medicamento para o paciente. `nome` e `dosagem` sao obrigatorios;
-tambem aceita `descricao`, `fabricante`, `lote` e `quantidade`.
+tambem aceita `frequencia`, `horarios`, `alertas`, `descricao`, `fabricante`,
+`lote`, `quantidade`, `alerta_sonoro` e `som_alerta`.
 
 ```json
 {
@@ -154,6 +197,52 @@ Atualiza os campos enviados de um medicamento.
 
 Exclui o medicamento informado.
 
+### Fotos e administrações de medicamentos
+
+- `POST`, `GET` e `DELETE /medicamentos/{medicamento_id}/foto`: envia, abre ou
+  remove uma foto JPEG, PNG ou WebP de até 5 MB usando o campo multipart `foto`.
+- `GET` e `POST /medicamentos/{medicamento_id}/administracoes`: lista ou
+  registra uma dose confirmada com horário, responsável e observação.
+- `PATCH` e `DELETE /administracoes-medicamentos/{administracao_id}`: altera ou
+  remove uma confirmação de dose.
+
+## Documentos de exames
+
+- `GET` e `POST /exames/{exame_id}/documentos`: lista ou recebe o multipart
+  `arquivo` nos formatos PDF, JPEG, PNG e WebP, com limite de 10 MB.
+- `GET /documentos-exame/{documento_id}/arquivo`: abre ou baixa o arquivo.
+- `DELETE /documentos-exame/{documento_id}`: exclui o documento e o arquivo
+  armazenado.
+
+## Consultas
+
+### `POST /pacientes/{paciente_id}/consultas`
+### `GET /pacientes/{paciente_id}/consultas`
+
+Criam ou listam consultas do paciente. Para criar, `titulo` e `data` sao
+obrigatorios; tambem podem ser enviados `especialidade`, `profissional`,
+`hora`, `local`, `telefone` e `observacoes`.
+
+### `GET /consultas/{consulta_id}`
+### `PUT/PATCH /consultas/{consulta_id}`
+### `DELETE /consultas/{consulta_id}`
+
+Consultam, alteram ou excluem uma consulta.
+
+## Exames
+
+### `POST /pacientes/{paciente_id}/exames`
+### `GET /pacientes/{paciente_id}/exames`
+
+Criam ou listam exames do paciente. `nome` e `data` sao obrigatorios; tambem
+aceita `laboratorio`, `local`, `observacoes` e `documento_url`.
+
+### `GET /exames/{exame_id}`
+### `PUT/PATCH /exames/{exame_id}`
+### `DELETE /exames/{exame_id}`
+
+Consultam, alteram ou excluem um exame.
+
 ## Sinais vitais
 
 ### `POST /sinais-vitais`
@@ -170,3 +259,46 @@ Cria um registro de sinais vitais. Informe pelo menos uma medida. O campo
   "temperatura": "36.6 C"
 }
 ```
+
+## Rotinas clínicas
+
+### `POST /pacientes/{paciente_id}/higiene`
+### `GET /pacientes/{paciente_id}/higiene`
+
+Criam ou listam checklists de higiene persistidos para o paciente. O corpo
+deve conter `tipo`, `data_hora` e um objeto `itens` com pelo menos um item
+booleano; `observacoes` é opcional.
+
+### `GET /higiene/{higiene_id}`
+### `PUT/PATCH /higiene/{higiene_id}`
+### `DELETE /higiene/{higiene_id}`
+
+Consultam, alteram ou excluem uma rotina de higiene.
+
+### `POST /pacientes/{paciente_id}/lesoes`
+### `GET /pacientes/{paciente_id}/lesoes`
+
+Criam ou listam prontuários de lesões. `localizacao`, `data_inicio` e
+`descricao` são obrigatórios; `evolucao` é opcional.
+
+### `GET /lesoes/{lesao_id}`
+### `PUT/PATCH /lesoes/{lesao_id}`
+### `DELETE /lesoes/{lesao_id}`
+
+Consultam, alteram ou excluem uma lesão.
+
+- `POST`, `GET` e `DELETE /lesoes/{lesao_id}/foto`: enviam, abrem ou removem
+  uma foto JPEG, PNG ou WebP de até 5 MB usando o campo multipart `foto`.
+
+### `POST /pacientes/{paciente_id}/dietas`
+### `GET /pacientes/{paciente_id}/dietas`
+
+Criam ou listam dietas e restrições alimentares. `tipo`, `data_inicio` e
+`descricao` são obrigatórios; `restricoes`, `observacoes` e `ativa` são
+opcionais.
+
+### `GET /dietas/{dieta_id}`
+### `PUT/PATCH /dietas/{dieta_id}`
+### `DELETE /dietas/{dieta_id}`
+
+Consultam, alteram, ativam/desativam ou excluem uma dieta.

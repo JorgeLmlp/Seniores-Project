@@ -29,17 +29,29 @@ class UserService:
             "telefone": info.get("telefone") or info.get("phoneNumber"),
             "cpf": info.get("cpf"),
             "tipo": self._normalizar_tipo(info.get("tipo")),
+            "idade": info.get("idade"),
+            "tipo_sanguineo": info.get("tipo_sanguineo"),
+            "preferencias": info.get("preferencias"),
         }
         classe = self._classe_por_tipo(dados["tipo"])
-        if not all([*dados.values(), classe]):
+        campos_obrigatorios = (
+            dados["nome"],
+            dados["email"],
+            dados["senha"],
+            dados["telefone"],
+            dados["cpf"],
+            dados["tipo"],
+            classe,
+        )
+        if not all(campos_obrigatorios):
             return None, 400
         if classe.email_ou_cpf_existe(CLASSES_POR_TIPO.values(), dados["email"], dados["cpf"]):
             return None, 409
         usuario = classe.criar(dados)
         return (usuario, 201) if usuario else (None, 500)
 
-    def listar(self, tipo=None, cuidador_id=None):
-        """Lista usuarios, com suporte aos pacientes de um cuidador especifico."""
+    def listar(self, tipo=None, cuidador_id=None, responsavel_id=None):
+        """Lista usuarios vinculados a um cuidador ou responsável específico."""
         if cuidador_id is not None:
             if self._normalizar_tipo(tipo) != "paciente":
                 return None, 400
@@ -48,6 +60,14 @@ class UserService:
             except (TypeError, ValueError):
                 return None, 400
             return Paciente.listar_por_cuidador(cuidador_id), 200
+        if responsavel_id is not None:
+            if self._normalizar_tipo(tipo) != "paciente":
+                return None, 400
+            try:
+                responsavel_id = int(responsavel_id)
+            except (TypeError, ValueError):
+                return None, 400
+            return Paciente.listar_por_responsavel(responsavel_id), 200
         if tipo:
             classe = self._classe_por_tipo(tipo)
             return (classe.listar(), 200) if classe else (None, 400)

@@ -19,7 +19,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 version: 1.0.0+1
 
 environment:
-  sdk: ^3.6.0
+  sdk: ^3.12.0
 
 # Dependencies specify other packages that your package needs in order to work.
 # To automatically upgrade your package dependencies to the latest versions
@@ -36,6 +36,18 @@ dependencies:
   cupertino_icons: ^1.0.8
   device_preview: ^1.2.0
   http: ^1.6.0
+  shared_preferences: ^2.5.3
+  url_launcher: ^6.3.1
+  file_picker: ^8.1.7
+  image_picker: ^1.1.2
+  # Compatível com archive 4.0.9, usado pela linha pdf/printing atual.
+  image: 4.10.2
+  flutter_local_notifications: ^19.4.2
+  timezone: ^0.10.1
+  # 3.12.x mantém compatibilidade com o XML exigido pelas notificações locais.
+  pdf: ^3.12.0
+  # 5.14.x usa a mesma linha do pdf 3.12 e não conflita com xml 6.x.
+  printing: ^5.14.3
 
 dev_dependencies:
   flutter_test:

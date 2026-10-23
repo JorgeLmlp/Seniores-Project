@@ -54,9 +54,7 @@ class _CampoTextoState extends State<CampoTexto> {
         suffixIcon: widget.senha && temTexto
             ? IconButton(
                 icon: Icon(
-                  mostrarSenha
-                      ? Icons.visibility
-                      : Icons.visibility_off,
+                  mostrarSenha ? Icons.visibility : Icons.visibility_off,
                 ),
                 onPressed: () {
                   setState(() {
@@ -66,9 +64,7 @@ class _CampoTextoState extends State<CampoTexto> {
               )
             : null,
 
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
     );
   }
@@ -93,23 +89,18 @@ class CampoDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: valor,
+      initialValue: valor,
 
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: prefixIcon,
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-        ),
+        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
       ),
 
       icon: const Icon(Icons.keyboard_arrow_down),
 
       items: itens.map((item) {
-        return DropdownMenuItem<String>(
-          value: item,
-          child: Text(item),
-        );
+        return DropdownMenuItem<String>(value: item, child: Text(item));
       }).toList(),
 
       onChanged: onChanged,

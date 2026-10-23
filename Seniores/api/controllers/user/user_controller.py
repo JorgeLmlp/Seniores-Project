@@ -1,5 +1,6 @@
 from flask import jsonify, request
 from services.User_services import UserService
+from services.auth_service import emitir_token
 
 
 user_service = UserService()
@@ -29,7 +30,8 @@ def listar_usuarios():
     """Lista usuarios e permite filtrar pacientes pelo cuidador vinculado."""
     tipo = request.args.get('tipo')
     cuidador_id = request.args.get('cuidador_id')
-    usuarios, status = user_service.listar(tipo, cuidador_id)
+    responsavel_id = request.args.get('responsavel_id')
+    usuarios, status = user_service.listar(tipo, cuidador_id, responsavel_id)
 
     if status == 400:
         return jsonify({'erro': 'Tipo de usuario ou cuidador_id invalido'}), 400
@@ -56,7 +58,10 @@ def login():
         return jsonify({'erro': 'Email e senha sao obrigatorios; tipo deve ser valido'}), 400
     if status == 401:
         return jsonify({'erro': 'Email ou senha invalidos'}), 401
-    return jsonify(_usuario_json(usuario)), 200
+    resposta = _usuario_json(usuario)
+    resposta["token"] = emitir_token(usuario)
+    resposta["token_expira_em"] = 8 * 60 * 60
+    return jsonify(resposta), 200
 
 
 def atualizar_usuario(tipo, usuario_id):

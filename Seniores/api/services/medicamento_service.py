@@ -7,7 +7,9 @@ class MedicamentoService:
 
     # Apenas estes campos podem ser alterados depois do cadastro.
     CAMPOS_EDITAVEIS = {
-        "nome", "descricao", "dosagem", "fabricante", "lote", "quantidade"
+        "nome", "descricao", "dosagem", "frequencia", "horarios", "alertas",
+        "fabricante", "lote", "quantidade",
+        "alerta_sonoro", "som_alerta"
     }
 
     def criar(self, paciente_id, info):
