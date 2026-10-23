@@ -4,7 +4,9 @@ import '../widgets/custom_textField.dart';
 import '../widgets/custom_botao.dart';
 import 'tela_cadastro.dart';
 import 'tela_inicio.dart';
-
+import '../services/api_service.dart';
+import '../services/session_service.dart';
+import 'tela_recuperar_senha.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -19,9 +21,10 @@ class _LoginState extends State<Login> {
 
   String mensagemErro = '';
   bool lembrarDados = true;
+  bool enviando = false;
 
   bool validarEmail(String email) {
-    final regex = RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$',);
+    final regex = RegExp(r'^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}$');
 
     return regex.hasMatch(email);
   }
@@ -30,11 +33,11 @@ class _LoginState extends State<Login> {
   void dispose() {
     emailController.dispose();
     senhaController.dispose();
-    
+
     super.dispose();
   }
 
-  void fazerLogin() {
+  Future<void> fazerLogin() async {
     String email = emailController.text.trim();
     String senha = senhaController.text;
 
@@ -42,43 +45,37 @@ class _LoginState extends State<Login> {
       setState(() {
         mensagemErro = 'Digite seu e-mail.';
       });
-    } 
-
-    else if (!validarEmail(email)) {
+    } else if (!validarEmail(email)) {
       setState(() {
         mensagemErro = 'Digite um e-mail válido.';
       });
-    }
-
-     else if (senha.isEmpty) {
+    } else if (senha.isEmpty) {
       setState(() {
         mensagemErro = 'Digite sua senha.';
       });
-    }
-
-     else if (senha.length < 6) {
+    } else if (senha.length < 6) {
       setState(() {
         mensagemErro = 'A senha deve possuir pelo menos 6 caracteres.';
       });
-    } 
-    
-    else {
+    } else {
       setState(() {
         mensagemErro = '';
+        enviando = true;
       });
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Login realizado com sucesso!'),
-        ),
-      );
-
-       Navigator.pushReplacement(
-         context,
-         MaterialPageRoute(
-           builder: (_) => const Home(),
-         ),
-       ); //Tela inicio
+      try {
+        final usuario = await ApiService().login(email: email, senha: senha);
+        await SessionService.instance.iniciar(usuario, lembrar: lembrarDados);
+        if (!mounted) return;
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (_) => const Home()),
+        );
+      } on ApiException catch (erro) {
+        if (mounted) setState(() => mensagemErro = erro.message);
+      } finally {
+        if (mounted) setState(() => enviando = false);
+      }
     }
   }
 
@@ -127,10 +124,7 @@ class _LoginState extends State<Login> {
                 controller: emailController,
                 hintText: 'E-mail',
                 keyboardType: TextInputType.emailAddress,
-                prefixIcon: const Icon(
-                  Icons.email,
-                  color: Color(0xFF275DAD),
-                ),
+                prefixIcon: const Icon(Icons.email, color: Color(0xFF275DAD)),
               ),
 
               const SizedBox(height: 20),
@@ -139,50 +133,46 @@ class _LoginState extends State<Login> {
                 controller: senhaController,
                 hintText: 'Senha',
                 senha: true,
-                prefixIcon: const Icon(
-                  Icons.lock,
-                  color: Color(0xFF275DAD),
-                ),
+                prefixIcon: const Icon(Icons.lock, color: Color(0xFF275DAD)),
               ),
-             
-               const SizedBox(height: 10),
 
-          Row(
-          children: [
-            Checkbox(
-              value: lembrarDados,
-              activeColor: const Color(0xFF275DAD),
-              onChanged: (value) {
-                setState(() {
-                  lembrarDados = value!;
-                });
-              },
-            ),
+              const SizedBox(height: 10),
 
-            const Text('Lembrar-me'),
-
-            const Spacer(),
-
-            TextButton(
-              onPressed: () {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  const SnackBar(
-                    content: Text('Em breve.'),
+              Row(
+                children: [
+                  Checkbox(
+                    value: lembrarDados,
+                    activeColor: const Color(0xFF275DAD),
+                    onChanged: (value) {
+                      setState(() {
+                        lembrarDados = value!;
+                      });
+                    },
                   ),
-                );
-              },
-              child: const Text(
-                'Esqueceu sua senha?',
-                style: TextStyle(
-                  color: Color(0xFF275DAD),
-                ),
+
+                  const Text('Lembrar-me'),
+
+                  const Spacer(),
+
+                  TextButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const RecuperarSenha(),
+                        ),
+                      );
+                    },
+                    child: const Text(
+                      'Esqueceu sua senha?',
+                      style: TextStyle(color: Color(0xFF275DAD)),
+                    ),
+                  ),
+                ],
               ),
-            ),
-          ],
-        ),
-          
-          const SizedBox(height: 20),
-         
+
+              const SizedBox(height: 20),
+
               if (mensagemErro.isNotEmpty)
                 Padding(
                   padding: const EdgeInsets.only(bottom: 15),
@@ -196,19 +186,16 @@ class _LoginState extends State<Login> {
                 ),
 
               Botao(
-                texto: 'Entrar',
-                onPressed: fazerLogin,
+                texto: enviando ? 'Entrando...' : 'Entrar',
+                onPressed: enviando ? () {} : fazerLogin,
               ),
 
               const SizedBox(height: 20),
 
-                const Row(
+              const Row(
                 children: [
                   Expanded(
-                    child: Divider(
-                      thickness: 1,
-                      color: Color(0xFFD9D9D9),
-                    ),
+                    child: Divider(thickness: 1, color: Color(0xFFD9D9D9)),
                   ),
                   Padding(
                     padding: EdgeInsets.symmetric(horizontal: 10),
@@ -221,36 +208,30 @@ class _LoginState extends State<Login> {
                     ),
                   ),
                   Expanded(
-                    child: Divider(
-                      thickness: 1,
-                      color: Color(0xFFD9D9D9),
-                    ),
+                    child: Divider(thickness: 1, color: Color(0xFFD9D9D9)),
                   ),
                 ],
               ),
 
-                const SizedBox(height: 20),
+              const SizedBox(height: 20),
 
-             Botao(
-            texto: 'Criar uma conta',
-            backgroundColor: Colors.white,
-            textColor: const Color(0xFF275DAD),
-            borderColor: const Color(0xFF275DAD),
-            borderWidth: 2,
-            onPressed: () {
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => const Cadastro(),
-                ),
-              );
-            },
+              Botao(
+                texto: 'Criar uma conta',
+                backgroundColor: Colors.white,
+                textColor: const Color(0xFF275DAD),
+                borderColor: const Color(0xFF275DAD),
+                borderWidth: 2,
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const Cadastro()),
+                  );
+                },
+              ),
+            ],
           ),
-        ],
+        ),
       ),
-   ),
-),
-    
     );
   }
 }

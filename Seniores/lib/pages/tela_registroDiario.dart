@@ -4,6 +4,9 @@ import '../widgets/custom_textField.dart';
 import '../widgets/custom_botao.dart';
 import '../widgets/custom_barraPersonalizada.dart';
 import '../models/registroDiario.dart';
+import '../services/api_service.dart';
+import '../services/session_service.dart';
+import '../widgets/custom_menu.dart';
 
 class RegistroDiario extends StatefulWidget {
   const RegistroDiario({super.key});
@@ -20,10 +23,33 @@ class _RegistroDiarioState extends State<RegistroDiario> {
   int incidenteTipoSelecionado = 0;
 
   final TextEditingController observacoesController = TextEditingController();
-  final TextEditingController incidenteDescricaoController = TextEditingController();
-  final TextEditingController horarioController = TextEditingController(text: "10:00");
+  final TextEditingController incidenteDescricaoController =
+      TextEditingController();
+  final TextEditingController horarioController = TextEditingController(
+    text: "10:00",
+  );
   final TextEditingController duvidasController = TextEditingController();
   final List<Map<String, dynamic>> listaIncidentes = [];
+  bool _salvando = false;
+  DateTime _dataRegistro = DateTime.now();
+
+  String _formatarData(DateTime data) {
+    return '${data.day.toString().padLeft(2, '0')}/${data.month.toString().padLeft(2, '0')}/${data.year}';
+  }
+
+  Future<void> _selecionarData() async {
+    final escolhida = await showDatePicker(
+      context: context,
+      firstDate: DateTime(2000),
+      lastDate: DateTime.now(),
+      initialDate: _dataRegistro.isAfter(DateTime.now())
+          ? DateTime.now()
+          : _dataRegistro,
+    );
+    if (escolhida != null && mounted) {
+      setState(() => _dataRegistro = escolhida);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -47,13 +73,17 @@ class _RegistroDiarioState extends State<RegistroDiario> {
                     cor: Colors.black,
                   ),
                   IconButton(
-                    icon: const Icon(Icons.calendar_today_rounded, color: azulTema, size: 28),
-                    onPressed: () {},
+                    icon: const Icon(
+                      Icons.calendar_today_rounded,
+                      color: azulTema,
+                      size: 28,
+                    ),
+                    onPressed: _selecionarData,
                   ),
                 ],
               ),
-              const AppText(
-                texto: 'Hoje, 15/04',
+              AppText(
+                texto: 'Registro de ${_formatarData(_dataRegistro)}',
                 tamanho: 18,
                 peso: FontWeight.bold,
                 cor: azulTema,
@@ -150,7 +180,9 @@ class _RegistroDiarioState extends State<RegistroDiario> {
                         if (incidenteDescricaoController.text.isNotEmpty) {
                           setState(() {
                             listaIncidentes.add({
-                              'tipo': incidenteTipoSelecionado == 0 ? 'Incidente' : 'Queda',
+                              'tipo': incidenteTipoSelecionado == 0
+                                  ? 'Incidente'
+                                  : 'Queda',
                               'hora': horarioController.text,
                               'descricao': incidenteDescricaoController.text,
                               'cor': Colors.amber,
@@ -174,16 +206,27 @@ class _RegistroDiarioState extends State<RegistroDiario> {
                     padding: const EdgeInsets.symmetric(vertical: 4.0),
                     child: Row(
                       children: [
-                        Icon(Icons.warning_amber_rounded, color: incidente['cor'], size: 20),
+                        Icon(
+                          Icons.warning_amber_rounded,
+                          color: incidente['cor'],
+                          size: 20,
+                        ),
                         const SizedBox(width: 6),
                         Expanded(
                           child: RichText(
                             text: TextSpan(
-                              style: TextStyle(color: incidente['cor'], fontSize: 14, fontFamily: 'Inter'),
+                              style: TextStyle(
+                                color: incidente['cor'],
+                                fontSize: 14,
+                                fontFamily: 'Inter',
+                              ),
                               children: [
                                 TextSpan(
-                                  text: '${incidente['tipo']} às ${incidente['hora']}',
-                                  style: const TextStyle(fontWeight: FontWeight.bold),
+                                  text:
+                                      '${incidente['tipo']} às ${incidente['hora']}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                                 ),
                                 TextSpan(text: ' - ${incidente['descricao']}'),
                               ],
@@ -217,21 +260,11 @@ class _RegistroDiarioState extends State<RegistroDiario> {
 
               Center(
                 child: Botao(
-                  texto: 'Concluir',
+                  texto: _salvando ? 'Salvando...' : 'Concluir',
                   largura: 160,
                   altura: 45,
                   borderRadius: 12,
-                  onPressed: () {
-                  final novoRegistro = RegistroModel(
-                    humor: humor <= 1.0 ? humor * 10 : humor,
-                    dor: dor <= 1.0 ? dor * 10 : dor,
-                    apetite: apetite <= 1.0 ? apetite * 10 : apetite,
-                    mobilidade: mobilidade <= 1.0 ? mobilidade * 10 : mobilidade,
-                    totalIncidentes: listaIncidentes.length,
-                    tendencia: "Leve piora",
-                  );
-                  Navigator.pop(context, novoRegistro);
-                },
+                  onPressed: _salvando ? () {} : _concluir,
                 ),
               ),
               const SizedBox(height: 20),
@@ -240,21 +273,81 @@ class _RegistroDiarioState extends State<RegistroDiario> {
         ),
       ),
 
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: 3,
-        type: BottomNavigationBarType.fixed,
-        selectedItemColor: azulTema,
-        unselectedItemColor: Colors.grey.shade600,
-        selectedFontSize: 12,
-        unselectedFontSize: 12,
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home_outlined), label: 'Início'),
-          BottomNavigationBarItem(icon: Icon(Icons.medication_outlined), label: 'Medicamentos'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Cuidados'),
-          BottomNavigationBarItem(icon: Icon(Icons.calendar_month), label: 'Diário de saúde'),
-          BottomNavigationBarItem(icon: Icon(Icons.menu), label: 'Mais'),
-        ],
-      ),
+      bottomNavigationBar: const Menu(paginaAtual: 3),
     );
+  }
+
+  Future<void> _concluir() async {
+    final humorAtual = humor <= 1.0 ? humor * 10 : humor;
+    final dorAtual = dor <= 1.0 ? dor * 10 : dor;
+    final apetiteAtual = apetite <= 1.0 ? apetite * 10 : apetite;
+    final mobilidadeAtual = mobilidade <= 1.0 ? mobilidade * 10 : mobilidade;
+    final tendencia = await _calcularTendencia(
+      humorAtual,
+      dorAtual,
+      apetiteAtual,
+      mobilidadeAtual,
+    );
+    final novoRegistro = RegistroModel(
+      data: _dataRegistro,
+      humor: humorAtual,
+      dor: dorAtual,
+      apetite: apetiteAtual,
+      mobilidade: mobilidadeAtual,
+      totalIncidentes: listaIncidentes.length,
+      tendencia: tendencia,
+      observacoes: observacoesController.text.trim(),
+      duvidas: duvidasController.text.trim(),
+    );
+    setState(() => _salvando = true);
+    try {
+      final salvo = await ApiService().criarRegistroDiario(
+        SessionService.instance.pacienteId,
+        novoRegistro,
+      );
+      if (!mounted) return;
+      Navigator.pop(context, salvo);
+    } on ApiException catch (exception) {
+      if (!mounted) return;
+      setState(() => _salvando = false);
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text(exception.message)));
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _salvando = false);
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Não foi possível salvar o diário.')),
+      );
+    }
+  }
+
+  Future<String> _calcularTendencia(
+    double humorAtual,
+    double dorAtual,
+    double apetiteAtual,
+    double mobilidadeAtual,
+  ) async {
+    try {
+      final historico = await ApiService().listarRegistrosDiarios(
+        SessionService.instance.pacienteId,
+      );
+      if (historico.isEmpty) return 'Primeiro registro';
+      final anterior = historico.first;
+      final atual =
+          (humorAtual + (10 - dorAtual) + apetiteAtual + mobilidadeAtual) / 4;
+      final passado =
+          (anterior.humor +
+              (10 - anterior.dor) +
+              anterior.apetite +
+              anterior.mobilidade) /
+          4;
+      final diferenca = atual - passado;
+      if (diferenca >= 0.5) return 'Melhora';
+      if (diferenca <= -0.5) return 'Atenção';
+      return 'Estável';
+    } catch (_) {
+      return 'Sem comparação';
+    }
   }
 }

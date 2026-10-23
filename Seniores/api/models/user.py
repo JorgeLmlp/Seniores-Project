@@ -15,6 +15,10 @@ class Usuario(db.Model):
     phoneNumber = db.Column(db.String(20), nullable=False)
     tipo = db.Column(db.String(20))
     cpf = db.Column(db.String(14), unique=True, nullable=False)
+    idade = db.Column(db.Integer, nullable=True)
+    tipo_sanguineo = db.Column(db.String(5), nullable=True)
+    preferencias = db.Column(db.String(500), nullable=True)
+    senha_reset_nonce = db.Column(db.String(128), nullable=True)
 
     __mapper_args__ = {
         # SQLAlchemy usa `tipo` para identificar a subclasse carregada.
@@ -70,6 +74,9 @@ class Usuario(db.Model):
             name=dados["nome"], email=dados["email"],
             password=generate_password_hash(dados["senha"]),
             phoneNumber=dados["telefone"], cpf=dados["cpf"], tipo=dados["tipo"],
+            idade=dados.get("idade"),
+            tipo_sanguineo=dados.get("tipo_sanguineo"),
+            preferencias=dados.get("preferencias"),
         )
         return cls.salvar(usuario)
 
@@ -78,6 +85,8 @@ class Usuario(db.Model):
         campos = {
             "nome": "name", "name": "name", "email": "email",
             "telefone": "phoneNumber", "phoneNumber": "phoneNumber", "cpf": "cpf",
+            "idade": "idade", "tipo_sanguineo": "tipo_sanguineo",
+            "preferencias": "preferencias",
         }
         for chave, atributo in campos.items():
             if chave in info:
@@ -115,5 +124,8 @@ class Usuario(db.Model):
             'email': self.email,
             'phoneNumber': self.phoneNumber,
             'cpf': self.cpf,
+            'idade': self.idade,
+            'tipo_sanguineo': self.tipo_sanguineo,
+            'preferencias': self.preferencias,
             'tipo': self.tipo,
         }

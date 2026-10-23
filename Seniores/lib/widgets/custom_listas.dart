@@ -8,7 +8,7 @@ class ListaPadrao extends StatelessWidget {
   final String titulo;
   final String subtitulo;
   final String textoBotao;
-  final VoidCallback? onPressed;
+  final VoidCallback onPressed;
   final Color corIndicador;
   final Color corBotao;
 
@@ -17,7 +17,7 @@ class ListaPadrao extends StatelessWidget {
     required this.titulo,
     required this.subtitulo,
     required this.textoBotao,
-    this.onPressed,
+    required this.onPressed,
     this.corIndicador = const Color(0xFF275DAD),
     this.corBotao = const Color(0xFF275DAD),
   });
@@ -27,10 +27,7 @@ class ListaPadrao extends StatelessWidget {
     return Column(
       children: [
         Padding(
-          padding: const EdgeInsets.symmetric(
-            horizontal: 16,
-            vertical: 10,
-          ),
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
           child: Row(
             children: [
               Container(
@@ -48,16 +45,8 @@ class ListaPadrao extends StatelessWidget {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    AppText(
-                      texto: titulo,
-                      tamanho: 15,
-                      peso: FontWeight.w600,
-                    ),
-                    AppText(
-                      texto: subtitulo,
-                      tamanho: 12,
-                      cor: Colors.grey,
-                    ),
+                    AppText(texto: titulo, tamanho: 15, peso: FontWeight.w600),
+                    AppText(texto: subtitulo, tamanho: 12, cor: Colors.grey),
                   ],
                 ),
               ),
@@ -68,7 +57,7 @@ class ListaPadrao extends StatelessWidget {
                 altura: 32,
                 fontSize: 12,
                 backgroundColor: corBotao,
-                onPressed: onPressed ?? () {},
+                onPressed: onPressed,
               ),
             ],
           ),
@@ -97,9 +86,7 @@ class ListaComCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          CardTitulo(
-            titulo: tituloCard,
-          ),
+          CardTitulo(titulo: tituloCard),
           ...itens,
         ],
       ),

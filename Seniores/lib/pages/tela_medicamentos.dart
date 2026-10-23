@@ -1,4 +1,3 @@
-
 import 'package:flutter/material.dart';
 import '../widgets/custom_textos.dart';
 import '../widgets/custom_listas.dart';
@@ -8,12 +7,15 @@ import '../models/medicamento.dart';
 import 'tela_inicio.dart';
 // import 'tela_detalhesRemedio.dart';
 import 'tela_cadastroRemedio.dart';
-// import 'tela_cuidados.dart';
-// import 'tela_diarioSaude.dart';
-// import 'tela_notificacoes.dart';
+import 'tela_detalhesMedicamento.dart';
+import '../services/api_service.dart';
+import '../services/session_service.dart';
+import '../services/notification_service.dart';
 
 class Medicamentos extends StatefulWidget {
-  const Medicamentos({super.key});
+  final int? medicamentoId;
+
+  const Medicamentos({super.key, this.medicamentoId});
 
   @override
   State<Medicamentos> createState() => _MedicamentosState();
@@ -22,18 +24,78 @@ class Medicamentos extends StatefulWidget {
 class _MedicamentosState extends State<Medicamentos> {
   int abaSelecionada = 0;
 
-//Demonstracao
-  final List<Medicamento> _listaMedicamentos = [
-    Medicamento(
-      nome: "Dipirona 500mg",
-      dosagem: "1 comprimido - 3 vezes ao dia",
-      frequencia: "diário",
-      horarios: ["08:00", "14:00", "20:00"],
-    ),
-  ];
+  final List<Medicamento> _listaMedicamentos = [];
+  bool carregando = true;
+  String? erro;
+  bool _medicamentoInicialAberto = false;
 
   // Mapeamento dos nomes das abas para filtrar a lista
-  final List<String> _abasFrequencia = ["diário", "Semanal", "Mensal"];
+  final List<String> _abasFrequencia = ["diario", "semanal", "mensal"];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarMedicamentos();
+  }
+
+  Future<void> _carregarMedicamentos() async {
+    try {
+      final medicamentos = await ApiService().listarMedicamentos(
+        SessionService.instance.pacienteId,
+      );
+      if (!mounted) return;
+      setState(() {
+        _listaMedicamentos
+          ..clear()
+          ..addAll(medicamentos);
+        erro = null;
+        carregando = false;
+      });
+      await NotificationService.sincronizar(medicamentos);
+      final medicamentoInicial = widget.medicamentoId == null
+          ? null
+          : medicamentos
+                .where((item) => item.id == widget.medicamentoId)
+                .firstOrNull;
+      if (medicamentoInicial != null && !_medicamentoInicialAberto) {
+        _medicamentoInicialAberto = true;
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          if (mounted) _abrirDetalhes(medicamentoInicial);
+        });
+      }
+    } on ApiException catch (exception) {
+      if (mounted) {
+        setState(() {
+          erro = exception.message;
+          carregando = false;
+        });
+      }
+    } on StateError catch (exception) {
+      if (mounted) {
+        setState(() {
+          erro = exception.message;
+          carregando = false;
+        });
+      }
+    }
+  }
+
+  Future<void> _abrirDetalhes(Medicamento item) async {
+    final resultado = await Navigator.push<Object?>(
+      context,
+      MaterialPageRoute(
+        builder: (_) => TelaDetalhesMedicamento(medicamento: item),
+      ),
+    );
+    if (!mounted) return;
+    if (resultado is Medicamento) {
+      final indice = _listaMedicamentos.indexOf(item);
+      if (indice >= 0) setState(() => _listaMedicamentos[indice] = resultado);
+    } else if (resultado == true) {
+      setState(() => _listaMedicamentos.remove(item));
+    }
+    await NotificationService.sincronizar(_listaMedicamentos);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -60,9 +122,7 @@ class _MedicamentosState extends State<Medicamentos> {
                     onPressed: () {
                       Navigator.pushReplacement(
                         context,
-                        MaterialPageRoute(
-                          builder: (_) => const Home(),
-                        ),
+                        MaterialPageRoute(builder: (_) => const Home()),
                       );
                     },
                   ),
@@ -80,11 +140,7 @@ class _MedicamentosState extends State<Medicamentos> {
 
               // Abas (Diários, Semanais, Mensais)
               GrupoBotoes(
-                itens: const [
-                  "Diários",
-                  "Semanais",
-                  "Mensais",
-                ],
+                itens: const ["Diários", "Semanais", "Mensais"],
                 selecionado: abaSelecionada,
                 onSelecionado: (index) {
                   setState(() {
@@ -99,7 +155,23 @@ class _MedicamentosState extends State<Medicamentos> {
 
               // Lista dinâmica de medicamentos
               Expanded(
-                child: medicamentosFiltrados.isEmpty
+                child: carregando
+                    ? const Center(child: CircularProgressIndicator())
+                    : erro != null
+                    ? Center(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(erro!, textAlign: TextAlign.center),
+                            const SizedBox(height: 12),
+                            TextButton(
+                              onPressed: _carregarMedicamentos,
+                              child: const Text('Tentar novamente'),
+                            ),
+                          ],
+                        ),
+                      )
+                    : medicamentosFiltrados.isEmpty
                     ? const Center(
                         child: AppText(
                           texto: "Nenhum medicamento cadastrado.",
@@ -117,6 +189,9 @@ class _MedicamentosState extends State<Medicamentos> {
                               titulo: item.nome,
                               subtitulo: item.descricaoSubtitulo,
                               textoBotao: "Detalhes",
+                              onPressed: () async {
+                                await _abrirDetalhes(item);
+                              },
                             ),
                           );
                         },
@@ -134,24 +209,47 @@ class _MedicamentosState extends State<Medicamentos> {
           // Abre a tela de cadastro e espera o retorno do novo Medicamento
           final novoMedicamento = await Navigator.push<Medicamento>(
             context,
-            MaterialPageRoute(
-              builder: (_) => const CadastroRemedio(),
-            ),
+            MaterialPageRoute(builder: (_) => const CadastroRemedio()),
           );
 
           // Se um novo medicamento foi retornado, adiciona à lista
           if (novoMedicamento != null) {
-            setState(() {
-              _listaMedicamentos.add(novoMedicamento);
-            });
+            try {
+              final salvo = await ApiService().criarMedicamento(
+                SessionService.instance.pacienteId,
+                novoMedicamento,
+              );
+              final salvoComFoto =
+                  novoMedicamento.fotoBytes == null ||
+                      novoMedicamento.fotoNome == null
+                  ? salvo
+                  : await ApiService().enviarFotoMedicamento(
+                      medicamentoId: salvo.id!,
+                      nome: novoMedicamento.fotoNome!,
+                      bytes: novoMedicamento.fotoBytes!,
+                    );
+              if (!mounted) return;
+              setState(() {
+                _listaMedicamentos.add(salvoComFoto);
+              });
+              await NotificationService.sincronizar(_listaMedicamentos);
+            } on ApiException catch (exception) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(exception.message)));
+            } on StateError catch (exception) {
+              if (!context.mounted) return;
+              ScaffoldMessenger.of(
+                context,
+              ).showSnackBar(SnackBar(content: Text(exception.message)));
+            }
           }
         },
         child: const Icon(Icons.add, color: Colors.white),
       ),
 
-      bottomNavigationBar: const Menu(
-        paginaAtual: 1,
-      ),
+      bottomNavigationBar: const Menu(paginaAtual: 1),
     );
   }
 }

@@ -6,7 +6,21 @@ import '../widgets/custom_menu.dart';
 import '../widgets/custom_bolinhas.dart';
 import 'tela_medicamentos.dart';
 import 'tela_registroDiario.dart';
+import 'tela_cuidados.dart';
+import 'tela_notificacoes.dart';
+import 'tela_login.dart';
+import '../services/session_service.dart';
 import '../models/registroDiario.dart';
+import '../models/medicamento.dart';
+import 'tela_conta.dart';
+import 'tela_estoque.dart';
+import 'tela_seguranca.dart';
+import 'tela_gastos.dart';
+import 'tela_cuidadores.dart';
+import 'tela_comunicados.dart';
+import 'tela_relatorios.dart';
+import 'tela_selecionar_paciente.dart';
+import '../services/api_service.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -17,6 +31,106 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   RegistroModel? registroAtual;
+  bool _carregandoPacientes = false;
+  List<Medicamento> _proximosMedicamentos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _prepararPacienteSelecionado();
+  }
+
+  Future<void> _prepararPacienteSelecionado() async {
+    if (SessionService.instance.tipoUsuario == 'paciente') {
+      await Future.wait([
+        _carregarResumoMedicamentos(),
+        _carregarResumoDiario(),
+      ]);
+      return;
+    }
+    setState(() => _carregandoPacientes = true);
+    try {
+      final pacientes = await ApiService().listarPacientesVinculados();
+      if (!mounted) return;
+      if (SessionService.instance.pacienteSelecionadoId == null &&
+          pacientes.length == 1) {
+        await SessionService.instance.selecionarPaciente(
+          pacientes.first.id,
+          pacientes.first.nome,
+        );
+      }
+      if (SessionService.instance.pacienteSelecionadoId != null) {
+        await Future.wait([
+          _carregarResumoMedicamentos(),
+          _carregarResumoDiario(),
+        ]);
+      }
+    } on ApiException catch (_) {
+      // A tela de seleção exibirá o erro detalhado quando for aberta.
+    } finally {
+      if (mounted) setState(() => _carregandoPacientes = false);
+    }
+  }
+
+  Future<void> _trocarPaciente() async {
+    final mudou = await Navigator.push<bool>(
+      context,
+      MaterialPageRoute(builder: (_) => const SelecionarPaciente()),
+    );
+    if (mudou == true && mounted) {
+      setState(() {});
+      await _carregarResumoMedicamentos();
+    }
+  }
+
+  Future<void> _carregarResumoMedicamentos() async {
+    try {
+      final medicamentos = await ApiService().listarMedicamentos(
+        SessionService.instance.pacienteId,
+      );
+      if (mounted) setState(() => _proximosMedicamentos = medicamentos);
+    } on ApiException {
+      if (mounted) setState(() => _proximosMedicamentos = []);
+    } on StateError {
+      if (mounted) setState(() => _proximosMedicamentos = []);
+    }
+  }
+
+  Future<void> _carregarResumoDiario() async {
+    try {
+      final registros = await ApiService().listarRegistrosDiarios(
+        SessionService.instance.pacienteId,
+      );
+      final hoje = DateTime.now();
+      final registroHoje = registros.where((registro) {
+        final data = registro.data;
+        return data != null &&
+            data.year == hoje.year &&
+            data.month == hoje.month &&
+            data.day == hoje.day;
+      }).firstOrNull;
+      if (mounted) setState(() => registroAtual = registroHoje);
+    } on ApiException {
+      if (mounted) setState(() => registroAtual = null);
+    } on StateError {
+      if (mounted) setState(() => registroAtual = null);
+    }
+  }
+
+  String _dataAtual() {
+    final agora = DateTime.now();
+    return '${agora.day.toString().padLeft(2, '0')}/${agora.month.toString().padLeft(2, '0')}';
+  }
+
+  Future<void> _sair() async {
+    await SessionService.instance.encerrar();
+    if (!mounted) return;
+    Navigator.pushAndRemoveUntil(
+      context,
+      MaterialPageRoute(builder: (_) => const Login()),
+      (_) => false,
+    );
+  }
 
   Future<void> _abrirRegistroDiario() async {
     final resultado = await Navigator.push(
@@ -68,20 +182,50 @@ class _HomeState extends State<Home> {
                 leading: const Icon(Icons.health_and_safety),
                 title: const Text("Exames e consultas"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Cuidados()),
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.calendar_today),
                 title: const Text("Diário de saúde"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const RegistroDiario()),
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.people),
                 title: const Text("Cuidadores"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: SessionService.instance.tipoUsuario != 'paciente'
+                    ? null
+                    : () {
+                        Navigator.pop(context);
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(builder: (_) => const Cuidadores()),
+                        );
+                      },
               ),
+              if (SessionService.instance.tipoUsuario != 'paciente')
+                ListTile(
+                  leading: const Icon(Icons.switch_account),
+                  title: const Text('Trocar paciente'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () {
+                    Navigator.pop(context);
+                    _trocarPaciente();
+                  },
+                ),
               const SizedBox(height: 20),
               const Padding(
                 padding: EdgeInsets.symmetric(horizontal: 16),
@@ -98,43 +242,61 @@ class _HomeState extends State<Home> {
                 leading: const Icon(Icons.campaign),
                 title: const Text("Comunicados"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Comunicados()),
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.attach_money),
                 title: const Text("Gastos"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Gastos()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.inventory_2_outlined),
+                title: const Text("Estoque"),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Estoque()),
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.description),
                 title: const Text("Relatórios"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
-              ),
-              const SizedBox(height: 20),
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  "Apoio",
-                  style: TextStyle(
-                    color: Color(0xFF275DAD),
-                    fontSize: 26,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Relatorios()),
+                  );
+                },
               ),
               ListTile(
-                leading: const Icon(Icons.menu_book),
-                title: const Text("Dicionário"),
+                leading: const Icon(Icons.notifications),
+                title: const Text("Notificações"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
-              ),
-              ListTile(
-                leading: const Icon(Icons.help_outline),
-                title: const Text("Ajuda"),
-                trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Notificacoes()),
+                  );
+                },
               ),
               const SizedBox(height: 20),
               const Padding(
@@ -152,13 +314,43 @@ class _HomeState extends State<Home> {
                 leading: const Icon(Icons.settings),
                 title: const Text("Configurações"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MinhaConta()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.emergency_outlined),
+                title: const Text("Segurança e emergência"),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const Seguranca()),
+                  );
+                },
               ),
               ListTile(
                 leading: const Icon(Icons.account_circle),
                 title: const Text("Minha conta"),
                 trailing: const Icon(Icons.chevron_right),
-                onTap: () {},
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const MinhaConta()),
+                  );
+                },
+              ),
+              ListTile(
+                leading: const Icon(Icons.logout),
+                title: const Text("Sair da conta"),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: _sair,
               ),
             ],
           ),
@@ -176,11 +368,12 @@ class _HomeState extends State<Home> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  const Column(
+                  Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       AppText(
-                        texto: "Olá, nome!",
+                        texto:
+                            'Olá, ${SessionService.instance.nomeUsuario ?? 'usuário'}!',
                         tamanho: 28,
                         peso: FontWeight.bold,
                         cor: Colors.black,
@@ -206,73 +399,35 @@ class _HomeState extends State<Home> {
                 ],
               ),
 
+              if (SessionService.instance.tipoUsuario != 'paciente') ...[
+                const SizedBox(height: 16),
+                Card(
+                  color: const Color(0xFFEAF1FF),
+                  child: ListTile(
+                    leading: const Icon(Icons.switch_account),
+                    title: Text(
+                      SessionService.instance.pacienteSelecionadoNome == null
+                          ? 'Nenhum paciente selecionado'
+                          : 'Paciente: ${SessionService.instance.pacienteSelecionadoNome}',
+                    ),
+                    subtitle: Text(
+                      _carregandoPacientes
+                          ? 'Carregando vínculos...'
+                          : 'Toque para trocar o paciente',
+                    ),
+                    onTap: _trocarPaciente,
+                  ),
+                ),
+              ],
+
               const SizedBox(height: 25),
-
-              Row(
-                children: [
-                  Expanded(
-                    child: CardPadrao(
-                      altura: 95,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(width: 42, height: 42),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                SizedBox(height: 3),
-                                Text("", style: TextStyle(fontSize: 10, color: Color(0xFF636E72))),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: CardPadrao(
-                      altura: 95,
-                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
-                      child: Row(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          Container(width: 42, height: 42),
-                          const SizedBox(width: 12),
-                          const Expanded(
-                            child: Column(
-                              mainAxisAlignment: MainAxisAlignment.center,
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("", style: TextStyle(fontSize: 12, fontWeight: FontWeight.bold)),
-                                SizedBox(height: 3),
-                                Text("", style: TextStyle(fontSize: 10, color: Color(0xFF636E72))),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              const SizedBox(height: 20),
 
               // Card diário de saúde
               CardPadrao(
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    const CardTitulo(
-                      titulo: "Diário de saúde",
-                      data: "13/04",
-                    ),
+                    CardTitulo(titulo: "Diário de saúde", data: _dataAtual()),
                     Padding(
                       padding: const EdgeInsets.all(16.0),
                       child: registroAtual == null
@@ -281,13 +436,25 @@ class _HomeState extends State<Home> {
                                 const Row(
                                   mainAxisAlignment: MainAxisAlignment.center,
                                   children: [
-                                    Icon(Icons.warning_amber_rounded, color: Colors.grey, size: 18),
+                                    Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.grey,
+                                      size: 18,
+                                    ),
                                     SizedBox(width: 5),
-                                    Text("0 incidentes registrados hoje", style: TextStyle(fontWeight: FontWeight.bold)),
+                                    Text(
+                                      "Ainda não há registro diário hoje",
+                                      style: TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
                                   ],
                                 ),
                                 const SizedBox(height: 15),
-                                const Text("Registre humor, dor e eventos\npara acompanhar a evolução", textAlign: TextAlign.center),
+                                const Text(
+                                  "Registre humor, dor e eventos\npara acompanhar a evolução",
+                                  textAlign: TextAlign.center,
+                                ),
                                 const SizedBox(height: 20),
                                 Botao(
                                   texto: 'Registrar dia de hoje',
@@ -300,38 +467,43 @@ class _HomeState extends State<Home> {
                                   onPressed: _abrirRegistroDiario,
                                 ),
                               ],
-                            ): Column(
+                            )
+                          : Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
                                 IntrinsicHeight(
                                   child: Row(
                                     children: [
-                                      const VerticalDivider(thickness: 2, color: Colors.grey),
+                                      const VerticalDivider(
+                                        thickness: 2,
+                                        color: Colors.grey,
+                                      ),
                                       const SizedBox(width: 8),
                                       Column(
-                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
                                         children: [
-                                        IndicadorPontos(
-                                          label: "Humor",
-                                          valor: registroAtual!.humor,
-                                        ),
+                                          IndicadorPontos(
+                                            label: "Humor",
+                                            valor: registroAtual!.humor,
+                                          ),
 
-                                        IndicadorPontos(
-                                          label: "Dor",
-                                          valor: registroAtual!.dor,
-                                          inverso: true,
-                                        ),
+                                          IndicadorPontos(
+                                            label: "Dor",
+                                            valor: registroAtual!.dor,
+                                            inverso: true,
+                                          ),
 
-                                        IndicadorPontos(
-                                          label: "Apetite",
-                                          valor: registroAtual!.apetite,
-                                        ),
+                                          IndicadorPontos(
+                                            label: "Apetite",
+                                            valor: registroAtual!.apetite,
+                                          ),
 
-                                        IndicadorPontos(
-                                          label: "Mobilidade",
-                                          valor: registroAtual!.mobilidade,
-                                        ),
-                                       ],
+                                          IndicadorPontos(
+                                            label: "Mobilidade",
+                                            valor: registroAtual!.mobilidade,
+                                          ),
+                                        ],
                                       ),
                                     ],
                                   ),
@@ -339,21 +511,37 @@ class _HomeState extends State<Home> {
                                 const SizedBox(height: 16),
                                 Row(
                                   children: [
-                                    const Icon(Icons.warning_amber_rounded, color: Colors.amber, size: 20),
+                                    const Icon(
+                                      Icons.warning_amber_rounded,
+                                      color: Colors.amber,
+                                      size: 20,
+                                    ),
                                     const SizedBox(width: 6),
                                     Text(
                                       "${registroAtual!.totalIncidentes} incidente registrado hoje",
-                                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                   ],
                                 ),
                                 const SizedBox(height: 12),
                                 Row(
                                   children: [
-                                    const Text("Tendência: ", style: TextStyle(color: Colors.grey, fontSize: 13)),
+                                    const Text(
+                                      "Tendência: ",
+                                      style: TextStyle(
+                                        color: Colors.grey,
+                                        fontSize: 13,
+                                      ),
+                                    ),
                                     Text(
                                       registroAtual!.tendencia,
-                                      style: const TextStyle(fontWeight: FontWeight.w500, fontSize: 13),
+                                      style: const TextStyle(
+                                        fontWeight: FontWeight.w500,
+                                        fontSize: 13,
+                                      ),
                                     ),
                                     const SizedBox(width: 4),
                                     const Icon(Icons.trending_down, size: 18),
@@ -369,16 +557,29 @@ class _HomeState extends State<Home> {
               const SizedBox(height: 20),
 
               CardPadrao(
-                child: const Column(
+                child: Column(
                   children: [
-                    CardTitulo(
-                      titulo: "Próximos medicamentos",
-                    ),
-                    ListTile(
-                      title: Text(""),
-                      subtitle: Text(""),
-                    ),
-                    Divider(),
+                    const CardTitulo(titulo: "Próximos medicamentos"),
+                    if (_proximosMedicamentos.isEmpty)
+                      const Padding(
+                        padding: EdgeInsets.all(18),
+                        child: Text('Nenhum medicamento cadastrado.'),
+                      )
+                    else
+                      ..._proximosMedicamentos
+                          .take(3)
+                          .map(
+                            (medicamento) => ListTile(
+                              leading: const Icon(Icons.medication_outlined),
+                              title: Text(medicamento.nome),
+                              subtitle: Text(
+                                medicamento.horarios.isEmpty
+                                    ? medicamento.dosagem
+                                    : '${medicamento.dosagem} • ${medicamento.horarios.join(', ')}',
+                              ),
+                            ),
+                          ),
+                    const Divider(),
                   ],
                 ),
               ),
@@ -389,9 +590,7 @@ class _HomeState extends State<Home> {
         ),
       ),
 
-      bottomNavigationBar: const Menu(
-        paginaAtual: 0,
-      ),
+      bottomNavigationBar: const Menu(paginaAtual: 0),
     );
   }
 }
