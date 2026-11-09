@@ -148,13 +148,14 @@ class _LoginState extends State<Login> {
                       });
                     },
                   ),
-                  Text(
+                  Expanded(
+                      child: Text(
                     'Lembrar-me',
                     style: TextStyle(
                         color: Theme.of(context).colorScheme.onSurface),
-                  ),
-                  Spacer(),
-                  TextButton(
+                  )),
+                  Expanded(
+                      child: TextButton(
                     onPressed: () {
                       ScaffoldMessenger.of(context).showSnackBar(
                         SnackBar(
@@ -164,11 +165,12 @@ class _LoginState extends State<Login> {
                     },
                     child: Text(
                       'Esqueceu sua senha?',
+                      textAlign: TextAlign.center,
                       style: TextStyle(
                         color: Cores.azul,
                       ),
                     ),
-                  ),
+                  )),
                 ],
               ),
               SizedBox(height: 20),
@@ -193,7 +195,7 @@ class _LoginState extends State<Login> {
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.cinza.withOpacity(0.3),
+                      color: Cores.cinza.withValues(alpha: 0.3),
                     ),
                   ),
                   Padding(
@@ -209,7 +211,7 @@ class _LoginState extends State<Login> {
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.cinza.withOpacity(0.3),
+                      color: Cores.cinza.withValues(alpha: 0.3),
                     ),
                   ),
                 ],

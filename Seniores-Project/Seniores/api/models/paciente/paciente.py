@@ -84,6 +84,7 @@ class Paciente(Usuario):
             "idade": self.idade,
             "tipo_sanguineo": self.tipo_sanguineo,
             "preferencias": self.preferencias or {},
+            "cuidador_id": self.cuidador_id,
         })
         return dados
 

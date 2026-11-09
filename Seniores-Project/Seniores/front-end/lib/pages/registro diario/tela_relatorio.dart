@@ -76,11 +76,12 @@ class _RelatorioState extends State<Relatorio> {
                     const SizedBox(height: 16),
                     FilledButton(
                         onPressed: () async {
-                          if (_erro == null)
+                          if (_erro == null) {
                             await Navigator.push(
                                 context,
                                 MaterialPageRoute(
                                     builder: (_) => const RegistroDiario()));
+                          }
                           if (!mounted) return;
                           setState(() {
                             _carregando = true;

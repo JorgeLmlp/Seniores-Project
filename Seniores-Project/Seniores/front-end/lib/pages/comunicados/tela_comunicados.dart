@@ -54,9 +54,10 @@ class _DestinatariosState extends State<Destinatarios> {
         }
       });
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     }
   }
 
@@ -73,7 +74,8 @@ class _DestinatariosState extends State<Destinatarios> {
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Expanded(
+                      child: Row(
                     children: [
                       IconButton(
                         icon: Icon(Icons.arrow_back_ios_new,
@@ -83,12 +85,13 @@ class _DestinatariosState extends State<Destinatarios> {
                             ? Navigator.pop(context)
                             : null,
                       ),
-                      AppText(
-                          texto: 'Comunicados',
-                          estilo: AppText.titulo,
-                          tamanho: 24),
+                      Expanded(
+                          child: AppText(
+                              texto: 'Comunicados',
+                              estilo: AppText.titulo,
+                              tamanho: 24)),
                     ],
-                  ),
+                  )),
                   IconButton(
                     icon:
                         Icon(Icons.edit_outlined, color: Cores.azul, size: 22),

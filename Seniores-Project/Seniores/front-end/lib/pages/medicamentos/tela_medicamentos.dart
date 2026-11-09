@@ -77,12 +77,13 @@ class _MedicamentosState extends State<Medicamentos> {
                     onPressed: () => Navigator.pop(context),
                   ),
                   SizedBox(width: 8),
-                  AppText(
+                  Expanded(
+                      child: AppText(
                     texto: 'Medicamentos',
                     estilo: AppText.titulo,
                     tamanho: 22,
                     peso: FontWeight.bold,
-                  ),
+                  )),
                 ],
               ),
               SizedBox(height: 20),
@@ -131,8 +132,9 @@ class _MedicamentosState extends State<Medicamentos> {
                                             ),
                                           ),
                                         );
-                                        if (mounted)
+                                        if (mounted) {
                                           await _carregarMedicamentos();
+                                        }
                                       },
                                     ),
                                   );

@@ -208,7 +208,14 @@ Por padrão, ela fica disponível em `http://127.0.0.1:5001`.
 
 Na inicialização, `db.create_all()` cria tabelas inexistentes e a migração
 aditiva em `extensions.py` acrescenta colunas novas aos bancos anteriores sem
-remover dados. SQLite é aceito somente em testes quando `API_TESTING=1`.
+remover dados. SQLite também pode ser usado no desenvolvimento local.
+Na Vercel, MySQL externo e `SECRET_KEY` fixa são obrigatórios; a preparação
+do banco é explícita com `python -m flask --app app init-db`.
+
+## Deploy na Vercel
+
+Siga o [guia de deploy](../DEPLOY_VERCEL.md). Configure a pasta `api` como
+Root Directory e o preset Flask no projeto Vercel.
 
 ## Testes
 

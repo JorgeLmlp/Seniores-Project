@@ -11,6 +11,8 @@ import 'package:widgets/models/consulta.dart';
 import 'package:widgets/models/gasto.dart';
 import 'package:widgets/pages/comunicados/tela_cadastroDestinatario.dart';
 import 'package:widgets/pages/tela_vinculos.dart';
+import 'package:widgets/pages/tela_notificacoes.dart';
+import 'package:widgets/pages/tela_permissoes.dart';
 import 'package:widgets/main.dart';
 import 'package:widgets/services/app_settings.dart';
 
@@ -122,6 +124,135 @@ void main() {
                   ]),
             200,
             headers: {'content-type': 'application/json; charset=utf-8'})));
+  });
+  testWidgets('notificações mostram convite antes de selecionar paciente',
+      (tester) async {
+    SessionService.instance.iniciar(
+        {'id': 3, 'tipo': 'cuidador', 'name': 'Maria', 'token': 'test'});
+    var aceito = false;
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(home: Notificacoes()));
+      await tester.pumpAndSettle();
+      expect(find.text('Convite de João'), findsOneWidget);
+      expect(find.text('Ana'), findsOneWidget);
+      expect(find.text('Ver ou trocar paciente'), findsOneWidget);
+      await tester.tap(find.text('Aceitar'));
+      await tester.pumpAndSettle();
+      expect(aceito, isTrue);
+      expect(find.text('Nenhum convite pendente.'), findsOneWidget);
+      expect(tester.takeException(), isNull);
+    },
+        () => MockClient((request) async {
+              if (request.method == 'PATCH') {
+                expect(request.url.path, '/minha-conta/solicitacoes/1');
+                expect(jsonDecode(request.body)['status'], 'aceita');
+                aceito = true;
+                return http.Response('{}', 200);
+              }
+              return http.Response(
+                  jsonEncode(aceito
+                      ? []
+                      : [
+                          {
+                            'id': 1,
+                            'status': 'pendente',
+                            'paciente': {'nome': 'Ana'},
+                            'responsavel': {'nome': 'João'}
+                          }
+                        ]),
+                  200);
+            }));
+  });
+  testWidgets('responsável convida cuidador pelo e-mail cadastrado',
+      (tester) async {
+    SessionService.instance.iniciar(
+        {'id': 2, 'tipo': 'responsavel', 'name': 'João', 'token': 'test'});
+    var conviteEnviado = false;
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(home: Vinculos()));
+      await tester.pumpAndSettle();
+      await tester.tap(find.text('Convidar cuidador por e-mail'));
+      await tester.pumpAndSettle();
+      await tester.enterText(
+          find.byType(TextField).last, ' Cuidador@EXAMPLE.com ');
+      await tester.tap(find.text('Enviar convite'));
+      await tester.pumpAndSettle();
+      expect(conviteEnviado, isTrue);
+      expect(tester.takeException(), isNull);
+    },
+        () => MockClient((request) async {
+              if (request.method == 'POST') {
+                expect(request.url.path, '/minha-conta/solicitacoes');
+                expect(jsonDecode(request.body),
+                    {'email': 'cuidador@example.com', 'paciente_id': 7});
+                conviteEnviado = true;
+                return http.Response('{}', 201);
+              }
+              return http.Response(
+                  jsonEncode(request.url.path.endsWith('/pacientes')
+                      ? [
+                          {'id': 7, 'name': 'Ana'}
+                        ]
+                      : []),
+                  200);
+            }));
+  });
+  testWidgets('responsável define escrita de paciente e cuidador',
+      (tester) async {
+    SessionService.instance.iniciar(
+        {'id': 2, 'tipo': 'responsavel', 'name': 'João', 'token': 'test'});
+    final salvos = <Map<String, dynamic>>[];
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(
+          home: PermissoesPaciente(
+              pacienteId: 7, pacienteNome: 'Ana', cuidadorId: 3)));
+      await tester.pumpAndSettle();
+      expect(find.text('Permissões de escrita'), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsNWidgets(2));
+      await tester.tap(find.byType(SwitchListTile).first);
+      await tester.pumpAndSettle();
+      await tester.ensureVisible(find.byType(SwitchListTile).last);
+      await tester.tap(find.byType(SwitchListTile).last);
+      await tester.pumpAndSettle();
+      expect(salvos, [
+        {'membro_tipo': 'paciente', 'membro_id': 7, 'nivel': 'leitura'},
+        {'membro_tipo': 'cuidador', 'membro_id': 3, 'nivel': 'escrita'},
+      ]);
+      expect(tester.takeException(), isNull);
+    },
+        () => MockClient((request) async {
+              expect(request.url.path, '/pacientes/7/permissoes');
+              if (request.method == 'GET') return http.Response('[]', 200);
+              final dados = Map<String, dynamic>.from(jsonDecode(request.body));
+              salvos.add(dados);
+              return http.Response(
+                  jsonEncode({'id': salvos.length, 'paciente_id': 7, ...dados}),
+                  201);
+            }));
+  });
+  testWidgets('responsável abre permissões pelo cartão do paciente',
+      (tester) async {
+    SessionService.instance.iniciar(
+        {'id': 2, 'tipo': 'responsavel', 'name': 'João', 'token': 'test'});
+    await http.runWithClient(() async {
+      await tester.pumpWidget(const MaterialApp(home: Vinculos()));
+      await tester.pumpAndSettle();
+      expect(find.text('Cuidador vinculado'), findsOneWidget);
+      await tester.ensureVisible(find.text('Gerenciar permissões de escrita'));
+      await tester.tap(find.text('Gerenciar permissões de escrita'));
+      await tester.pumpAndSettle();
+      expect(find.text('Permissões de escrita'), findsOneWidget);
+      expect(find.byType(SwitchListTile), findsNWidgets(2));
+      expect(tester.takeException(), isNull);
+    },
+        () => MockClient((request) async {
+              final dados = request.url.path == '/minha-conta/pacientes'
+                  ? [
+                      {'id': 7, 'name': 'Ana', 'cuidador_id': 3}
+                    ]
+                  : [];
+              return http.Response(jsonEncode(dados), 200);
+            }));
   });
   testWidgets('aplicativo aplica modo escuro e relógio de 24 horas',
       (tester) async {

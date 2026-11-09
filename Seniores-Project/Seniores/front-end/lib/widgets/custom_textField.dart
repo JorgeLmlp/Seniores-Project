@@ -36,8 +36,9 @@ class _CampoTextoState extends State<CampoTexto> {
   }
 
   void _atualizarTexto() {
-    if (mounted)
+    if (mounted) {
       setState(() => temTexto = widget.controller?.text.isNotEmpty ?? false);
+    }
   }
 
   @override
@@ -104,7 +105,8 @@ class CampoDropdown extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DropdownButtonFormField<String>(
-      value: valor,
+      isExpanded: true,
+      initialValue: valor,
       decoration: InputDecoration(
         hintText: hintText,
         prefixIcon: prefixIcon,

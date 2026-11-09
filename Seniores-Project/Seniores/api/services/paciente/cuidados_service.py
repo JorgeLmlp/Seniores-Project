@@ -4,6 +4,7 @@ from datetime import datetime
 
 from models.medicamento.remedio import Remedio
 from models.cuidador.cuidador import Cuidador
+from models.paciente.paciente import Paciente
 from models.paciente.cuidados import (
     AdministracaoMedicamento, AlertaPanico, ContatoEmergencia, DietaRestricao,
     Incidente, PermissaoMembro, TurnoCuidador,
@@ -79,14 +80,14 @@ class CuidadosService:
         elif recurso == "permissoes":
             if "nivel" in dados and dados["nivel"] not in {"leitura", "escrita"}:
                 return None
-            if "membro_tipo" in dados and dados["membro_tipo"] not in {"cuidador", "responsavel"}:
+            if "membro_tipo" in dados and dados["membro_tipo"] not in {"paciente", "cuidador", "responsavel"}:
                 return None
             if "membro_id" in dados and (not isinstance(dados["membro_id"], int) or isinstance(dados["membro_id"], bool)):
                 return None
             tipo = dados.get("membro_tipo")
             membro_id = dados.get("membro_id")
             if tipo and membro_id is not None:
-                classe = {"cuidador": Cuidador, "responsavel": Responsavel}.get(tipo)
+                classe = {"paciente": Paciente, "cuidador": Cuidador, "responsavel": Responsavel}.get(tipo)
                 if not classe or not usuario_repository.buscar_por_id(classe, membro_id):
                     return None
         elif recurso == "alertas-panico" and "resolvido" in dados and not isinstance(dados["resolvido"], bool):
@@ -97,11 +98,17 @@ class CuidadosService:
         modelo, _ = self._config(recurso)
         if not modelo:
             return None, 400
-        if not paciente_repository.buscar_paciente(paciente_id):
+        paciente = paciente_repository.buscar_paciente(paciente_id)
+        if not paciente:
             return None, 404
         dados = self._normalizar(recurso, info)
         if dados is None:
             return None, 400
+        if recurso == "permissoes" and dados["membro_tipo"] != "responsavel":
+            membro = dados["membro_tipo"]
+            esperado = {"paciente": paciente.id, "cuidador": paciente.cuidador_id}[membro]
+            if esperado is None or dados["membro_id"] != esperado:
+                return None, 400
         medicamento = dados.pop("_medicamento", None)
         if medicamento and medicamento.paciente_id != paciente_id:
             return None, 400
@@ -127,6 +134,10 @@ class CuidadosService:
         registro, status = self.buscar(recurso, registro_id)
         if status != 200:
             return None, status
+        if recurso == "permissoes" and any(
+            chave in info for chave in ("membro_tipo", "membro_id")
+        ):
+            return None, 400
         dados = self._normalizar(recurso, info, parcial=True)
         if dados is None:
             return None, 400

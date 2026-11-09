@@ -15,7 +15,16 @@ app = Flask(__name__)
 # Aplicativos Flutter nativos (Android/iOS/Windows) nao dependem de CORS.
 CORS(app,resources={r"/*": {"origins": "*"}})
 # Carrega DATABASE_URL e DEBUG antes de configurar o Flask.
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+na_vercel = os.getenv('VERCEL') == '1'
+if not na_vercel:
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+if na_vercel:
+    if not os.getenv('DATABASE_URL', '').startswith('mysql+pymysql://'):
+        raise RuntimeError('Na Vercel, configure DATABASE_URL com um MySQL externo (mysql+pymysql://).')
+    if not os.getenv('SECRET_KEY'):
+        raise RuntimeError('Na Vercel, configure uma SECRET_KEY fixa para validar as sessoes.')
+    if os.getenv('API_TESTING') == '1':
+        raise RuntimeError('API_TESTING nao pode estar habilitado na Vercel.')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or secrets.token_hex(32)
 database_url = os.getenv("DATABASE_URL", "sqlite:///seniores-local.db")
 
@@ -58,12 +67,18 @@ def criar_banco_mysql_se_necessario(url_banco):
 
 
 if database_url.startswith("mysql"):
-    criar_banco_mysql_se_necessario(database_url)
+    if os.getenv('AUTO_CREATE_DATABASE', '0' if na_vercel else '1') == '1':
+        criar_banco_mysql_se_necessario(database_url)
 elif not database_url.startswith("sqlite"):
     raise RuntimeError("DATABASE_URL deve apontar para MySQL ou SQLite.")
 
 app.config['SQLALCHEMY_DATABASE_URI'] = database_url
 app.config["SQLALCHEMY_TRACK_MODIFICATIONS"] = False
+if database_url.startswith('mysql'):
+    app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
+        'pool_pre_ping': True, 'pool_recycle': 280,
+        'pool_size': 2, 'max_overflow': 0,
+    }
 
 db.init_app(app)
 
@@ -143,9 +158,22 @@ def migrar_schema_existente():
                     )
 
 
+def inicializar_banco():
+    """Prepara as tabelas em uma etapa explicita antes do deploy."""
+    with app.app_context():
+        db.create_all()
+        migrar_schema_existente()
+
+
+@app.cli.command('init-db')
+def init_db_command():
+    inicializar_banco()
+    print('Tabelas e migracoes preparadas.')
+
+
 with app.app_context():
     # Importar os models faz o SQLAlchemy conhecer todas as tabelas antes do create_all.
     import models
     # Cria apenas tabelas inexistentes; alteracoes em tabelas ja criadas exigem migracao.
-    db.create_all()
-    migrar_schema_existente()
+    if os.getenv('AUTO_INIT_DB', '0' if na_vercel else '1') == '1':
+        inicializar_banco()

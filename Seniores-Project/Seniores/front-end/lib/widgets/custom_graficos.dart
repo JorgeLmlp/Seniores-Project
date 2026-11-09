@@ -21,20 +21,23 @@ class _GraficoEstatisticasState extends State<GraficoEstatisticas> {
           List<Map<String, dynamic>>>(
       future: registros,
       builder: (context, snap) {
-        if (snap.connectionState != ConnectionState.done)
+        if (snap.connectionState != ConnectionState.done) {
           return const Center(child: CircularProgressIndicator());
-        if (snap.hasError)
+        }
+        if (snap.hasError) {
           return Center(
               child: TextButton(
                   onPressed: () =>
                       setState(() => registros = ApiService().listarDiarios()),
                   child: const Text('Falha ao carregar. Tentar novamente')));
+        }
         final dados = [...snap.data!]..sort((a, b) => (a['data_criacao'] ?? '')
             .toString()
             .compareTo((b['data_criacao'] ?? '').toString()));
-        if (dados.isEmpty)
+        if (dados.isEmpty) {
           return const Center(
               child: Text('Registre um diário para visualizar o gráfico.'));
+        }
         const campos = {
           'humor_nivel': 'Humor',
           'dor_nivel': 'Dor',
@@ -48,8 +51,9 @@ class _GraficoEstatisticasState extends State<GraficoEstatisticas> {
           final pontos = <FlSpot>[];
           for (var i = 0; i < dados.length; i++) {
             final valor = dados[i][campo];
-            if (valor is num)
+            if (valor is num) {
               pontos.add(FlSpot(i.toDouble(), valor.toDouble()));
+            }
           }
           linhas.add(LineChartBarData(
               spots: pontos,
@@ -58,10 +62,11 @@ class _GraficoEstatisticasState extends State<GraficoEstatisticas> {
               isCurved: false,
               dotData: const FlDotData(show: true)));
         }
-        if (linhas.every((l) => l.spots.isEmpty))
+        if (linhas.every((l) => l.spots.isEmpty)) {
           return const Center(
               child: Text(
                   'Os registros antigos não possuem níveis numéricos. Adicione um novo diário.'));
+        }
         return Column(children: [
           Expanded(
               child: LineChart(LineChartData(

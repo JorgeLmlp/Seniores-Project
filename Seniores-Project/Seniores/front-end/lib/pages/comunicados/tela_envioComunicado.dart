@@ -66,9 +66,10 @@ class _ComunicadosEnvioState extends State<ComunicadosEnvio>
         'mensagem': mensagemController.text.trim(),
       });
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     } finally {
       if (mounted) setState(() => _enviando = false);
     }
@@ -103,7 +104,8 @@ class _ComunicadosEnvioState extends State<ComunicadosEnvio>
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Expanded(
+                      child: Row(
                     children: [
                       IconButton(
                         icon: Icon(Icons.arrow_back_ios_new,
@@ -111,12 +113,13 @@ class _ComunicadosEnvioState extends State<ComunicadosEnvio>
                             size: 20),
                         onPressed: () => Navigator.pop(context),
                       ),
-                      AppText(
-                          texto: 'Comunicados',
-                          estilo: AppText.titulo,
-                          tamanho: 24),
+                      Expanded(
+                          child: AppText(
+                              texto: 'Comunicados',
+                              estilo: AppText.titulo,
+                              tamanho: 24)),
                     ],
-                  ),
+                  )),
                   IconButton(
                     icon: Icon(Icons.add_circle_outline,
                         color: Cores.azul, size: 26),

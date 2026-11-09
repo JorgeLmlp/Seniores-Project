@@ -12,6 +12,8 @@ import '../../models/exame.dart';
 import 'tela_consultas.dart';
 import 'tela_exames.dart';
 import '../../services/api_service.dart';
+import '../../models/recurso_cuidado.dart';
+import 'tela_registros_cuidado.dart';
 
 class Cuidados extends StatefulWidget {
   const Cuidados({super.key});
@@ -89,7 +91,7 @@ class _CuidadosState extends State<Cuidados> {
                   SizedBox(width: 8),
                   Expanded(
                       child: AppText(
-                    texto: 'Exames e Consultas',
+                    texto: 'Cuidados',
                     estilo: AppText.titulo,
                     tamanho: 22,
                     peso: FontWeight.bold,
@@ -97,6 +99,22 @@ class _CuidadosState extends State<Cuidados> {
                 ],
               ),
               SizedBox(height: 20),
+              Text('Acompanhamento do paciente',
+                  style: Theme.of(context).textTheme.titleMedium),
+              const SizedBox(height: 12),
+              for (final recurso in recursosCuidado)
+                Card(
+                    child: ListTile(
+                  leading: Icon(recurso.icone,
+                      color: Theme.of(context).colorScheme.primary),
+                  title: Text(recurso.titulo),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (_) => RegistrosCuidado(recurso: recurso))),
+                )),
+              const SizedBox(height: 20),
               ListaComCard(
                 tituloCard: "Consultas",
                 itens: [

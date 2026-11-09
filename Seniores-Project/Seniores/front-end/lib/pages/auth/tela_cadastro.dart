@@ -294,7 +294,7 @@ class _CadastroState extends State<Cadastro> {
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.cinza.withOpacity(0.3),
+                      color: Cores.cinza.withValues(alpha: 0.3),
                     ),
                   ),
                   Padding(
@@ -310,7 +310,7 @@ class _CadastroState extends State<Cadastro> {
                   Expanded(
                     child: Divider(
                       thickness: 1,
-                      color: Cores.cinza.withOpacity(0.3),
+                      color: Cores.cinza.withValues(alpha: 0.3),
                     ),
                   ),
                 ],

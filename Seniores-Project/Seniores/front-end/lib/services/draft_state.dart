@@ -32,19 +32,22 @@ mixin DraftState<T extends StatefulWidget> on State<T> {
       final stored = await LocalStore.instance.get(_scope, _key);
       if (!mounted ||
           stored is! Map ||
-          draftControllers.entries.any((e) => e.value.text != baseline[e.key]))
+          draftControllers.entries.any((e) => e.value.text != baseline[e.key])) {
         return;
+      }
       for (final entry in draftControllers.entries) {
-        if (stored['text']?[entry.key] is String)
+        if (stored['text']?[entry.key] is String) {
           entry.value.text = stored['text'][entry.key];
+        }
       }
       restoreDraftValues(Map<String, dynamic>.from(stored['values'] ?? {}));
       if (mounted) setState(() {});
     } catch (_) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(const SnackBar(
             content:
                 Text('Não foi possível abrir o armazenamento temporário.')));
+      }
     } finally {
       _loaded = true;
     }
@@ -62,7 +65,9 @@ mixin DraftState<T extends StatefulWidget> on State<T> {
   Future<void> _save() async {
     if (_finished ||
         SessionService.instance.escopo != _scope ||
-        (!_loaded && !_changed)) return;
+        (!_loaded && !_changed)) {
+      return;
+    }
     final value = {
       'text': draftControllers.map((k, v) => MapEntry(k, v.text)),
       'values': draftValues

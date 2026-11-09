@@ -126,11 +126,12 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                     onPressed: () => Navigator.pop(context),
                   ),
                   SizedBox(width: 8),
-                  AppText(
+                  Expanded(
+                      child: AppText(
                     texto: 'Medicamentos',
                     estilo: AppText.titulo,
                     tamanho: 24,
-                  ),
+                  )),
                 ],
               ),
               SizedBox(height: 20),
@@ -244,8 +245,9 @@ class _DetalhesMedicamentoState extends State<DetalhesMedicamento> {
                               final cor = _obterCorStatus(status);
 
                               String textoBotao = 'Concluir';
-                              if (status == 'concluido')
+                              if (status == 'concluido') {
                                 textoBotao = 'Concluído';
+                              }
 
                               return Row(
                                 mainAxisAlignment:

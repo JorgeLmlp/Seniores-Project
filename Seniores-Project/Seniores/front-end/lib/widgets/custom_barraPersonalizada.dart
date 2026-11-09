@@ -71,23 +71,26 @@ class ItemNivelSaude extends StatelessWidget {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
+              Expanded(
+                  child: Text(
                 titulo,
                 style: const TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 16,
                   fontWeight: FontWeight.bold,
                 ),
-              ),
-              Text(
+              )),
+              Flexible(
+                  child: Text(
                 '$descricao • ${(valor * 10).round()}/10',
+                textAlign: TextAlign.end,
                 style: TextStyle(
                   fontFamily: 'Inter',
                   fontSize: 14,
                   fontWeight: FontWeight.bold,
                   color: corBarra,
                 ),
-              ),
+              )),
             ],
           ),
           const SizedBox(height: 4),

@@ -1,4 +1,5 @@
 # Environment variables
+.vercel/
 .env
 .env.local
 .env.*.local

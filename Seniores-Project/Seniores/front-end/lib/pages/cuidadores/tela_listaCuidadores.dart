@@ -33,9 +33,10 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
       setState(() => lista.addAll(registros.map((registro) =>
           Cuidador.fromJson(registro['dados'] as Map<String, dynamic>))));
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     }
   }
 
@@ -90,7 +91,7 @@ class _ListaCuidadoresState extends State<ListaCuidadores> {
                               children: [
                                 CircleAvatar(
                                   radius: 20,
-                                  backgroundColor: Cores.cinza.withOpacity(0.2),
+                                  backgroundColor: Cores.cinza.withValues(alpha: 0.2),
                                   child: Icon(Icons.person,
                                       color: Cores.cinza, size: 24),
                                 ),

@@ -8,6 +8,8 @@ import '../../widgets/custom_textField.dart';
 import '../../utils/cores.dart';
 import '../../utils/mascaras.dart';
 import '../../services/api_service.dart';
+import '../../models/recurso_cuidado.dart';
+import 'tela_registros_cuidado.dart';
 
 class AdicionarExame extends StatefulWidget {
   const AdicionarExame({super.key});
@@ -43,15 +45,17 @@ class _AdicionarExameState extends State<AdicionarExame>
 
   @override
   void restoreDraftValues(Map<String, dynamic> v) {
-    if (v['_statusSelecionado'] != null)
+    if (v['_statusSelecionado'] != null) {
       _statusSelecionado = v['_statusSelecionado'] as int;
+    }
     if (v['_alertas'] is List) {
       _alertas.clear();
       _alertas.addAll((v['_alertas'] as List).cast<String>());
     }
     _dataSelecionada = DateTime.tryParse(v['data'] ?? '');
-    if (v['hora'] is int)
+    if (v['hora'] is int) {
       _horarioInicio = TimeOfDay(hour: v['hora'], minute: v['minuto']);
+    }
   }
 
   int _statusSelecionado = 0;
@@ -240,9 +244,10 @@ class _AdicionarExameState extends State<AdicionarExame>
         ),
       );
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     } finally {
       if (mounted) setState(() => _salvando = false);
     }
@@ -277,12 +282,13 @@ class _AdicionarExameState extends State<AdicionarExame>
                     onPressed: () => Navigator.pop(context),
                   ),
                   SizedBox(width: 8),
-                  AppText(
+                  Expanded(
+                      child: AppText(
                     texto: 'Adicionar exame',
                     estilo: AppText.titulo,
                     tamanho: 22,
                     peso: FontWeight.bold,
-                  ),
+                  )),
                 ],
               ),
               SizedBox(height: 24),
@@ -495,26 +501,23 @@ class _AdicionarExameState extends State<AdicionarExame>
                   peso: FontWeight.bold,
                   cor: Cores.azul),
               SizedBox(height: 4),
-              Text('Escolha ou escaneie o pedido',
+              Text('Adicione o pedido ou resultado ao prontuário',
                   style: TextStyle(color: Colors.grey, fontSize: 12)),
               SizedBox(height: 12),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Wrap(
+                alignment: WrapAlignment.center,
+                spacing: 12,
+                runSpacing: 8,
                 children: [
                   ElevatedButton.icon(
-                    onPressed: () {},
+                    onPressed: () => Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => RegistrosCuidado(
+                                recurso: recursosCuidado.firstWhere(
+                                    (r) => r.rota == 'exames-documentos')))),
                     icon: Icon(Icons.upload_file, size: 18),
-                    label: Text('Upload'),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Cores.azul,
-                      foregroundColor: Colors.white,
-                    ),
-                  ),
-                  SizedBox(width: 12),
-                  ElevatedButton.icon(
-                    onPressed: () {},
-                    icon: Icon(Icons.qr_code_scanner, size: 18),
-                    label: Text('Escanear'),
+                    label: Text('Documentos de exames'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Cores.azul,
                       foregroundColor: Colors.white,

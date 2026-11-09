@@ -73,9 +73,10 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
       await _apiService.criarRegistro('cuidadores', cuidador.toJson());
       if (mounted) Navigator.pop(context, cuidador);
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     } finally {
       if (mounted) setState(() => _salvando = false);
     }
@@ -101,10 +102,11 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                         size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  AppText(
-                      texto: 'Novo Cuidador',
-                      estilo: AppText.titulo,
-                      tamanho: 24),
+                  Expanded(
+                      child: AppText(
+                          texto: 'Novo Cuidador',
+                          estilo: AppText.titulo,
+                          tamanho: 24)),
                 ],
               ),
             ),
@@ -115,7 +117,8 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Column(
+                      Expanded(
+                          child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           AppText(
@@ -130,7 +133,7 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                               tamanho: 11,
                               cor: Cores.cinza),
                         ],
-                      ),
+                      )),
                       Container(
                         decoration: BoxDecoration(
                           color: Cores.azul,
@@ -235,7 +238,7 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                             border: Border.all(
                                 color: ativo
                                     ? Cores.azul
-                                    : Cores.cinza.withOpacity(0.3)),
+                                    : Cores.cinza.withValues(alpha: 0.3)),
                           ),
                           child: Center(
                             child: Text(
@@ -302,7 +305,7 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
                       enabledBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
                         borderSide:
-                            BorderSide(color: Cores.cinza.withOpacity(0.3)),
+                            BorderSide(color: Cores.cinza.withValues(alpha: 0.3)),
                       ),
                       focusedBorder: OutlineInputBorder(
                         borderRadius: BorderRadius.circular(12),
@@ -349,7 +352,7 @@ class _TelaCadastroCuidadorState extends State<CadastroCuidador> {
         contentPadding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide(color: Cores.cinza.withOpacity(0.3)),
+          borderSide: BorderSide(color: Cores.cinza.withValues(alpha: 0.3)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(12),

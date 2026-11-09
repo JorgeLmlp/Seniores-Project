@@ -33,10 +33,12 @@ class _NovoGastoScreenState extends State<NovoGasto>
 
   @override
   void restoreDraftValues(Map<String, dynamic> v) {
-    if (v['_tipoSelecionado'] != null)
+    if (v['_tipoSelecionado'] != null) {
       _tipoSelecionado = v['_tipoSelecionado'] as String;
-    if (v['_corSelecionada'] != null)
+    }
+    if (v['_corSelecionada'] != null) {
       _corSelecionada = v['_corSelecionada'] as String;
+    }
   }
 
   final TextEditingController _nomeController = TextEditingController();

@@ -14,6 +14,8 @@ import '../pages/gastos/tela_gastos.dart';
 import '../pages/dicionario/tela_dicionario.dart';
 import '../pages/ajuda/tela_ajuda.dart';
 import '../utils/cores.dart';
+import '../models/recurso_cuidado.dart';
+import '../pages/cuidados/tela_registros_cuidado.dart';
 
 class MenuSanduiche extends StatelessWidget {
   const MenuSanduiche({super.key});
@@ -61,8 +63,8 @@ class MenuSanduiche extends StatelessWidget {
           children: [
             if (SessionService.instance.tipoUsuario != 'paciente')
               _buildMenuItem(
-                  icon: Icons.people_alt,
-                  title: 'Pacientes e vínculos',
+                  icon: Icons.switch_account_outlined,
+                  title: 'Trocar paciente / vínculos',
                   onTap: () {
                     Navigator.pop(context);
                     Navigator.push(context,
@@ -73,6 +75,13 @@ class MenuSanduiche extends StatelessWidget {
                 title: 'Sair da conta',
                 onTap: () => sairDaConta(context)),
             _buildSectionHeader("Cuidados"),
+            for (final recurso in recursosCuidado)
+              _buildMenuItem(icon: recurso.icone, title: recurso.titulo,
+                onTap: () {
+                  Navigator.pop(context);
+                  Navigator.push(context, MaterialPageRoute(builder: (_) =>
+                      RegistrosCuidado(recurso: recurso)));
+                }),
             _buildMenuItem(
               icon: Icons.medication,
               title: "Medicamentos",

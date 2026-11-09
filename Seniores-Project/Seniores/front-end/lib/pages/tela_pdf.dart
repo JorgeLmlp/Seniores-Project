@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:printing/printing.dart';
 import '../services/api_service.dart';
+import '../services/session_service.dart';
 
 class RelatoriosPdf extends StatefulWidget {
   const RelatoriosPdf({super.key});
@@ -9,6 +10,41 @@ class RelatoriosPdf extends StatefulWidget {
 }
 
 class _RelatoriosPdfState extends State<RelatoriosPdf> {
+  final email = TextEditingController();
+  final form = GlobalKey<FormState>();
+  @override
+  void dispose() {
+    email.dispose();
+    super.dispose();
+  }
+
+  Future<void> enviar() async {
+    if (!form.currentState!.validate()) return;
+    setState(() => ocupado = true);
+    try {
+      final id = SessionService.instance.pacienteId;
+      await ApiService().requisicao('POST', '/pacientes/$id/historico/email',
+          dados: {
+            'email': email.text.trim(),
+            'mes': periodo.month,
+            'ano': periodo.year
+          });
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Envio do relatório aceito.')));
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+            content: Text(e is ApiException
+                ? e.message
+                : 'Não foi possível enviar o relatório.')));
+      }
+    } finally {
+      if (mounted) setState(() => ocupado = false);
+    }
+  }
+
   DateTime periodo = DateTime.now();
   bool ocupado = false;
   Future<void> baixar() async {
@@ -21,11 +57,12 @@ class _RelatoriosPdfState extends State<RelatoriosPdf> {
           filename:
               'relatorio-${periodo.year}-${periodo.month.toString().padLeft(2, '0')}.pdf');
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(e is ApiException
                 ? e.message
                 : 'Não foi possível baixar o relatório. Verifique a conexão.')));
+      }
     } finally {
       if (mounted) setState(() => ocupado = false);
     }
@@ -64,5 +101,23 @@ class _RelatoriosPdfState extends State<RelatoriosPdf> {
             onPressed: ocupado ? null : baixar,
             icon: Icon(Icons.download),
             label: Text(ocupado ? 'Gerando PDF...' : 'Baixar PDF')),
+        const SizedBox(height: 24),
+        Form(
+            key: form,
+            child: TextFormField(
+                controller: email,
+                keyboardType: TextInputType.emailAddress,
+                decoration: const InputDecoration(
+                    labelText: 'E-mail do destinatário',
+                    border: OutlineInputBorder()),
+                validator: (v) => RegExp(r'^[^\s@]+@[^\s@]+\.[^\s@]+$')
+                        .hasMatch(v?.trim() ?? '')
+                    ? null
+                    : 'Informe um e-mail válido.')),
+        const SizedBox(height: 12),
+        OutlinedButton.icon(
+            onPressed: ocupado ? null : enviar,
+            icon: const Icon(Icons.email_outlined),
+            label: const Text('Enviar relatório por e-mail')),
       ]));
 }

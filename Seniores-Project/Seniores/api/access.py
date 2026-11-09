@@ -60,4 +60,9 @@ def verificar_escopo():
         return jsonify(erro='Paciente não vinculado à sua conta.'), 403
     if u.tipo != 'responsavel' and '/permissoes' in request.path and request.method != 'GET':
         return jsonify(erro='Somente o responsável pode alterar permissões.'), 403
+    if request.method in ('POST', 'PUT', 'PATCH', 'DELETE') and u.tipo in ('paciente', 'cuidador'):
+        from permissoes import pode_escrever
+
+        if not pode_escrever(paciente_id, u.tipo, u.id):
+            return jsonify(erro='Permissão de somente leitura para este paciente.'), 403
     return None

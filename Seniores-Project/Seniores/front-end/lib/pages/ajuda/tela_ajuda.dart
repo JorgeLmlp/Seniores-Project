@@ -162,14 +162,15 @@ class _AjudaScreenState extends State<Ajuda> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Text(
+                        Expanded(
+                            child: Text(
                           'Perguntas frequentes',
                           style: TextStyle(
                             fontWeight: FontWeight.bold,
                             fontSize: 16,
                             color: Cores.azul,
                           ),
-                        ),
+                        )),
                         GestureDetector(
                           onTap: () {},
                           child: Text(
@@ -265,7 +266,7 @@ class _AjudaScreenState extends State<Ajuda> {
                             Container(
                               padding: EdgeInsets.all(12),
                               decoration: BoxDecoration(
-                                color: Cores.azul.withOpacity(0.1),
+                                color: Cores.azul.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.headset_mic,

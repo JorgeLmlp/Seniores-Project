@@ -47,7 +47,7 @@ class DetalheCuidador extends StatelessWidget {
                           children: [
                             CircleAvatar(
                               radius: 28,
-                              backgroundColor: Cores.cinza.withOpacity(0.2),
+                              backgroundColor: Cores.cinza.withValues(alpha: 0.2),
                               child: Icon(Icons.person,
                                   color: Cores.cinza, size: 34),
                             ),
@@ -148,7 +148,7 @@ class DetalheCuidador extends StatelessWidget {
                           border: Border.all(
                               color: ativo
                                   ? Cores.azul
-                                  : Cores.cinza.withOpacity(0.3)),
+                                  : Cores.cinza.withValues(alpha: 0.3)),
                         ),
                         child: Center(
                           child: Text(

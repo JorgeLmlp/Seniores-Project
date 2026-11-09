@@ -3,6 +3,7 @@ import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
+import 'package:http_parser/http_parser.dart';
 import 'session_service.dart';
 import 'local_store.dart';
 
@@ -121,6 +122,51 @@ class ApiService {
   Future<dynamic> requisicao(String metodo, String caminho,
           {Map<String, dynamic>? dados}) =>
       _request(metodo, caminho, data: dados);
+
+  Future<Uint8List> baixarArquivo(String caminho) async {
+    try {
+      final response = await _client.get(Uri.parse('$_baseUrl$caminho'),
+          headers: {
+            'Authorization': 'Bearer ${SessionService.instance.token}'
+          }).timeout(const Duration(seconds: 30));
+      if (response.statusCode != 200) {
+        throw ApiException(
+            'Não foi possível abrir o arquivo (${response.statusCode}).');
+      }
+      return response.bodyBytes;
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw ApiException(
+          'Não foi possível baixar o arquivo. Verifique a conexão.');
+    }
+  }
+
+  Future<void> anexarExame(int pacienteId, Map<String, String> campos,
+      Uint8List bytes, String nomeArquivo, String mime) async {
+    try {
+      final request = http.MultipartRequest('POST',
+          Uri.parse('$_baseUrl/pacientes/$pacienteId/exames-documentos'))
+        ..headers['Authorization'] = 'Bearer ${SessionService.instance.token}'
+        ..fields.addAll(campos)
+        ..files.add(http.MultipartFile.fromBytes('arquivo', bytes,
+            filename: nomeArquivo, contentType: MediaType.parse(mime)));
+      final response = await _client.send(request)
+          .then(http.Response.fromStream)
+          .timeout(const Duration(seconds: 30));
+      if (response.statusCode != 201) {
+        final body = jsonDecode(response.body);
+        throw ApiException(body is Map
+            ? body['erro']?.toString() ?? 'Falha ao anexar exame.'
+            : 'Falha ao anexar exame.');
+      }
+    } on ApiException {
+      rethrow;
+    } catch (_) {
+      throw ApiException(
+          'Não foi possível enviar o arquivo. Verifique a conexão.');
+    }
+  }
 
   Future<Uint8List> baixarRelatorio(int ano, int mes) async {
     final id = SessionService.instance.pacienteId;

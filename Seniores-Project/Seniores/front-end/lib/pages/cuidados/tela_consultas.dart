@@ -69,16 +69,18 @@ class _TelaConsultasState extends State<Consultas> {
     try {
       await _apiService.atualizarRegistro(
           'consultas', consulta.id, {'concluida': novo, 'historico': novo});
-      if (mounted)
+      if (mounted) {
         setState(() {
           consulta.concluida = novo;
           consulta.historico = novo;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 e is ApiException ? e.message : 'Falha ao salvar o status.')));
+      }
     } finally {
       _atualizando.remove(consulta.id);
     }
@@ -101,7 +103,8 @@ class _TelaConsultasState extends State<Consultas> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
+                  Expanded(
+                      child: Row(
                     children: [
                       IconButton(
                         padding: EdgeInsets.zero,
@@ -114,13 +117,14 @@ class _TelaConsultasState extends State<Consultas> {
                         onPressed: () => Navigator.pop(context),
                       ),
                       SizedBox(width: 8),
-                      AppText(
+                      Expanded(
+                          child: AppText(
                         texto: 'Consultas',
                         estilo: AppText.titulo,
                         tamanho: 24,
-                      ),
+                      )),
                     ],
-                  ),
+                  )),
                   IconButton(
                     icon: Icon(Icons.refresh, color: Cores.azul),
                     onPressed: _carregar,

@@ -67,6 +67,22 @@ O campo `tipo` do login é opcional.
 
 ## 2. Relacionamentos entre usuários
 
+O fluxo atual de convite usa a conta autenticada. O responsável primeiro
+vincula um paciente por CPF (`POST /minha-conta/pacientes`) e depois envia o
+convite ao e-mail cadastrado do cuidador (`POST /minha-conta/solicitacoes`):
+
+```json
+{"paciente_id": 1, "email": "cuidador@example.com"}
+```
+
+O cuidador consulta os convites com `GET /minha-conta/solicitacoes` e responde
+com `PATCH /minha-conta/solicitacoes/{id}` e `{"status": "aceita"}` ou
+`{"status": "recusada"}`. Os convites aparecem nas notificações do aplicativo.
+O e-mail identifica a conta; o endpoint não envia mensagem à caixa postal.
+
+As rotas diretas abaixo permanecem documentadas como legado, mas o controle
+de acesso atual bloqueia seu uso no aplicativo.
+
 | Método | Endpoint | Finalidade |
 | --- | --- | --- |
 | `POST` | `/registrar_relacionamento` | Vincular paciente e responsável principal |
@@ -452,14 +468,18 @@ Formato antigo:
 
 ```json
 {
-  "membro_tipo": "responsavel",
+  "membro_tipo": "cuidador",
   "membro_id": 5,
   "nivel": "leitura"
 }
 ```
 
-`membro_tipo` aceita `cuidador` ou `responsavel`; `nivel` aceita `leitura` ou
-`escrita`.
+`membro_tipo` aceita `paciente`, `cuidador` ou `responsavel`; `nivel` aceita
+`leitura` ou `escrita`. Apenas o responsável vinculado pode alterar permissões.
+Sem registro explícito, o paciente pode escrever e o cuidador fica em somente
+leitura. O nível controla criação, edição e exclusão dos registros de cuidado;
+consultas continuam permitidas aos membros vinculados. Excluir uma permissão
+restaura o padrão do papel.
 
 ## 17. Dieta e restrições alimentares
 

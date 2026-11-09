@@ -39,6 +39,15 @@ def por_cpf(classe, cpf):
     return db.session.scalar(db.select(classe).where(normalizado == numero))
 
 
+def cuidador_por_email(email):
+    email = str(email or '').strip().lower()
+    if not re.fullmatch(r'[^\s@]+@[^\s@]+\.[^\s@]+', email):
+        return None
+    return db.session.scalar(
+        db.select(Cuidador).where(db.func.lower(Cuidador.email) == email)
+    )
+
+
 @solicitacoesbp.get('/minha-conta/pacientes')
 @autenticado
 def meus_pacientes():
@@ -49,7 +58,9 @@ def meus_pacientes():
         pacientes = db.session.scalars(db.select(Paciente).where(Paciente.responsavel_id == u.id)).all()
     else:
         pacientes = db.session.scalars(db.select(Paciente).where(Paciente.cuidador_id == u.id)).all()
-    return jsonify([p.to_dict for p in pacientes])
+    from permissoes import pode_escrever
+    return jsonify([{**p.to_dict, 'pode_escrever': pode_escrever(p.id, u.tipo, u.id)}
+                    for p in pacientes])
 
 
 @solicitacoesbp.post('/minha-conta/pacientes')
@@ -84,9 +95,9 @@ def solicitacoes():
     p = db.session.get(Paciente, dados.get('paciente_id')) if isinstance(dados.get('paciente_id'), int) else None
     if not p or p.responsavel_id != u.id:
         return jsonify(erro='Selecione um paciente vinculado à sua conta.'), 403
-    c = por_cpf(Cuidador, dados.get('cpf'))
+    c = cuidador_por_email(dados.get('email'))
     if not c:
-        return jsonify(erro='Cuidador não encontrado pelo CPF.'), 404
+        return jsonify(erro='Cuidador não encontrado pelo e-mail cadastrado.'), 404
     existente = db.session.scalar(db.select(Solicitacao).where(
         Solicitacao.paciente_id == p.id, Solicitacao.cuidador_id == c.id,
         Solicitacao.responsavel_id == u.id, Solicitacao.status == 'pendente'))

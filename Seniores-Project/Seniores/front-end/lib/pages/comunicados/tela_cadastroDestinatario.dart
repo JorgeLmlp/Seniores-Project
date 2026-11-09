@@ -63,9 +63,10 @@ class _CadastroDestinatarioState extends State<CadastroDestinatario>
       await clearDraft();
       if (mounted) Navigator.pop(context, destinatario);
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     } finally {
       if (mounted) setState(() => _salvando = false);
     }

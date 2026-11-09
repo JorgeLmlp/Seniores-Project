@@ -55,13 +55,15 @@ class _RegistroDiarioState extends State<RegistroDiario>
       listaIncidentes.addAll((v['incidentes'] as List)
           .map((i) => Incidente.fromJson(Map<String, dynamic>.from(i))));
     }
-    if (v['incidenteTipoSelecionado'] != null)
+    if (v['incidenteTipoSelecionado'] != null) {
       incidenteTipoSelecionado = v['incidenteTipoSelecionado'] as int;
+    }
     if (v['humor'] != null) humor = (v['humor'] as num).toDouble();
     if (v['dor'] != null) dor = (v['dor'] as num).toDouble();
     if (v['apetite'] != null) apetite = (v['apetite'] as num).toDouble();
-    if (v['mobilidade'] != null)
+    if (v['mobilidade'] != null) {
       mobilidade = (v['mobilidade'] as num).toDouble();
+    }
   }
 
   double humor = 0.0;

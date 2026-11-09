@@ -25,7 +25,7 @@ class FluxosCorrigidosTest(unittest.TestCase):
         self.assertEqual(self.client.post('/minha-conta/pacientes', headers=self.r['headers'], json={'cpf': self.p['cpf']}).status_code, 200)
         rota = f"/pacientes/{self.p['id']}/medicamentos"
         self.assertEqual(self.client.get(rota, headers=self.c['headers']).status_code, 403)
-        pedido = self.client.post('/minha-conta/solicitacoes', headers=self.r['headers'], json={'cpf': self.c['cpf'], 'paciente_id': self.p['id']})
+        pedido = self.client.post('/minha-conta/solicitacoes', headers=self.r['headers'], json={'email': self.c['email'].upper(), 'paciente_id': self.p['id']})
         self.assertEqual(pedido.status_code, 201, pedido.get_json())
         id = pedido.get_json()['id']
         lista = self.client.get('/minha-conta/solicitacoes', headers=self.c['headers']).get_json()
@@ -39,9 +39,60 @@ class FluxosCorrigidosTest(unittest.TestCase):
 
     def test_recusa_nao_concede_acesso(self):
         self.client.post('/minha-conta/pacientes', headers=self.r['headers'], json={'cpf': self.p['cpf']})
-        pedido = self.client.post('/minha-conta/solicitacoes', headers=self.r['headers'], json={'cpf': self.c['cpf'], 'paciente_id': self.p['id']}).get_json()
+        pedido = self.client.post('/minha-conta/solicitacoes', headers=self.r['headers'], json={'email': self.c['email'], 'paciente_id': self.p['id']}).get_json()
         self.assertEqual(self.client.patch(f"/minha-conta/solicitacoes/{pedido['id']}", headers=self.c['headers'], json={'status': 'recusada'}).status_code, 200)
         self.assertEqual(self.client.get('/minha-conta/pacientes', headers=self.c['headers']).get_json(), [])
+
+    def test_convite_exige_email_cadastrado_do_cuidador(self):
+        self.client.post('/minha-conta/pacientes', headers=self.r['headers'], json={'cpf': self.p['cpf']})
+        rota = '/minha-conta/solicitacoes'
+        self.assertEqual(self.client.post(rota, headers=self.r['headers'],
+            json={'cpf': self.c['cpf'], 'paciente_id': self.p['id']}).status_code, 404)
+        self.assertEqual(self.client.post(rota, headers=self.r['headers'],
+            json={'email': 'nao-existe@example.com', 'paciente_id': self.p['id']}).status_code, 404)
+        convite = self.client.post(rota, headers=self.r['headers'],
+            json={'email': f"  {self.c['email'].upper()}  ", 'paciente_id': self.p['id']})
+        self.assertEqual(convite.status_code, 201)
+
+    def test_responsavel_controla_escrita_do_cuidador_e_do_paciente(self):
+        self.client.post('/minha-conta/pacientes', headers=self.r['headers'],
+            json={'cpf': self.p['cpf']})
+        convite = self.client.post('/minha-conta/solicitacoes',
+            headers=self.r['headers'],
+            json={'email': self.c['email'], 'paciente_id': self.p['id']}).get_json()
+        self.client.patch(f"/minha-conta/solicitacoes/{convite['id']}",
+            headers=self.c['headers'], json={'status': 'aceita'})
+        rota = f"/pacientes/{self.p['id']}/medicamentos"
+        dados = {'nome': 'Teste', 'dosagem': '1 mg'}
+        permissoes = f"/pacientes/{self.p['id']}/permissoes"
+
+        self.assertEqual(self.client.get(rota, headers=self.c['headers']).status_code, 200)
+        self.assertEqual(self.client.post(rota, headers=self.c['headers'], json=dados).status_code, 403)
+        self.assertFalse(self.client.get('/minha-conta/pacientes',
+            headers=self.c['headers']).get_json()[0]['pode_escrever'])
+        self.assertEqual(self.client.post(permissoes, headers=self.c['headers'],
+            json={'membro_tipo': 'cuidador', 'membro_id': self.c['id'], 'nivel': 'escrita'}).status_code, 403)
+        permissao_c = self.client.post(permissoes, headers=self.r['headers'],
+            json={'membro_tipo': 'cuidador', 'membro_id': self.c['id'], 'nivel': 'escrita'})
+        self.assertEqual(permissao_c.status_code, 201)
+        self.assertTrue(self.client.get('/minha-conta/pacientes',
+            headers=self.c['headers']).get_json()[0]['pode_escrever'])
+        medicamento = self.client.post(rota, headers=self.c['headers'], json=dados)
+        self.assertEqual(medicamento.status_code, 201)
+        self.assertEqual(self.client.patch(f"/permissoes/{permissao_c.get_json()['id']}",
+            headers=self.r['headers'], json={'nivel': 'leitura'}).status_code, 200)
+        self.assertEqual(self.client.patch(
+            f"/medicamentos/{medicamento.get_json()['id']}",
+            headers=self.c['headers'], json={'dosagem': '2 mg'}).status_code, 403)
+
+        permissao_p = self.client.post(permissoes, headers=self.r['headers'],
+            json={'membro_tipo': 'paciente', 'membro_id': self.p['id'], 'nivel': 'leitura'})
+        self.assertEqual(permissao_p.status_code, 201)
+        self.assertEqual(self.client.post(rota, headers=self.p['headers'], json=dados).status_code, 403)
+        self.assertEqual(self.client.get(rota, headers=self.p['headers']).status_code, 200)
+        self.assertEqual(self.client.patch(f"/permissoes/{permissao_p.get_json()['id']}",
+            headers=self.r['headers'], json={'nivel': 'escrita'}).status_code, 200)
+        self.assertEqual(self.client.post(rota, headers=self.p['headers'], json=dados).status_code, 201)
 
     def test_consulta_sem_exame_gasto_e_doses(self):
         prefixo = f"/pacientes/{self.p['id']}"

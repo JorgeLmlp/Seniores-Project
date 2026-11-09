@@ -21,8 +21,7 @@ class DetalhesComunicado extends StatelessWidget {
       body: SafeArea(
         child: Padding(
           padding: EdgeInsets.all(24.0),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
+          child: ListView(
             children: [
               Row(
                 children: [
@@ -32,10 +31,11 @@ class DetalhesComunicado extends StatelessWidget {
                         size: 20),
                     onPressed: () => Navigator.pop(context),
                   ),
-                  AppText(
-                      texto: 'Detalhes do Comunicado',
-                      estilo: AppText.titulo,
-                      tamanho: 22),
+                  Expanded(
+                      child: AppText(
+                          texto: 'Detalhes do Comunicado',
+                          estilo: AppText.titulo,
+                          tamanho: 22)),
                 ],
               ),
               SizedBox(height: 32),
@@ -51,7 +51,7 @@ class DetalhesComunicado extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Cores.cinza.withOpacity(0.3)),
+                  border: Border.all(color: Cores.cinza.withValues(alpha: 0.3)),
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -93,7 +93,7 @@ class DetalhesComunicado extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Theme.of(context).colorScheme.surface,
                   borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Cores.cinza.withOpacity(0.3)),
+                  border: Border.all(color: Cores.cinza.withValues(alpha: 0.3)),
                 ),
                 child: AppText(
                   texto: mensagem.isEmpty
@@ -104,7 +104,7 @@ class DetalhesComunicado extends StatelessWidget {
                   cor: Theme.of(context).colorScheme.onSurface,
                 ),
               ),
-              Spacer(),
+              SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
                 child: Botao(

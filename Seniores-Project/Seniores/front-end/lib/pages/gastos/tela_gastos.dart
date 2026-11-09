@@ -114,7 +114,7 @@ class _GastosScreenState extends State<Gastos> {
                                 child: Center(
                                   child: Icon(Icons.pie_chart,
                                       size: 130,
-                                      color: Cores.azul.withOpacity(0.8)),
+                                      color: Cores.azul.withValues(alpha: 0.8)),
                                 ),
                               ),
                             ],

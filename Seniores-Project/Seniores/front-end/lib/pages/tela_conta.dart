@@ -12,9 +12,10 @@ Future<void> sairDaConta(BuildContext context) async {
   try {
     await LocalStore.instance.clear(scope);
   } finally {
-    if (context.mounted)
+    if (context.mounted) {
       Navigator.of(context).pushAndRemoveUntil(
           MaterialPageRoute(builder: (_) => Login()), (_) => false);
+    }
   }
 }
 
@@ -29,7 +30,7 @@ class Configuracoes extends StatelessWidget {
         ValueListenableBuilder<ThemeMode>(
             valueListenable: AppSettings.instance,
             builder: (_, value, __) => DropdownButtonFormField<ThemeMode>(
-                value: value,
+                initialValue: value,
                 decoration: InputDecoration(labelText: 'Tema'),
                 items: [
                   DropdownMenuItem(
@@ -51,9 +52,10 @@ class Configuracoes extends StatelessWidget {
             title: Text('Limpar dados temporários'),
             onTap: () async {
               await LocalStore.instance.clear(SessionService.instance.escopo);
-              if (context.mounted)
+              if (context.mounted) {
                 ScaffoldMessenger.of(context).showSnackBar(
                     SnackBar(content: Text('Dados temporários removidos.')));
+              }
             }),
         ListTile(
             leading: Icon(Icons.logout),
@@ -73,6 +75,12 @@ class _MinhaContaState extends State<MinhaConta> {
       email = TextEditingController(),
       telefone = TextEditingController(),
       senha = TextEditingController();
+  final idade = TextEditingController(),
+      musicas = TextEditingController(),
+      hobbies = TextEditingController();
+  String? tipoSanguineo;
+  Map<String, dynamic> preferencias = {};
+  bool get paciente => SessionService.instance.tipoUsuario == 'paciente';
   bool carregando = true, salvando = false;
   String? erro;
   @override
@@ -88,6 +96,12 @@ class _MinhaContaState extends State<MinhaConta> {
       nome.text = p?['name'] ?? '';
       email.text = p?['email'] ?? '';
       telefone.text = p?['phoneNumber'] ?? '';
+      idade.text = p?['idade']?.toString() ?? '';
+      tipoSanguineo = p?['tipo_sanguineo'];
+      preferencias =
+          Map<String, dynamic>.from(p?['preferencias'] as Map? ?? {});
+      musicas.text = (preferencias['musicas'] as List? ?? []).join(', ');
+      hobbies.text = (preferencias['hobbies'] as List? ?? []).join(', ');
     } catch (e) {
       erro =
           e is ApiException ? e.message : 'Não foi possível carregar a conta.';
@@ -96,25 +110,60 @@ class _MinhaContaState extends State<MinhaConta> {
   }
 
   Future<void> _save() async {
+    if (paciente &&
+        idade.text.trim().isNotEmpty &&
+        (int.tryParse(idade.text.trim()) == null ||
+            int.parse(idade.text.trim()) < 0 ||
+            int.parse(idade.text.trim()) > 130)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Informe uma idade entre 0 e 130.')));
+      return;
+    }
     setState(() => salvando = true);
     try {
-      final p = await ApiService().requisicao('PATCH', '/minha-conta', dados: {
-        'nome': nome.text,
-        'email': email.text,
-        'telefone': telefone.text,
-        if (senha.text.isNotEmpty) 'senha': senha.text
-      });
+      final p = await ApiService().requisicao(
+          'PATCH',
+          paciente
+              ? '/users/paciente/${SessionService.instance.usuarioId}/'
+              : '/minha-conta',
+          dados: {
+            'nome': nome.text,
+            'email': email.text,
+            'telefone': telefone.text,
+            if (senha.text.isNotEmpty) 'senha': senha.text,
+            if (paciente) ...{
+              'idade': idade.text.trim().isEmpty
+                  ? null
+                  : int.parse(idade.text.trim()),
+              'tipo_sanguineo': tipoSanguineo,
+              'preferencias': {
+                ...preferencias,
+                'musicas': musicas.text
+                    .split(',')
+                    .map((v) => v.trim())
+                    .where((v) => v.isNotEmpty)
+                    .toList(),
+                'hobbies': hobbies.text
+                    .split(',')
+                    .map((v) => v.trim())
+                    .where((v) => v.isNotEmpty)
+                    .toList()
+              },
+            },
+          });
       SessionService.instance.nomeUsuario = p['name'];
       senha.clear();
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text('Conta atualizada.')));
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(e is ApiException
                 ? e.message
                 : 'Falha ao atualizar a conta.')));
+      }
     } finally {
       if (mounted) setState(() => salvando = false);
     }
@@ -126,6 +175,9 @@ class _MinhaContaState extends State<MinhaConta> {
     email.dispose();
     telefone.dispose();
     senha.dispose();
+    idade.dispose();
+    musicas.dispose();
+    hobbies.dispose();
     super.dispose();
   }
 
@@ -161,6 +213,49 @@ class _MinhaContaState extends State<MinhaConta> {
                       decoration:
                           InputDecoration(labelText: 'Nova senha (opcional)')),
                   SizedBox(height: 24),
+                  if (paciente) ...[
+                    Text('Perfil de cuidado',
+                        style: Theme.of(context).textTheme.titleMedium),
+                    const SizedBox(height: 16),
+                    TextField(
+                        controller: idade,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(labelText: 'Idade')),
+                    const SizedBox(height: 16),
+                    DropdownButtonFormField<String>(
+                        initialValue: tipoSanguineo ?? '',
+                        decoration:
+                            const InputDecoration(labelText: 'Tipo sanguíneo'),
+                        items: [
+                          const DropdownMenuItem(
+                              value: '', child: Text('Não informado')),
+                          for (final tipo in [
+                            'A+',
+                            'A-',
+                            'B+',
+                            'B-',
+                            'AB+',
+                            'AB-',
+                            'O+',
+                            'O-'
+                          ])
+                            DropdownMenuItem(value: tipo, child: Text(tipo))
+                        ],
+                        onChanged: (v) => tipoSanguineo = v == '' ? null : v),
+                    const SizedBox(height: 16),
+                    TextField(
+                        controller: musicas,
+                        decoration: const InputDecoration(
+                            labelText: 'Músicas preferidas',
+                            helperText: 'Separe por vírgulas.')),
+                    const SizedBox(height: 16),
+                    TextField(
+                        controller: hobbies,
+                        decoration: const InputDecoration(
+                            labelText: 'Hobbies',
+                            helperText: 'Separe por vírgulas.')),
+                    const SizedBox(height: 24),
+                  ],
                   FilledButton(
                       onPressed: salvando ? null : _save,
                       child:

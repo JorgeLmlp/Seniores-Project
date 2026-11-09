@@ -34,8 +34,9 @@ class _CadastroRemedioState extends State<CadastroRemedio>
 
   @override
   void restoreDraftValues(Map<String, dynamic> v) {
-    if (v['frequenciaSelecionada'] != null)
+    if (v['frequenciaSelecionada'] != null) {
       frequenciaSelecionada = v['frequenciaSelecionada'] as int;
+    }
     if (v['_alertas'] is List) {
       _alertas.clear();
       _alertas.addAll((v['_alertas'] as List).cast<String>());

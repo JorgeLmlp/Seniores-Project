@@ -69,16 +69,18 @@ class _TelaExamesState extends State<Exames> {
     try {
       await _apiService.atualizarRegistro(
           'exames', exame.id, {'concluido': novo, 'historico': novo});
-      if (mounted)
+      if (mounted) {
         setState(() {
           exame.concluido = novo;
           exame.historico = novo;
         });
+      }
     } catch (e) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(SnackBar(
             content: Text(
                 e is ApiException ? e.message : 'Falha ao salvar o status.')));
+      }
     } finally {
       _atualizando.remove(exame.id);
     }

@@ -31,10 +31,16 @@ após 24 horas; senha e token não são armazenados no SQLite do aplicativo.
 ## Fluxos
 
 - Responsável: abra **Pacientes e vínculos**, vincule um paciente cadastrado por
-  CPF e use **Convidar cuidador por CPF** no cartão desse paciente.
-- Cuidador: abra **Meus pacientes**, examine o responsável e o paciente na
-  solicitação e aceite ou recuse. Após aceitar, selecione o paciente para abrir
-  seus cuidados. A API não permite acessar pacientes sem vínculo.
+  CPF e use **Convidar cuidador por e-mail** no cartão desse paciente. O e-mail
+  deve pertencer a uma conta de cuidador já cadastrada.
+- Cuidador: abra **Notificações** para aceitar ou recusar os convites recebidos.
+  Após aceitar, abra **Meus pacientes** para escolher o paciente. O botão
+  **Trocar paciente** na tela inicial e no menu permite mudar o atendimento.
+  A API não permite acessar pacientes sem vínculo.
+- Permissões: no cartão do paciente, o responsável abre **Gerenciar permissões
+  de escrita**. O paciente pode registrar dados por padrão; o cuidador começa
+  em somente leitura. Os controles permitem conceder ou retirar a escrita de
+  cada um, sem impedir a leitura dos dados a que já têm acesso.
 - Medicamentos: **Detalhes** permite editar o cadastro e alternar cada dose
   entre concluída e não concluída. O estado pertence à data e ao horário da dose.
 - Relatórios: o menu **Relatórios** baixa o PDF mensal da API; o gráfico do

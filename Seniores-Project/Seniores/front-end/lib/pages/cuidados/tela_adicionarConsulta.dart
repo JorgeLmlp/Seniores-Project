@@ -45,8 +45,9 @@ class _AdicionarConsultaState extends State<AdicionarConsulta>
 
   @override
   void restoreDraftValues(Map<String, dynamic> v) {
-    if (v['_statusSelecionado'] != null)
+    if (v['_statusSelecionado'] != null) {
       _statusSelecionado = v['_statusSelecionado'] as int;
+    }
     if (v['_alertas'] is List) {
       _alertas.clear();
       _alertas.addAll((v['_alertas'] as List).cast<String>());
@@ -57,8 +58,9 @@ class _AdicionarConsultaState extends State<AdicionarConsulta>
           .addAll((v['_examesAdicionados'] as List).cast<String>());
     }
     _dataSelecionada = DateTime.tryParse(v['data'] ?? '');
-    if (v['hora'] is int)
+    if (v['hora'] is int) {
       _horarioInicio = TimeOfDay(hour: v['hora'], minute: v['minuto']);
+    }
   }
 
   int _statusSelecionado = 0;
@@ -329,9 +331,10 @@ class _AdicionarConsultaState extends State<AdicionarConsulta>
         ),
       );
     } on ApiException catch (erro) {
-      if (mounted)
+      if (mounted) {
         ScaffoldMessenger.of(context)
             .showSnackBar(SnackBar(content: Text(erro.message)));
+      }
     } finally {
       if (mounted) setState(() => _salvando = false);
     }

@@ -13,6 +13,7 @@ import '../../pages/registro diario/tela_relatorio.dart';
 import '../../pages/cuidados/tela_cuidados.dart';
 import '../../services/api_service.dart';
 import '../../services/session_service.dart';
+import 'tela_vinculos.dart';
 
 class Home extends StatefulWidget {
   const Home({super.key});
@@ -33,7 +34,9 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     if (SessionService.instance.tipoUsuario != 'paciente' &&
-        SessionService.instance.pacienteSelecionado == null) return;
+        SessionService.instance.pacienteSelecionado == null) {
+      return;
+    }
     _carregarUltimoRegistro();
     _carregarNomeUsuario();
     _carregarMedicamentos();
@@ -182,6 +185,17 @@ class _HomeState extends State<Home> {
                   ),
                 ],
               ),
+              if (SessionService.instance.tipoUsuario == 'cuidador' ||
+                  SessionService.instance.tipoUsuario == 'responsavel') ...[
+                const SizedBox(height: 8),
+                OutlinedButton.icon(
+                  onPressed: () => Navigator.push(context,
+                      MaterialPageRoute(builder: (_) => const Vinculos())),
+                  icon: const Icon(Icons.switch_account_outlined),
+                  label: Text(
+                      'Paciente: ${SessionService.instance.nomePaciente ?? 'selecionar'} · Trocar'),
+                ),
+              ],
               SizedBox(height: 24),
               Row(
                 children: [
@@ -197,7 +211,7 @@ class _HomeState extends State<Home> {
                             Container(
                               padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Cores.azul.withOpacity(0.1),
+                                color: Cores.azul.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.favorite_border,
@@ -259,7 +273,7 @@ class _HomeState extends State<Home> {
                             Container(
                               padding: EdgeInsets.all(8),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.1),
+                                color: Colors.green.withValues(alpha: 0.1),
                                 shape: BoxShape.circle,
                               ),
                               child: Icon(Icons.calendar_today_outlined,
@@ -561,8 +575,9 @@ class _HomeState extends State<Home> {
                                                                   Medicamento
                                                                       .fromJson(
                                                                           med))));
-                                              if (mounted)
+                                              if (mounted) {
                                                 await _carregarMedicamentos();
+                                              }
                                             },
                                             style: ElevatedButton.styleFrom(
                                               backgroundColor: isAtrasado
