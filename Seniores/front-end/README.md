@@ -1,6 +1,21 @@
 # Seniores Front-end
 
 Aplicativo em Flutter para centralizar a interface do usuário, interações locais e a rotina de cuidados de pessoas idosas, integrando-se à API REST principal.
+
+## Download Android
+
+[Baixar o APK mais recente](https://github.com/JorgeLmlp/Seniores-Project/releases/latest/download/seniores-android.apk)
+ou abrir a [página de Releases](https://github.com/JorgeLmlp/Seniores-Project/releases/latest).
+
+O APK usa a API `https://seniores-project-tj1t.vercel.app` e pode ser instalado
+diretamente no Android. É uma distribuição para testes com assinatura de
+desenvolvimento; atualizar entre builds pode exigir desinstalar a versão anterior.
+
+O workflow **Android APK** analisa, testa, compila e publica uma nova Release
+quando o front-end muda na `main`. Também pode ser executado manualmente em
+[Actions](https://github.com/JorgeLmlp/Seniores-Project/actions/workflows/android-release.yml).
+Cada Release inclui o APK e seu checksum SHA-256.
+
 ## Funcionalidades
 
 ### 1. Login e autenticação
