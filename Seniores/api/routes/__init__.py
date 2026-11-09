@@ -13,7 +13,9 @@ from .paciente.exames_documentos import exames_documentosbp
 from .paciente.relatorios import relatoriosbp
 from .relacionamento.solicitacoes import solicitacoesbp
 from .medicamento.doses import dosesbp
+from .documentos_legais import documentos_legaisbp
 blueprints = [
+        documentos_legaisbp,
         solicitacoesbp,
         dosesbp,
         # A ordem nao altera as URLs; ela apenas organiza os grupos de rotas.

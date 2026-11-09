@@ -16,7 +16,13 @@ app = Flask(__name__)
 # Aplicativos Flutter nativos (Android/iOS/Windows) nao dependem de CORS.
 CORS(app,resources={r"/*": {"origins": "*"}})
 # Carrega DATABASE_URL e DEBUG antes de configurar o Flask.
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+na_vercel = os.getenv('VERCEL') == '1'
+if not na_vercel:
+    load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+if na_vercel and not os.getenv('SECRET_KEY'):
+    raise RuntimeError('Configure SECRET_KEY fixa na Vercel.')
+if na_vercel and os.getenv('API_TESTING') == '1':
+    raise RuntimeError('API_TESTING nao pode estar habilitado na Vercel.')
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY') or secrets.token_hex(32)
 database_url = os.getenv('DATABASE_URL')
 if not database_url:
@@ -87,10 +93,16 @@ def criar_banco_mysql_se_necessario(url_banco):
 # MySQL remoto: nao executar CREATE DATABASE nem migracoes automaticamente.
 # TLS com verificacao por CA fornecida pelo provedor, sem desabilitar a verificacao.
 url_config = make_url(database_url)
+if na_vercel and not url_config.drivername.startswith('mysql'):
+    raise RuntimeError('Na Vercel, configure DATABASE_URL com o MySQL do Aiven.')
 remoto = False
 if url_config.drivername.startswith('mysql'):
     remoto = (url_config.host or '').lower() not in {'localhost', '127.0.0.1', '::1'}
-    ca = os.getenv('DB_SSL_CA', '').strip()
+    ca = os.getenv('DB_SSL_CA', '').strip() or url_config.query.get('ssl_ca', '')
+    if not ca and (url_config.host or '').endswith('.aivencloud.com'):
+        ca = 'certs/aiven-ca.pem'
+    if ca and not os.path.isabs(ca):
+        ca = os.path.join(os.path.dirname(__file__), ca)
     if remoto:
         if not ca or not os.path.isfile(ca):
             raise RuntimeError('MySQL remoto requer DB_SSL_CA com caminho do certificado CA valido.')
@@ -98,17 +110,24 @@ if url_config.drivername.startswith('mysql'):
         contexto_ssl.check_hostname = True
         contexto_ssl.verify_mode = ssl.CERT_REQUIRED
         app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
-            'connect_args': {'ssl': contexto_ssl, 'connect_timeout': 10}
+            'connect_args': {'ssl': contexto_ssl, 'connect_timeout': 10},
+            'pool_pre_ping': True, 'pool_recycle': 280,
+            'pool_size': 2, 'max_overflow': 0,
         }
+        # SSLContext e a fonte unica de configuracao TLS.
+        url_config = url_config.difference_update_query([
+            'ssl_ca', 'ssl_verify_cert', 'ssl_verify_identity',
+        ])
+        database_url = url_config.render_as_string(hide_password=False)
     else:
-        if os.getenv('DB_AUTO_SCHEMA', '1') == '1':
+        if os.getenv('AUTO_CREATE_DATABASE', os.getenv('DB_AUTO_SCHEMA', '1')) == '1':
             criar_banco_mysql_se_necessario(database_url)
 elif not database_url.startswith('sqlite'):
     raise RuntimeError('DATABASE_URL deve apontar para MySQL ou SQLite de testes.')
 
 # Em hospedagem compartilhada nao alteramos schema na inicializacao.
 # Migracoes devem ser feitas em procedimento separado, com backup.
-AUTO_SCHEMA = os.getenv('DB_AUTO_SCHEMA', '0' if remoto else '1') == '1'
+AUTO_SCHEMA = os.getenv('AUTO_INIT_DB', os.getenv('DB_AUTO_SCHEMA', '0' if remoto else '1')) == '1'
 if remoto and AUTO_SCHEMA:
     raise RuntimeError('Nao habilite DB_AUTO_SCHEMA em banco remoto compartilhado.')
 
@@ -197,6 +216,14 @@ def migrar_schema_existente():
                     conexao.execute(
                         text(f"ALTER TABLE {tabela} ADD COLUMN {nome} {tipo} NULL")
                     )
+
+
+@app.cli.command('init-db')
+def init_db_command():
+    """Aplica o schema explicitamente, apos backup do banco remoto."""
+    db.create_all()
+    migrar_schema_existente()
+    print('Tabelas e migracoes preparadas.')
 
 
 with app.app_context():

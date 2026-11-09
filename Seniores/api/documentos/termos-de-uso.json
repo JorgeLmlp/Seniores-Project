@@ -1,0 +1,392 @@
+{
+  "titulo": "Termos de uso",
+  "versao": "2026-11-09",
+  "contato": "jorgelmlp2@gmail.com",
+  "blocos": [
+    {
+      "texto": "Este Termo de Uso (“Termo”) é um acordo legal entre você, o(a) usuário(a) do sistema “Seniores”, e os desenvolvedores do Projeto “Seniores” (doravante denominado “Seniores” ou “Nós”), um sistema pensado para organizar medicamentos, consultas, exames e rotinas de saúde de pacientes, com acesso de cuidadores e responsáveis autorizados.\n\nAo acessar ou utilizar o “Seniores”, você manifesta sua concordância integral com este Termo de Uso, com a Política de Privacidade e com a Lei Geral de Proteção de Dados Pessoais (LGPD – Lei nº 13.709/2018). Se você não concordar com estes termos, não deverá utilizar o sistema.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA PRIMEIRA – DAS CONDIÇÕES GERAIS DE USO",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O “Seniores” é destinado a auxiliar no registro e acompanhamento das rotinas de cuidados e saúde por pacientes, cuidadores e responsáveis autorizados.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA SEGUNDA – DA COLETA E USO DE DADOS PESSOAIS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O usuário declara estar ciente da coleta e uso dos seguintes dados pelo “Seniores”, que visam exclusivamente permitir o cadastro, o acompanhamento de cuidados e o acesso de pessoas autorizadas:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Nome, e-mail, telefone e CPF: identificação da conta e contato com o usuário.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Perfil de paciente, cuidador ou responsável e vínculos autorizados: controle do acesso às informações.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Dados de saúde e cuidados inseridos por usuários autorizados, como medicamentos, doses, consultas, exames, sinais vitais, dietas e lesões: organização e acompanhamento das rotinas de cuidado.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Dados técnicos de acesso, quando registrados: segurança e diagnóstico de falhas do sistema.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "CLÁUSULA TERCEIRA – FINALIDADE DA COLETA",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "A coleta dos dados mencionados tem finalidades específicas e essenciais para a operação do “Seniores” e a conformidade com a LGPD:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Identificação, autenticação, atualização de conta e contatos essenciais.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Organização de medicamentos, consultas, exames, saúde e cuidados do paciente.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Acesso às informações de pacientes por cuidadores e responsáveis devidamente vinculados.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Segurança do aplicativo e atendimento a solicitações do titular de dados.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "CLÁUSULA QUARTA – VEDAÇÕES DO USO",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O usuário compromete-se a não utilizar o “Seniores” para qualquer finalidade ilícita ou que viole este Termo de Uso, incluindo:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Carregar conteúdo ilegal, difamatório, obsceno ou prejudicial.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Acessar, alterar ou danificar contas de outros usuários.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Violar direitos de propriedade intelectual ou outros direitos de terceiros.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "CLÁUSULA QUINTA – DA CIÊNCIA E ACEITE DOS TERMOS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O uso do Sistema “Seniores” pressupõe a leitura prévia, a compreensão e a concordância com este Termo de Uso, com a Política de Privacidade e com as disposições da Lei nº 13.709/2018 (LGPD). O consentimento para o tratamento de dados pessoais é coletado de forma expressa, específica e destacada, conforme exige o art. 8º da LGPD, sendo vedada sua obtenção por aceitação genérica, tácita ou implícita. O titular que não concordar com estes termos deverá abster-se de utilizar o sistema.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA SEXTA – DA PROTEÇÃO DOS DADOS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O “Seniores” compromete-se a adotar medidas técnicas e administrativas em conformidade com a LGPD e normas ISO/IEC 27001, 27701 e 29100:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Criptografia dos arquivos armazenados.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Banco de dados seguro, com autenticação robusta e acesso restrito.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Políticas de segurança da informação e plano de resposta a incidentes.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Notificação ao titular e à Autoridade Nacional de Proteção de Dados (ANPD), em prazo razoável, nos casos de incidente de segurança que possa acarretar risco ou dano relevante aos titulares, nos termos do art. 48 da LGPD.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "CLÁUSULA SÉTIMA – DO COMPARTILHAMENTO DE DADOS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "Os dados armazenados não serão compartilhados com terceiros, exceto:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Quando autorizado expressamente pelo titular.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Mediante obrigação legal ou ordem judicial.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Para auxílio técnico restrito e necessário.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "CLÁUSULA OITAVA – DOS DIREITOS DO TITULAR DOS DADOS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "Em conformidade com a LGPD, o sistema deve permitir ao usuário exercer seus direitos, incluindo:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Confirmação da existência de tratamento e acesso aos dados pessoais tratados (art. 18, I e II, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Correção de dados incompletos, inexatos ou desatualizados (art. 18, III, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Anonimização, bloqueio ou eliminação de dados pessoais desnecessários, excessivos ou tratados em desconformidade com a LGPD (art. 18, IV, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Portabilidade dos dados pessoais a outro fornecedor de serviço ou produto, mediante requisição expressa, observados os segredos comercial e industrial (art. 18, V, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Eliminação dos dados pessoais tratados com fundamento no consentimento, após sua revogação, ressalvadas as hipóteses legais de conservação (art. 18, VI, e art. 16, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Informação sobre as entidades públicas e privadas com as quais o controlador realizou uso compartilhado de dados (art. 18, VII, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Informação sobre a possibilidade de não fornecer consentimento e sobre as consequências da negativa (art. 18, VIII, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Revogação do consentimento a qualquer momento, mediante manifestação expressa e gratuita (art. 18, IX, e art. 8º, § 5º, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Exclusão da conta e dos arquivos armazenados, mediante solicitação formal (art. 18, IV, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Petição à Autoridade Nacional de Proteção de Dados (ANPD) em relação ao tratamento de seus dados pessoais, quando a resposta do controlador for insatisfatória (art. 18, § 1º, da LGPD).",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "Os direitos acima poderão ser exercidos a qualquer momento, mediante requerimento expresso ao controlador, que deverá responder em prazo não superior a 15 (quinze) dias (art. 18, § 3º, da LGPD). Canal de contato do Encarregado (DPO): jorgelmlp2@gmail.com.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA NONA – DA IDENTIFICAÇÃO DO RESPONSÁVEL PELO TRATAMENTO DOS DADOS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O Projeto “Seniores” é responsável pelo tratamento dos dados e indicará formalmente o Encarregado de Dados (DPO):",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "[PENDENTE: identificação do responsável pelo tratamento de dados]",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA DÉCIMA – DA RESPONSABILIDADE NA EXATIDÃO DOS DADOS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O usuário é responsável pela exatidão, veracidade e atualização dos dados fornecidos e documentos carregados.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "O “Seniores” não se responsabiliza por inconsistências inseridas pelo usuário.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA DÉCIMA PRIMEIRA – DA TRANSPARÊNCIA",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O “Seniores” garante a transparência sobre o tratamento dos dados pessoais.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Os requerimentos dos titulares relativos aos seus dados pessoais serão atendidos em prazo não superior a 15 (quinze) dias, contados da data da solicitação, conforme art. 18, § 3º, da LGPD. Caso a resposta não seja satisfatória, o titular poderá peticionar diretamente à Autoridade Nacional de Proteção de Dados (ANPD), nos termos do art. 18, § 1º, da LGPD. O tratamento de dados pessoais deve sempre estar fundamentado em base legal adequada (art. 7º da LGPD), a qual deverá ser indicada de forma específica para cada atividade de tratamento desenvolvida pelo sistema.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA DÉCIMA SEGUNDA – DO TRATAMENTO DE DADOS DE CRIANÇAS E ADOLESCENTES",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O “Seniores” observa as disposições do art. 14 da LGPD, quando aplicáveis, quanto ao tratamento de dados de crianças e adolescentes, adotando os seguintes princípios:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "tratamento de dados pessoais de crianças (menores de 12 anos) somente ocorrerá mediante consentimento específico e em destaque dado por pelo menos um dos pais ou responsável legal.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "tratamento de dados pessoais de adolescentes (maiores de 12 anos e menores de 18 anos) será realizado de forma prioritária no seu melhor interesse, garantindo segurança, privacidade e respeito ao desenvolvimento.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "sistema compromete-se a manter controles técnicos e administrativos adequados, de acordo com a LGPD e com as normas ISO/IEC 27701, para assegurar a confidencialidade, integridade e uso responsável das informações de crianças e adolescentes.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "consentimento dos responsáveis poderá ser verificado por mecanismos de autenticação digital, e estes poderão revogar a autorização a qualquer momento.",
+      "titulo": false,
+      "item": true
+    },
+    {
+      "texto": "CLÁUSULA DÉCIMA TERCEIRA – DISPOSIÇÕES GERAIS",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "O presente Termo pode ser atualizado periodicamente para refletir mudanças legais ou operacionais. Em caso de alterações relevantes que afetem direitos dos titulares, o usuário será previamente notificado por meio do próprio sistema ou pelo e-mail cadastrado, com antecedência mínima de 15 (quinze) dias antes de sua entrada em vigor, salvo quando a alteração decorrer de determinação legal ou decisão judicial que exija adoção imediata. O uso continuado do sistema após a notificação implica ciência e concordância com os termos atualizados.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Este Termo é regido pela legislação brasileira e pela LGPD (Lei nº 13.709/2018). Os dados pessoais serão conservados pelo prazo estritamente necessário ao cumprimento das finalidades para as quais foram coletados, nos termos do art. 15 da LGPD, e serão eliminados ao término do tratamento, salvo nas hipóteses de conservação previstas no art. 16 da mesma lei (cumprimento de obrigação legal ou regulatória, uso exclusivo do controlador com anonimização, transferência a terceiro mediante consentimento, ou uso em pesquisa).",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "CLÁUSULA DÉCIMA QUARTA – DO FORO",
+      "titulo": true,
+      "item": false
+    },
+    {
+      "texto": "Fica eleito o foro da comarca de Belo Horizonte/MG para dirimir eventuais controvérsias.",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "[PENDENTE: data e local de aprovação do documento]",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "USUÁRIO(A):",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "____________________________________________",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Nome completo – CPF",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "PELO PROJETO “Seniores”:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "[PENDENTE: identificação do encarregado pela equipe]",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "TESTEMUNHAS:",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "____________________________________________",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Nome completo – CPF",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "____________________________________________",
+      "titulo": false,
+      "item": false
+    },
+    {
+      "texto": "Nome completo – CPF",
+      "titulo": false,
+      "item": false
+    }
+  ]
+}

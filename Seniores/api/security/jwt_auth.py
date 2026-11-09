@@ -108,6 +108,11 @@ def registrar_protecao_jwt(app):
     def exigir_access_token():
         if request.method == "OPTIONS":
             return None
+        if request.method in ('GET', 'HEAD') and request.endpoint in {
+            'documentos_legais.inicio', 'documentos_legais.termos_de_uso',
+            'documentos_legais.consentimento',
+        }:
+            return None
         if request.method == "POST" and request.endpoint in ENDPOINTS_PUBLICOS:
             return None
 

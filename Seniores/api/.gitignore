@@ -61,3 +61,5 @@ logs/
 
 # Docker
 mysql_data/
+
+.vercel/

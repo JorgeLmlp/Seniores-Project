@@ -262,3 +262,12 @@ python -m unittest discover -s tests -v
 
 A relação completa de endpoints, corpos e parâmetros está em
 [README_ENDPOINTS.md](README_ENDPOINTS.md).
+
+## Documentos públicos e deploy
+
+- `GET /`: identificação da API.
+- `GET /termos-de-uso`: termos de uso, versão e contato.
+- `GET /termo-consentimento`: consentimento fornecido pela equipe, versão e contato.
+
+Essas consultas não exigem autenticação nem registram aceite.
+Contato: jorgelmlp2@gmail.com. Veja [deploy na Vercel](../DEPLOY_VERCEL.md).
