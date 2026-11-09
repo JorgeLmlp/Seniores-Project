@@ -461,9 +461,20 @@ class TodasFuncionalidadesTest(unittest.TestCase):
         self.assertEqual(comunicado["dados"]["mensagem"], "Consulta alterada")
 
     def test_24_pdf_cria_paginas_adicionais_quando_necessario(self):
-        pdf = RelatorioService._pdf([f"Linha {indice}" for indice in range(120)])
-        self.assertTrue(pdf.startswith(b"%PDF-1.4"))
-        self.assertIn(b"/Count 3", pdf)
+        from io import BytesIO
+        from pypdf import PdfReader
+        from test_relatorio_legivel import exemplo_historico
+
+        historico = exemplo_historico()
+        historico['sinais_vitais'] *= 120
+        with patch('repositories.relatorio_repository.consultar_historico_periodo',
+                   return_value=historico):
+            pdf, status = RelatorioService().gerar(0, ano=2026, mes=10)
+        self.assertEqual(status, 200)
+        documento = PdfReader(BytesIO(pdf))
+        self.assertGreater(len(documento.pages), 3)
+        texto = '\n'.join(pagina.extract_text() for pagina in documento.pages)
+        self.assertEqual(texto.count('120/80 mmHg'), 120)
 
 
 if __name__ == "__main__":

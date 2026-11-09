@@ -12,11 +12,9 @@ import ssl
 from email.message import EmailMessage
 from time import monotonic
 
-from flask import current_app
+import logging
 from itsdangerous import BadSignature, SignatureExpired, URLSafeTimedSerializer
-from werkzeug.security import generate_password_hash
 
-from extensions import db
 from repositories import usuario_repository
 from services.usuario.usuario_service import CLASSES_POR_TIPO
 
@@ -25,8 +23,8 @@ from services.usuario.usuario_service import CLASSES_POR_TIPO
 _tentativas = {}
 
 
-def _assinador():
-    return URLSafeTimedSerializer(current_app.config['SECRET_KEY'],
+def _assinador(chave):
+    return URLSafeTimedSerializer(chave,
                                  salt='seniores-redefinicao-de-senha-v1')
 
 
@@ -60,7 +58,7 @@ def _smtp_configurado():
     return bool(os.getenv('SMTP_HOST') and os.getenv('SMTP_FROM'))
 
 
-def solicitar_recuperacao(email):
+def solicitar_recuperacao(email, chave):
     """Retorna (sucesso, status). Resposta publica nunca identifica contas."""
     if not isinstance(email, str) or len(email) > 254 or '@' not in email:
         return False, 400
@@ -73,7 +71,7 @@ def solicitar_recuperacao(email):
     if not usuario:
         return True, 200
 
-    token = _assinador().dumps({
+    token = _assinador(chave).dumps({
         'id': usuario.id, 'tipo': usuario.tipo, 'hash': _impressao(usuario)
     })
     mensagem = EmailMessage()
@@ -105,32 +103,26 @@ def solicitar_recuperacao(email):
                     smtp.login(os.environ['SMTP_USER'], os.getenv('SMTP_PASSWORD', ''))
                 smtp.send_message(mensagem)
     except (OSError, ValueError, smtplib.SMTPException):
-        current_app.logger.warning('Falha de SMTP no pedido de redefinicao de senha.')
+        logging.getLogger(__name__).warning('Falha de SMTP no pedido de redefinicao de senha.')
         # Resposta indistinguivel para contas existentes e inexistentes.
         return True, 200
     return True, 200
 
 
-def redefinir_senha(token, nova_senha):
+def redefinir_senha(token, nova_senha, chave):
     if not isinstance(token, str) or len(token) > 2048:
         return False, 400
     if not isinstance(nova_senha, str) or not 8 <= len(nova_senha) <= 128:
         return False, 400
     try:
-        dados = _assinador().loads(token, max_age=30 * 60)
+        dados = _assinador(chave).loads(token, max_age=30 * 60)
         tipo, usuario_id, hash_original = dados['tipo'], int(dados['id']), dados['hash']
         classe = CLASSES_POR_TIPO.get(tipo)
         if not classe or usuario_id < 1 or not isinstance(hash_original, str):
             return False, 400
-        usuario = db.session.get(classe, usuario_id)
+        usuario = usuario_repository.buscar_por_id(classe, usuario_id)
         if not usuario or not hmac.compare_digest(hash_original, _impressao(usuario)):
             return False, 400
     except (BadSignature, SignatureExpired, ValueError, TypeError, KeyError):
         return False, 400
-    usuario.password = generate_password_hash(nova_senha)
-    try:
-        db.session.commit()
-        return True, 200
-    except Exception:
-        db.session.rollback()
-        return False, 500
+    return (True, 200) if usuario.atualizar({'senha': nova_senha}) else (False, 500)

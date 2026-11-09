@@ -10,12 +10,11 @@ import ssl
 from email.message import EmailMessage
 from datetime import datetime
 
-from models.paciente.registro_app import RegistroApp
-from extensions import db
+from repositories.paciente_repository import buscar_registro_app
 
 
 def enviar_comunicado_email(registro_id):
-    registro = db.session.get(RegistroApp, registro_id)
+    registro = buscar_registro_app(registro_id)
     if not registro or registro.recurso != 'comunicados':
         return None, 404
     dados = dict(registro.dados or {})

@@ -93,7 +93,14 @@ class Remedio(db.Model):
             return None
 
     def deletar(self):
+        from models.paciente.registro_app import RegistroApp
         try:
+            foto = db.session.scalar(db.select(RegistroApp).where(
+                RegistroApp.paciente_id == self.paciente_id,
+                RegistroApp.recurso == f'medfoto:{self.id}',
+            ).limit(1))
+            if foto:
+                db.session.delete(foto)
             db.session.delete(self)
             db.session.commit()
             return True

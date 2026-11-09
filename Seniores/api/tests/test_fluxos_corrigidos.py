@@ -63,7 +63,9 @@ class FluxosCorrigidosTest(unittest.TestCase):
         gasto = self.client.post(prefixo + '/gastos', headers=headers, json={'categoria': 'Farmácia', 'valor': 12.50, 'tipo': 'Mensal', 'cor': 'azul'})
         self.assertEqual(gasto.status_code, 201, gasto.get_json())
         self.assertEqual(self.client.get(prefixo + '/gastos', headers=headers).get_json()[0]['dados']['valor'], 12.50)
-        med = self.client.post(prefixo + '/medicamentos', headers=headers, json={'nome': 'Remédio', 'dosagem': '1 mg', 'horarios': ['08:00']}).get_json()
+        resposta_med = self.client.post(prefixo + '/medicamentos', headers=headers, json={'nome': 'Remédio', 'dosagem': '1 mg', 'frequencia': 'Diária', 'horarios': ['08:00']})
+        self.assertEqual(resposta_med.status_code, 201, resposta_med.get_json())
+        med = resposta_med.get_json()
         self.assertEqual(self.client.patch(f"/medicamentos/{med['id']}", headers=headers, json={'dosagem': '2 mg'}).get_json()['dosagem'], '2 mg')
         rota = f"/medicamentos/{med['id']}/doses/2026-10-20"
         for concluida in (True, False):
@@ -81,13 +83,73 @@ class FluxosCorrigidosTest(unittest.TestCase):
         self.assertEqual(resposta.status_code, 200)
         self.assertEqual(self.client.get('/minha-conta', headers=self.r['headers']).get_json()['name'], 'Novo nome')
 
+    def test_foto_preserva_bytes_e_e_removida_com_medicamento(self):
+        from base64 import b64encode
+        from extensions import db
+        from models.paciente.registro_app import RegistroApp
+
+        headers = self.p['headers']
+        resposta = self.client.post(f"/pacientes/{self.p['id']}/medicamentos",
+            headers=headers, json={'nome': 'Teste', 'dosagem': '1 mg', 'frequencia': 'Diária'})
+        self.assertEqual(resposta.status_code, 201)
+        medicamento_id = resposta.get_json()['id']
+        rota = f'/medicamentos/{medicamento_id}/foto'
+        foto = b'\x89PNG\r\n\x1a\nconteudo-de-teste'
+        self.assertEqual(self.client.put(rota, headers=headers, json={
+            'mime_type': 'image/png', 'foto_base64': b64encode(foto).decode(),
+        }).status_code, 200)
+        download = self.client.get(rota, headers=headers)
+        self.assertEqual(download.data, foto)
+        self.assertEqual(download.mimetype, 'image/png')
+        self.assertEqual(self.client.get(rota, headers=self.c['headers']).status_code, 403)
+        self.assertEqual(self.client.delete(f'/medicamentos/{medicamento_id}', headers=headers).status_code, 204)
+        with app.app_context():
+            self.assertIsNone(db.session.scalar(db.select(RegistroApp).where(
+                RegistroApp.recurso == f'medfoto:{medicamento_id}',
+                RegistroApp.paciente_id == self.p['id'],
+            )))
+
+    def test_recuperacao_de_senha_token_so_pode_ser_usado_uma_vez(self):
+        import os
+        with patch.dict(os.environ, {'SMTP_HOST': 'smtp.test', 'SMTP_FROM': 'teste@teste.local'}), \
+                patch('services.usuario.recuperacao_senha_service.smtplib.SMTP') as smtp:
+            resposta = self.client.post('/users/password/solicitar', json={'email': self.p['email']})
+            self.assertEqual(resposta.status_code, 200)
+            mensagem = smtp.return_value.__enter__.return_value.send_message.call_args.args[0]
+            token = mensagem.get_content().split('\n\n')[2].strip()
+        dados = {'token': token, 'nova_senha': 'NovaSenha123!'}
+        self.assertEqual(self.client.post('/users/password/redefinir', json=dados).status_code, 200)
+        self.assertEqual(self.client.post('/users/password/redefinir', json=dados).status_code, 400)
+        self.assertEqual(self.client.post('/users/login/', json={
+            'email': self.p['email'], 'senha': 'NovaSenha123!',
+        }).status_code, 200)
+
+    def test_comunicado_envia_apenas_uma_vez(self):
+        import os
+        headers = self.p['headers']
+        resposta = self.client.post(f"/pacientes/{self.p['id']}/comunicados", headers=headers,
+            json={'mensagem': 'Comunicado de teste', 'destinatarios': [
+                {'nome': 'Contato', 'email': 'contato@teste.local'},
+            ]})
+        self.assertEqual(resposta.status_code, 201, resposta.get_json())
+        rota = f"/comunicados/{resposta.get_json()['id']}/enviar"
+        with patch.dict(os.environ, {'SMTP_HOST': 'smtp.test', 'SMTP_FROM': 'teste@teste.local'}), \
+                patch('services.paciente.envio_comunicado_service.smtplib.SMTP') as smtp:
+            for _ in range(2):
+                envio = self.client.post(rota, headers=headers)
+                self.assertEqual(envio.status_code, 200, envio.get_json())
+                self.assertEqual(envio.get_json()['dados']['status'], 'enviado')
+            smtp.return_value.send_message.assert_called_once()
+
     def test_dose_atrasada_avisa_paciente_e_responsavel(self):
         self.client.post('/minha-conta/pacientes', headers=self.r['headers'], json={'cpf': self.p['cpf']})
-        medicamento = self.client.post(
+        resposta_med = self.client.post(
             f"/pacientes/{self.p['id']}/medicamentos",
             headers=self.p['headers'],
-            json={'nome': 'Losartana', 'dosagem': '50 mg', 'horarios': ['08:00']},
-        ).get_json()
+            json={'nome': 'Losartana', 'dosagem': '50 mg', 'frequencia': 'Diária', 'horarios': ['08:00']},
+        )
+        self.assertEqual(resposta_med.status_code, 201, resposta_med.get_json())
+        medicamento = resposta_med.get_json()
 
         class DataHoraFixa(datetime):
             @classmethod
@@ -95,7 +157,7 @@ class FluxosCorrigidosTest(unittest.TestCase):
                 return cls(2026, 10, 23, 10, 0, tzinfo=tz or ZoneInfo('America/Sao_Paulo'))
 
         rota_alertas = f"/pacientes/{self.p['id']}/alertas-medicamentos"
-        with patch('routes.medicamento.doses.datetime', DataHoraFixa):
+        with patch('services.medicamento.doses_service.datetime', DataHoraFixa):
             alerta_paciente = self.client.get(rota_alertas, headers=self.p['headers']).get_json()
             alerta_responsavel = self.client.get(rota_alertas, headers=self.r['headers']).get_json()
             self.assertEqual(alerta_paciente[0]['tipo'], 'medicamento_atrasado')

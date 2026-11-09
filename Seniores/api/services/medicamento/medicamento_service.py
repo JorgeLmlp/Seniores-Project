@@ -76,21 +76,7 @@ class MedicamentoService:
         medicamento, status = self.buscar(medicamento_id)
         if status != 200:
             return None, status
-        from extensions import db
-        from models.paciente.registro_app import RegistroApp
-        foto = db.session.scalar(db.select(RegistroApp).where(
-            RegistroApp.paciente_id == medicamento.paciente_id,
-            RegistroApp.recurso == f'medfoto:{medicamento.id}',
-        ).limit(1))
-        try:
-            if foto:
-                db.session.delete(foto)
-            db.session.delete(medicamento)
-            db.session.commit()
-            return None, 204
-        except Exception:
-            db.session.rollback()
-            return None, 500
+        return (None, 204) if medicamento.deletar() else (None, 500)
 
     @staticmethod
     def _quantidade_valida(quantidade):

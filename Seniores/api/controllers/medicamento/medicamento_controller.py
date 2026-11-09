@@ -59,59 +59,12 @@ def deletar_medicamento(medicamento_id):
     return "", 204
 
 
-# Stored in the existing registros_app JSON table: no migration needed.
 def foto_medicamento(medicamento_id):
-    from base64 import b64decode, b64encode
-    from binascii import Error as Base64Error
-    from extensions import db
-    from models.medicamento.remedio import Remedio
-    from models.paciente.registro_app import RegistroApp
-    medicamento = db.session.get(Remedio, medicamento_id)
-    if medicamento is None:
-        return jsonify(erro='Medicamento não encontrado.'), 404
-    recurso = f'medfoto:{medicamento_id}'
-    registro = db.session.scalar(db.select(RegistroApp).where(
-        RegistroApp.paciente_id == medicamento.paciente_id,
-        RegistroApp.recurso == recurso,
-    ).limit(1))
-    if request.method == 'GET':
-        if registro is None:
-            return jsonify(erro='Sem foto cadastrada.'), 404
-        try:
-            foto = b64decode(registro.dados['foto_base64'], validate=True)
-        except (KeyError, ValueError, Base64Error):
-            return jsonify(erro='Arquivo da foto inválido.'), 500
-        return Response(foto, mimetype=registro.dados['mime_type'],
+    from services.medicamento.foto_service import foto_medicamento as processar
+    resultado = processar(medicamento_id, request.method, request.get_json(silent=True) or {})
+    corpo, status = resultado if isinstance(resultado, tuple) else (resultado, 200)
+    if isinstance(corpo, tuple):
+        foto, mime = corpo
+        return Response(foto, mimetype=mime,
                         headers={'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff'})
-    if request.method == 'DELETE':
-        if registro:
-            if not registro.deletar():
-                return jsonify(erro='Não foi possível remover a foto.'), 500
-        return jsonify(medicamento.to_dict)
-
-    dados = request.get_json(silent=True) or {}
-    mime = dados.get('mime_type')
-    base64_texto = dados.get('foto_base64')
-    if mime not in {'image/jpeg', 'image/png', 'image/webp'} or not isinstance(base64_texto, str):
-        return jsonify(erro='Formato de foto inválido.'), 400
-    if len(base64_texto) > 3 * 1024 * 1024:
-        return jsonify(erro='Foto muito grande (máximo 2 MB).'), 413
-    try:
-        foto = b64decode(base64_texto, validate=True)
-    except (Base64Error, ValueError):
-        return jsonify(erro='Imagem inválida.'), 400
-    assinaturas = {
-        'image/jpeg': lambda b: b.startswith(b'\xff\xd8\xff'),
-        'image/png': lambda b: b.startswith(b'\x89PNG\r\n\x1a\n'),
-        'image/webp': lambda b: b[:4] == b'RIFF' and b[8:12] == b'WEBP',
-    }
-    if not foto or len(foto) > 2 * 1024 * 1024 or not assinaturas[mime](foto):
-        return jsonify(erro='Arquivo não é uma imagem válida de até 2 MB.'), 400
-    payload = {'foto_base64': b64encode(foto).decode('ascii'), 'mime_type': mime}
-    if registro is None:
-        registro = RegistroApp.criar(medicamento.paciente_id, recurso, payload)
-    else:
-        registro = registro.atualizar(payload)
-    if registro is None:
-        return jsonify(erro='Não foi possível salvar a imagem.'), 500
-    return jsonify(medicamento.to_dict)
+    return jsonify(corpo), status

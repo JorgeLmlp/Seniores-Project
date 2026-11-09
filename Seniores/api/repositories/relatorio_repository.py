@@ -39,7 +39,7 @@ def consultar_historico_mensal(paciente_id, ano, mes):
 
 
 def consultar_historico_periodo(paciente_id, inicio, fim):
-    from routes.medicamento.doses import Dose
+    from models.medicamento.dose import Dose
     paciente = db.session.get(Paciente, paciente_id)
     if not paciente:
         return None
