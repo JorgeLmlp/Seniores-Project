@@ -27,7 +27,7 @@ class MenuSanduiche extends StatelessWidget {
     final session = SessionService.instance;
     final temPaciente = session.tipoUsuario == 'paciente' ||
         session.pacienteSelecionado != null;
-    final largura = math.min(MediaQuery.sizeOf(context).width * 0.78, 320.0);
+    final largura = math.min(MediaQuery.sizeOf(context).width - 24, 400.0);
 
     return Drawer(
       width: largura,
@@ -38,120 +38,174 @@ class MenuSanduiche extends StatelessWidget {
       clipBehavior: Clip.antiAlias,
       child: SafeArea(
         left: false,
-        child: Column(
-          children: [
-            _CabecalhoMenu(session: session),
-            Expanded(
-              child: ListView(
+        child: SingleChildScrollView(
+          child: Column(
+            children: [
+              _CabecalhoMenu(session: session),
+              Padding(
                 padding: const EdgeInsets.fromLTRB(14, 16, 14, 24),
-                children: [
-                  if (temPaciente) ...[
-                    _ItemMenu(
-                      icon: Icons.dashboard_rounded,
-                      title: 'Visão geral',
-                      ativo: paginaAtual == 'inicio',
-                      onTap: () => _abrir(context, const Home(), 'inicio'),
-                    ),
-                  ],
-                  if (session.tipoUsuario != 'paciente') ...[
-                    _ItemMenu(
-                      icon: Icons.group_rounded,
-                      title: 'Pacientes e vínculos',
-                      ativo: paginaAtual == 'vinculos',
-                      onTap: () =>
-                          _abrir(context, const Vinculos(), 'vinculos'),
-                    ),
-                  ],
-                  if (!temPaciente) ...[
-                    const SizedBox(height: 10),
-                    const _AvisoPaciente(),
-                  ],
-                  if (temPaciente) ...[
-                    const _TituloGrupo(title: 'Cuidados'),
-                    _ItemMenu(
-                      icon: Icons.medication_rounded,
-                      title: 'Medicamentos',
-                      onTap: () =>
-                          _abrir(context, const Medicamentos(), 'medicamentos'),
-                    ),
-                    _ItemMenu(
-                      icon: Icons.health_and_safety_rounded,
-                      title: 'Exames e consultas',
-                      onTap: () =>
-                          _abrir(context, const Cuidados(), 'cuidados'),
-                    ),
-                    _ItemMenu(icon: Icons.attach_file_rounded, title: 'Documentos de exames',
-                      onTap: () => _abrir(context, const DocumentosExames(), 'documentos')),
-                    _ItemMenu(
-                      icon: Icons.monitor_heart_rounded,
-                      title: 'Diário de saúde',
-                      onTap: () => _abrirDiario(context),
-                    ),
-                    const _TituloGrupo(title: 'Acompanhamento'),
-                    _ItemMenu(icon: Icons.monitor_heart_outlined, title: 'Sinais vitais',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.sinais), 'sinais')),
-                    _ItemMenu(icon: Icons.inventory_2_outlined, title: 'Estoque',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.estoque), 'estoque')),
-                    _ItemMenu(icon: Icons.report_outlined, title: 'Incidentes',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.incidentes), 'incidentes')),
-                    _ItemMenu(icon: Icons.contact_emergency_outlined, title: 'Contatos de emergência',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.contatos), 'contatos')),
-                    _ItemMenu(icon: Icons.restaurant_outlined, title: 'Dietas e restrições',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.dietas), 'dietas')),
-                    _ItemMenu(icon: Icons.clean_hands_outlined, title: 'Checklist de higiene',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.higiene), 'higiene')),
-                    _ItemMenu(icon: Icons.healing_outlined, title: 'Lesões',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.lesoes), 'lesoes')),
-                    _ItemMenu(icon: Icons.notification_important_outlined, title: 'Histórico de alertas',
-                      onTap: () => _abrir(context, const ModuloClinico(config: ModulosSeniores.alertas), 'alertas')),
-                    const _TituloGrupo(title: 'Organização'),
-                    _ItemMenu(
-                      icon: Icons.campaign_rounded,
-                      title: 'Comunicados',
-                      onTap: () => _abrir(
-                        context,
-                        const Destinatarios(),
-                        'comunicados',
+                child: Column(
+                  children: [
+                    if (temPaciente) ...[
+                      _ItemMenu(
+                        icon: Icons.dashboard_rounded,
+                        title: 'Visão geral',
+                        ativo: paginaAtual == 'inicio',
+                        onTap: () => _abrir(context, const Home(), 'inicio'),
                       ),
+                    ],
+                    if (session.tipoUsuario != 'paciente') ...[
+                      _ItemMenu(
+                        icon: Icons.group_rounded,
+                        title: 'Pacientes e vínculos',
+                        ativo: paginaAtual == 'vinculos',
+                        onTap: () =>
+                            _abrir(context, const Vinculos(), 'vinculos'),
+                      ),
+                    ],
+                    if (!temPaciente) ...[
+                      const SizedBox(height: 10),
+                      const _AvisoPaciente(),
+                    ],
+                    if (temPaciente) ...[
+                      const _TituloGrupo(title: 'Cuidados'),
+                      _ItemMenu(
+                        icon: Icons.medication_rounded,
+                        title: 'Medicamentos',
+                        onTap: () => _abrir(
+                            context, const Medicamentos(), 'medicamentos'),
+                      ),
+                      _ItemMenu(
+                        icon: Icons.health_and_safety_rounded,
+                        title: 'Exames e consultas',
+                        onTap: () =>
+                            _abrir(context, const Cuidados(), 'cuidados'),
+                      ),
+                      _ItemMenu(
+                          icon: Icons.attach_file_rounded,
+                          title: 'Documentos de exames',
+                          onTap: () => _abrir(
+                              context, const DocumentosExames(), 'documentos')),
+                      _ItemMenu(
+                        icon: Icons.monitor_heart_rounded,
+                        title: 'Diário de saúde',
+                        onTap: () => _abrirDiario(context),
+                      ),
+                      const _TituloGrupo(title: 'Acompanhamento'),
+                      _ItemMenu(
+                          icon: Icons.monitor_heart_outlined,
+                          title: 'Sinais vitais',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.sinais),
+                              'sinais')),
+                      _ItemMenu(
+                          icon: Icons.inventory_2_outlined,
+                          title: 'Estoque',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.estoque),
+                              'estoque')),
+                      _ItemMenu(
+                          icon: Icons.report_outlined,
+                          title: 'Incidentes',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.incidentes),
+                              'incidentes')),
+                      _ItemMenu(
+                          icon: Icons.contact_emergency_outlined,
+                          title: 'Contatos de emergência',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.contatos),
+                              'contatos')),
+                      _ItemMenu(
+                          icon: Icons.restaurant_outlined,
+                          title: 'Dietas e restrições',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.dietas),
+                              'dietas')),
+                      _ItemMenu(
+                          icon: Icons.clean_hands_outlined,
+                          title: 'Checklist de higiene',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.higiene),
+                              'higiene')),
+                      _ItemMenu(
+                          icon: Icons.healing_outlined,
+                          title: 'Lesões',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.lesoes),
+                              'lesoes')),
+                      _ItemMenu(
+                          icon: Icons.notification_important_outlined,
+                          title: 'Histórico de alertas',
+                          onTap: () => _abrir(
+                              context,
+                              const ModuloClinico(
+                                  config: ModulosSeniores.alertas),
+                              'alertas')),
+                      const _TituloGrupo(title: 'Organização'),
+                      _ItemMenu(
+                        icon: Icons.campaign_rounded,
+                        title: 'Comunicados',
+                        onTap: () => _abrir(
+                          context,
+                          const Destinatarios(),
+                          'comunicados',
+                        ),
+                      ),
+                      _ItemMenu(
+                        icon: Icons.account_balance_wallet_rounded,
+                        title: 'Gastos',
+                        onTap: () => _abrir(context, const Gastos(), 'gastos'),
+                      ),
+                      _ItemMenu(
+                        icon: Icons.description_rounded,
+                        title: 'Relatórios',
+                        onTap: () => _abrir(
+                            context, const RelatoriosPdf(), 'relatorios'),
+                      ),
+                    ],
+                    const _TituloGrupo(title: 'Conta'),
+                    _ItemMenu(
+                      icon: Icons.person_rounded,
+                      title: 'Minha conta',
+                      onTap: () => _abrir(context, const MinhaConta(), 'conta'),
                     ),
                     _ItemMenu(
-                      icon: Icons.account_balance_wallet_rounded,
-                      title: 'Gastos',
-                      onTap: () => _abrir(context, const Gastos(), 'gastos'),
+                      icon: Icons.tune_rounded,
+                      title: 'Configurações',
+                      onTap: () => _abrir(
+                          context, const Configuracoes(), 'configuracoes'),
                     ),
+                    const SizedBox(height: 12),
+                    Divider(
+                        color: Theme.of(context).colorScheme.outlineVariant),
+                    const SizedBox(height: 8),
                     _ItemMenu(
-                      icon: Icons.description_rounded,
-                      title: 'Relatórios',
-                      onTap: () =>
-                          _abrir(context, const RelatoriosPdf(), 'relatorios'),
+                      icon: Icons.logout_rounded,
+                      title: 'Sair da conta',
+                      destrutivo: true,
+                      mostrarSeta: false,
+                      onTap: () => _sair(context),
                     ),
                   ],
-                  const _TituloGrupo(title: 'Conta'),
-                  _ItemMenu(
-                    icon: Icons.person_rounded,
-                    title: 'Minha conta',
-                    onTap: () => _abrir(context, const MinhaConta(), 'conta'),
-                  ),
-                  _ItemMenu(
-                    icon: Icons.tune_rounded,
-                    title: 'Configurações',
-                    onTap: () =>
-                        _abrir(context, const Configuracoes(), 'configuracoes'),
-                  ),
-                  const SizedBox(height: 12),
-                  Divider(color: Theme.of(context).colorScheme.outlineVariant),
-                  const SizedBox(height: 8),
-                  _ItemMenu(
-                    icon: Icons.logout_rounded,
-                    title: 'Sair da conta',
-                    destrutivo: true,
-                    mostrarSeta: false,
-                    onTap: () => _sair(context),
-                  ),
-                ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -247,8 +301,6 @@ class _CabecalhoMenu extends StatelessWidget {
                   children: [
                     Text(
                       nome,
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.titleMedium?.copyWith(
                             color: scheme.onPrimary,
                             fontWeight: FontWeight.w800,
@@ -284,8 +336,6 @@ class _CabecalhoMenu extends StatelessWidget {
                   Expanded(
                     child: Text(
                       'Cuidando de ${session.nomePaciente}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
                       style: TextStyle(
                         color: scheme.onPrimary,
                         fontWeight: FontWeight.w700,
