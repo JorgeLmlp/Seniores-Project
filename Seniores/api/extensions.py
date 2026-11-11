@@ -12,13 +12,29 @@ from dotenv import load_dotenv
 db = SQLAlchemy()
 
 app = Flask(__name__)
-# Permite que a versao Flutter Web acesse a API durante o desenvolvimento.
-# Aplicativos Flutter nativos (Android/iOS/Windows) nao dependem de CORS.
-CORS(app,resources={r"/*": {"origins": "*"}})
 # Carrega DATABASE_URL e DEBUG antes de configurar o Flask.
 na_vercel = os.getenv('VERCEL') == '1'
 if not na_vercel:
     load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+
+# Aplicativos nativos não dependem de CORS. Para Flutter Web, autorize apenas
+# as origens explícitas em CORS_ORIGINS, separadas por vírgula.
+cors_origins = [
+    origem.strip().rstrip('/')
+    for origem in os.getenv('CORS_ORIGINS', '').split(',')
+    if origem.strip()
+]
+if na_vercel and '*' in cors_origins:
+    raise RuntimeError('CORS_ORIGINS não pode conter * em produção.')
+if cors_origins:
+    CORS(
+        app,
+        resources={r"/*": {"origins": cors_origins}},
+        allow_headers=['Authorization', 'Content-Type'],
+        methods=['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        supports_credentials=False,
+        max_age=600,
+    )
 if na_vercel and not os.getenv('SECRET_KEY'):
     raise RuntimeError('Configure SECRET_KEY fixa na Vercel.')
 if na_vercel and os.getenv('API_TESTING') == '1':

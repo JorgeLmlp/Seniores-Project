@@ -41,6 +41,21 @@ jobs:
         run: flutter analyze --no-pub
       - name: Test
         run: flutter test --no-pub
+      - name: Configure production signing
+        env:
+          ANDROID_KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          ANDROID_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          ANDROID_KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          ANDROID_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$ANDROID_KEYSTORE_BASE64"
+          test -n "$ANDROID_KEYSTORE_PASSWORD"
+          test -n "$ANDROID_KEY_ALIAS"
+          test -n "$ANDROID_KEY_PASSWORD"
+          printf '%s' "$ANDROID_KEYSTORE_BASE64" | base64 --decode > android/app/upload-keystore.jks
+          printf 'storeFile=upload-keystore.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+            "$ANDROID_KEYSTORE_PASSWORD" "$ANDROID_KEY_ALIAS" "$ANDROID_KEY_PASSWORD" \
+            > android/key.properties
       - name: Build APK
         run: |
           echo 'org.gradle.jvmargs=-Xmx4G -XX:MaxMetaspaceSize=1G -XX:+HeapDumpOnOutOfMemoryError' >> android/gradle.properties
@@ -68,8 +83,8 @@ jobs:
 
           API: $API_URL
           Código: $GITHUB_SHA
+          Assinatura: chave de produção do projeto Seniores.
 
-          APK para testes, assinado com a chave de desenvolvimento do runner. Uma próxima build pode exigir desinstalar a anterior antes de instalar.
           O arquivo SHA256SUMS.txt permite conferir a integridade do download.
           EOF
           if gh release view "$tag" >/dev/null 2>&1; then
